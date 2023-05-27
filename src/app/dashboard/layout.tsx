@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Wrapper>
+    <DivWrapper>
       <nav>
         <ul>
           <li>
@@ -16,11 +16,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         </ul>
       </nav>
       {children}
-    </Wrapper>
+    </DivWrapper>
   );
 };
 
-const Wrapper = styled.div`
+const DivWrapper = styled.div`
   box-sizing: border-box;
   margin: 0;
   padding: 0;
