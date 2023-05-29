@@ -1,54 +1,29 @@
-"use client";
-
 import Link from "next/link";
-import styled from "styled-components";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <StyledDiv>
-      <StyledHeader>
+    <div className="box-border m-0 p-0">
+      <header className="bg-black flex justify-between align-baseline px-8 py-[10%]">
         <nav>
           <ul>
-            <li>
+            <li className="text-base text-slate-200">
               <Link href="#">Nav1 link</Link>
             </li>
-            <li>
+            <li className="text-base text-slate-200">
               <Link href="#">Nav2 link</Link>
             </li>
-            <li>
+            <li className="text-base text-slate-200">
               <Link href="#">Nav3 link</Link>
             </li>
           </ul>
         </nav>
         <Link href="#">
-          <button>Contact</button>
+          <button className="text-base text-slate-200">Contact</button>
         </Link>
-      </StyledHeader>
+      </header>
       {children}
-    </StyledDiv>
+    </div>
   );
 };
-
-const StyledDiv = styled.div`
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-
-  li,
-  a,
-  button {
-    font-size: 16px;
-    color: #edf0f1;
-    text-decoration: none;
-  }
-`;
-
-const StyledHeader = styled.header`
-  background-color: black;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px 10%;
-`;
 
 export default DashboardLayout;
