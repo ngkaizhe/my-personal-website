@@ -1,8 +1,8 @@
-import { Montserrat_Alternates } from "next/font/google";
+import { Montserrat } from "next/font/google";
 
 import "./globals.css";
 
-const montserrat = Montserrat_Alternates({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: "700",
 });
