@@ -6,6 +6,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <header
         className="
           sticky
+          z-50
           top-0 w-full"
       >
         <div
