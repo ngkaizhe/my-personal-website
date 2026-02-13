@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 export interface TimelineItem {
     year: string;
@@ -8,8 +8,10 @@ export interface TimelineItem {
     tag: string;
     tagColorClass: string; // Full Tailwind color class for tag background/text
     titleColorClass: string; // Full Tailwind color class for title
-    numberColorClass: string; // Full Tailwind color class for number
+    numberColorClass: string; // Full Tailwind color class for number (or icon color)
     description: string;
+    icon?: ReactNode;
+    tags?: string[];
 }
 
 const TimelineCard = ({ item, index, isRight }: { item: TimelineItem; index: number; isRight: boolean }) => {
@@ -18,7 +20,13 @@ const TimelineCard = ({ item, index, isRight }: { item: TimelineItem; index: num
             <div className="order-1 w-5/12"></div>
 
             <div className={`z-20 flex items-center order-1 bg-white shadow-xl w-12 h-12 rounded-full border-4 border-white justify-center`}>
-                <h1 className={`mx-auto font-semibold text-lg ${item.numberColorClass}`}>{index + 1}</h1>
+                {item.icon ? (
+                    <div className={`${item.numberColorClass} w-6 h-6`}>
+                        {item.icon}
+                    </div>
+                ) : (
+                    <h1 className={`mx-auto font-semibold text-lg ${item.numberColorClass}`}>{index + 1}</h1>
+                )}
             </div>
 
             <div className={`order-1 w-5/12 px-6 py-4 bg-white rounded-lg shadow-xl ${isRight ? 'text-right' : 'text-left'}`}>
@@ -29,9 +37,19 @@ const TimelineCard = ({ item, index, isRight }: { item: TimelineItem; index: num
                 </div>
                 <h3 className={`mb-1 font-bold ${item.titleColorClass} text-xl`}>{item.year}</h3>
                 <p className="text-gray-400 text-sm mb-2">{item.title}</p>
-                <p className="text-sm leading-snug tracking-wide text-gray-900 text-opacity-100">
+                <p className="text-sm leading-snug tracking-wide text-gray-900 text-opacity-100 mb-4">
                     {item.description}
                 </p>
+
+                {item.tags && item.tags.length > 0 && (
+                    <div className={`flex flex-wrap gap-2 ${isRight ? 'justify-end' : 'justify-start'}`}>
+                        {item.tags.map((tag, i) => (
+                            <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border border-gray-200">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -44,8 +62,7 @@ interface TimelineProps {
 const Timeline = ({ items }: TimelineProps) => {
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-4xl font-bold text-center mb-12 uppercase tracking-wider">Timeline</h2>
-            <h3 className="text-xl font-semibold text-center mb-12 uppercase tracking-wide">History of Borcelle</h3>
+            <h2 className="text-4xl font-bold text-center mb-12 uppercase tracking-wider">My Journey</h2>
 
             <div className="relative wrap overflow-hidden p-10 h-full">
                 <div className="border-2-2 absolute border-opacity-20 border-gray-700 h-full border left-1/2"></div>
