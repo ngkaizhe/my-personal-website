@@ -22,7 +22,51 @@ export interface TimelineItem {
     };
 }
 
-const TimelineCard = ({ item, index, isRight, setSelectedId }: { item: TimelineItem; index: number; isRight: boolean, setSelectedId: (id: string) => void }) => {
+const TimelineCard = ({
+    item,
+    index,
+    isRight,
+    onClick
+}: {
+    item: TimelineItem;
+    index: number;
+    isRight: boolean;
+    onClick: () => void;
+}) => {
+    return (
+        <motion.div
+            layoutId={`card-${index}`}
+            onClick={onClick}
+            className={`order-1 w-5/12 px-6 py-4 bg-white rounded-lg shadow-xl ${isRight ? 'text-right' : 'text-left'} cursor-pointer group hover:shadow-2xl transition-shadow`}
+        >
+            <div className={`mb-3 ${isRight ? 'flex justify-end' : 'flex justify-start'}`}>
+                <span className={`${item.tagColorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
+                    {item.tag}
+                </span>
+            </div>
+            <h3 className={`mb-1 font-bold ${item.titleColorClass} text-xl`}>{item.year}</h3>
+            <p className="text-gray-400 text-sm mb-2">{item.title}</p>
+            <p className="text-sm leading-snug tracking-wide text-gray-900 text-opacity-100">
+                {item.description}
+            </p>
+            <div className={`mt-2 text-xs text-gray-400 ${isRight ? 'text-right' : 'text-left'}`}>
+                Click to view details...
+            </div>
+        </motion.div>
+    );
+};
+
+const TimelineRow = ({
+    item,
+    index,
+    isRight,
+    setSelectedId
+}: {
+    item: TimelineItem;
+    index: number;
+    isRight: boolean;
+    setSelectedId: (id: string) => void;
+}) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -43,25 +87,12 @@ const TimelineCard = ({ item, index, isRight, setSelectedId }: { item: TimelineI
                 )}
             </div>
 
-            <motion.div
-                layoutId={`card-${index}`}
+            <TimelineCard
+                item={item}
+                index={index}
+                isRight={isRight}
                 onClick={() => setSelectedId(`card-${index}`)}
-                className={`order-1 w-5/12 px-6 py-4 bg-white rounded-lg shadow-xl ${isRight ? 'text-right' : 'text-left'} cursor-pointer group hover:shadow-2xl transition-shadow`}
-            >
-                <div className={`mb-3 ${isRight ? 'flex justify-end' : 'flex justify-start'}`}>
-                    <span className={`${item.tagColorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
-                        {item.tag}
-                    </span>
-                </div>
-                <h3 className={`mb-1 font-bold ${item.titleColorClass} text-xl`}>{item.year}</h3>
-                <p className="text-gray-400 text-sm mb-2">{item.title}</p>
-                <p className="text-sm leading-snug tracking-wide text-gray-900 text-opacity-100">
-                    {item.description}
-                </p>
-                <div className={`mt-2 text-xs text-gray-400 ${isRight ? 'text-right' : 'text-left'}`}>
-                    Click to view details...
-                </div>
-            </motion.div>
+            />
         </motion.div>
     );
 };
@@ -82,7 +113,7 @@ const Timeline = ({ items }: TimelineProps) => {
                 <div className="border-2-2 absolute border-opacity-20 border-gray-700 h-full border left-1/2"></div>
 
                 {items.map((item, index) => (
-                    <TimelineCard key={index} item={item} index={index} isRight={index % 2 !== 0} setSelectedId={setSelectedId} />
+                    <TimelineRow key={index} item={item} index={index} isRight={index % 2 !== 0} setSelectedId={setSelectedId} />
                 ))}
             </div>
 
