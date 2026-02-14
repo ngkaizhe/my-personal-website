@@ -1,6 +1,8 @@
 'use client';
 
 import React, { ReactNode } from 'react';
+import { motion } from 'motion/react';
+import Link from 'next/link';
 
 export interface TimelineItem {
     year: string;
@@ -12,11 +14,21 @@ export interface TimelineItem {
     description: string;
     icon?: ReactNode;
     tags?: string[];
+    link?: {
+        url: string;
+        text: string;
+    };
 }
 
 const TimelineCard = ({ item, index, isRight }: { item: TimelineItem; index: number; isRight: boolean }) => {
     return (
-        <div className={`mb-8 flex justify-between items-center w-full ${isRight ? 'flex-row-reverse' : ''}`}>
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+            className={`mb-8 flex justify-between items-center w-full ${isRight ? 'flex-row-reverse' : ''}`}
+        >
             <div className="order-1 w-5/12"></div>
 
             <div className={`z-20 flex items-center order-1 bg-white shadow-xl w-12 h-12 rounded-full border-4 border-white justify-center`}>
@@ -42,7 +54,7 @@ const TimelineCard = ({ item, index, isRight }: { item: TimelineItem; index: num
                 </p>
 
                 {item.tags && item.tags.length > 0 && (
-                    <div className={`flex flex-wrap gap-2 ${isRight ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`flex flex-wrap gap-2 mb-4 ${isRight ? 'justify-end' : 'justify-start'}`}>
                         {item.tags.map((tag, i) => (
                             <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border border-gray-200">
                                 {tag}
@@ -50,8 +62,20 @@ const TimelineCard = ({ item, index, isRight }: { item: TimelineItem; index: num
                         ))}
                     </div>
                 )}
+
+                {item.link && (
+                    <div className={`flex ${isRight ? 'justify-end' : 'justify-start'}`}>
+                        <Link
+                            href={item.link.url}
+                            target="_blank"
+                            className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors`}
+                        >
+                            {item.link.text}
+                        </Link>
+                    </div>
+                )}
             </div>
-        </div>
+        </motion.div>
     );
 };
 
