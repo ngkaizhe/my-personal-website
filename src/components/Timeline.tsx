@@ -5,21 +5,47 @@ import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 
-export interface TimelineItem {
-    year: string;
-    title: string;
-    tag: string;
-    tagColorClass: string; // Full Tailwind color class for tag background/text
-    titleColorClass: string; // Full Tailwind color class for title
-    numberColorClass: string; // Full Tailwind color class for number (or icon color)
+export class TimelineItem {
+    year: {
+        content: string;
+        colorClass: string;
+    };
+    title: {
+        content: string;
+        colorClass: string;
+    };
+    category: {
+        text: string;
+        colorClass: string;
+    };
+    techStack: string[];
     description: string;
-    details?: string; // New field for expanded content
+    details?: string;
     icon?: ReactNode;
-    tags?: string[];
     link?: {
         url: string;
         text: string;
     };
+
+    constructor(data: {
+        year: { content: string; colorClass: string };
+        title: { content: string; colorClass: string };
+        category: { text: string; colorClass: string };
+        description: string;
+        techStack?: string[];
+        details?: string;
+        icon?: ReactNode;
+        link?: { url: string; text: string };
+    }) {
+        this.year = data.year;
+        this.title = data.title;
+        this.category = data.category;
+        this.description = data.description;
+        this.techStack = data.techStack || [];
+        this.details = data.details;
+        this.icon = data.icon;
+        this.link = data.link;
+    }
 }
 
 const TimelineCard = ({
@@ -40,12 +66,12 @@ const TimelineCard = ({
             className={`order-1 w-5/12 px-6 py-4 bg-white rounded-lg shadow-xl ${isRight ? 'text-right' : 'text-left'} cursor-pointer group hover:shadow-2xl transition-shadow`}
         >
             <div className={`mb-3 ${isRight ? 'flex justify-end' : 'flex justify-start'}`}>
-                <span className={`${item.tagColorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
-                    {item.tag}
+                <span className={`${item.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
+                    {item.category.text}
                 </span>
             </div>
-            <h3 className={`mb-1 font-bold ${item.titleColorClass} text-xl`}>{item.year}</h3>
-            <p className="text-gray-400 text-sm mb-2">{item.title}</p>
+            <h3 className={`mb-1 font-bold ${item.title.colorClass} text-xl`}>{item.year.content}</h3>
+            <p className="text-gray-400 text-sm mb-2">{item.title.content}</p>
             <p className="text-sm leading-snug tracking-wide text-gray-900 text-opacity-100">
                 {item.description}
             </p>
@@ -79,11 +105,11 @@ const TimelineRow = ({
 
             <div className={`z-20 flex items-center order-1 bg-white shadow-xl w-12 h-12 rounded-full border-4 border-white justify-center group-hover:scale-110 transition-transform`}>
                 {item.icon ? (
-                    <div className={`${item.numberColorClass} w-6 h-6`}>
+                    <div className={`${item.year.colorClass} w-6 h-6`}>
                         {item.icon}
                     </div>
                 ) : (
-                    <h1 className={`mx-auto font-semibold text-lg ${item.numberColorClass}`}>{index + 1}</h1>
+                    <h1 className={`mx-auto font-semibold text-lg ${item.year.colorClass}`}>{index + 1}</h1>
                 )}
             </div>
 
@@ -143,19 +169,19 @@ const Timeline = ({ items }: TimelineProps) => {
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className={`flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 border-4 border-white shadow-lg`}>
                                         {selectedItem.icon ? (
-                                            <div className={`${selectedItem.numberColorClass} w-8 h-8`}>
+                                            <div className={`${selectedItem.year.colorClass} w-8 h-8`}>
                                                 {selectedItem.icon}
                                             </div>
                                         ) : (
-                                            <h1 className={`font-semibold text-2xl ${selectedItem.numberColorClass}`}>#</h1>
+                                            <h1 className={`font-semibold text-2xl ${selectedItem.year.colorClass}`}>#</h1>
                                         )}
                                     </div>
                                     <div>
-                                        <span className={`${selectedItem.tagColorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
-                                            {selectedItem.tag}
+                                        <span className={`${selectedItem.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
+                                            {selectedItem.category.text}
                                         </span>
-                                        <h3 className={`mt-1 font-bold ${selectedItem.titleColorClass} text-3xl`}>{selectedItem.year}</h3>
-                                        <p className="text-gray-500">{selectedItem.title}</p>
+                                        <h3 className={`mt-1 font-bold ${selectedItem.title.colorClass} text-3xl`}>{selectedItem.year.content}</h3>
+                                        <p className="text-gray-500">{selectedItem.title.content}</p>
                                     </div>
                                 </div>
 
@@ -168,12 +194,12 @@ const Timeline = ({ items }: TimelineProps) => {
                                     )}
                                 </div>
 
-                                {/* Tags */}
-                                {selectedItem.tags && selectedItem.tags.length > 0 && (
+                                {/* Tech Stack */}
+                                {selectedItem.techStack.length > 0 && (
                                     <div className="mb-6">
                                         <h4 className="text-sm font-semibold text-gray-900 mb-2 uppercase tracking-wide">Tech Stack</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {selectedItem.tags.map((tag, i) => (
+                                            {selectedItem.techStack.map((tag, i) => (
                                                 <span key={i} className="bg-blue-50 text-blue-700 text-sm px-3 py-1 rounded-full font-medium">
                                                     {tag}
                                                 </span>
