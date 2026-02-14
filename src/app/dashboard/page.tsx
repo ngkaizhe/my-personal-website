@@ -12,6 +12,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-blue-600',
     numberColorClass: 'text-blue-600',
     description: 'Graduated with a degree in Computer Science. Specialized in web development and algorithms.',
+    details: 'During my time at university, I focused heavily on data structures and algorithms, which laid a strong foundation for my problem-solving skills. I also led the university coding club and organized two hackathons. My final year project involved building a distributed voting system using blockchain technology.',
     icon: <GraduationCap />,
     tags: ['Computer Science', 'Algorithms', 'Java'],
     link: {
@@ -27,6 +28,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-green-600',
     numberColorClass: 'text-green-600',
     description: 'Joined a tech startup as a Junior Frontend Developer. Built user interfaces and refactored legacy code.',
+    details: 'My first professional role was a steep learning curve. I was responsible for migrating the company\'s legacy jQuery codebase to React. This experience taught me the importance of component reusability and state management. I also implemented a comprehensive testing suite that reduced production bugs by 40%.',
     icon: <Briefcase />,
     tags: ['React', 'JavaScript', 'CSS', 'Redux'],
     link: {
@@ -42,6 +44,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-purple-600',
     numberColorClass: 'text-purple-600',
     description: 'Led a team of 5 developers to deliver a critical e-commerce platform. Implemented CI/CD pipelines.',
+    details: 'As a Senior Developer, I shifted my focus from just writing code to designing systems and mentoring others. I led the development of a high-traffic e-commerce platform that handled over 100k daily users. I also introduced Docker and CI/CD pipelines, which reduced deployment time from 2 hours to 15 minutes.',
     icon: <Trophy />,
     tags: ['Next.js', 'TypeScript', 'AWS', 'Docker']
   },
@@ -53,6 +56,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-orange-600',
     numberColorClass: 'text-orange-600',
     description: 'Designing scalable microservices architectures and mentoring junior developers.',
+    details: 'In my current role, I oversee the architectural decisions for our entire product suite. I recently redesigned our core authentication service to be microservices-based, improving scalability and reliability. I\'m also heavily involved in hiring and have revamped our engineering onboarding process.',
     icon: <Code />,
     tags: ['System Design', 'Node.js', 'GraphQL', 'Kubernetes'],
     link: {
@@ -68,6 +72,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-teal-600',
     numberColorClass: 'text-teal-600',
     description: 'Leading the technology strategy for a major tech company. Driving innovation and open source contributions.',
+    details: 'My long-term goal is to become a CTO where I can shape the technical vision of a company. I want to build an engineering culture that values innovation, psychological safety, and open source contribution. I plan to continue contributing to the developer community through speaking and writing.',
     icon: <Trophy />,
     tags: ['Leadership', 'Strategy', 'AI'],
   },
@@ -79,6 +84,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-pink-600',
     numberColorClass: 'text-pink-600',
     description: 'giving keynotes at major conferences about software architecture and team culture.',
+    details: 'I aspire to be a regular speaker at major tech conferences like React Conf and AWS re:Invent. I want to share my experiences in building scalable systems and growing engineering teams. I believe that sharing knowledge is the best way to give back to the community that helped me grow.',
     icon: <GraduationCap />,
     tags: ['Public Speaking', 'DevRel'],
   },
@@ -90,6 +96,7 @@ const timelineData: TimelineItem[] = [
     titleColorClass: 'text-yellow-600',
     numberColorClass: 'text-yellow-600',
     description: 'Investing in and mentoring early-stage startups in the developer tools space.',
+    details: 'Eventually, I want to use my experience and resources to help other founders succeed. I plan to focus on angel investing in the developer tools space, identifying promising startups that are solving real problems for engineers. I also want to provide mentorship to first-time technical founders.',
     icon: <Briefcase />,
     tags: ['Investing', 'Mentorship'],
   },
