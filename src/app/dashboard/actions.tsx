@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { TimelineItem } from '@/components/Timeline/TimelineItem';
+import type { TimelineItem } from '@/components/Timeline/TimelineItem';
 import { GraduationCap, Briefcase, Code, Trophy } from 'lucide-react';
 import React from 'react';
 
