@@ -2,16 +2,6 @@
 
 import { prisma } from '@/lib/prisma';
 import type { TimelineItem } from '@/components/Timeline/TimelineItem';
-import { GraduationCap, Briefcase, Code, Trophy } from 'lucide-react';
-import React from 'react';
-
-// Help map category/icon names from DB to Actual Lucide Icons
-const iconMap: Record<string, React.ReactNode> = {
-    'GraduationCap': <GraduationCap />,
-    'Briefcase': <Briefcase />,
-    'Code': <Code />,
-    'Trophy': <Trophy />,
-};
 
 export async function getTimelineItems() {
     try {
@@ -38,7 +28,8 @@ export async function getTimelineItems() {
                 description: dbItem.description,
                 details: dbItem.details || undefined,
                 techStack: dbItem.techStack,
-                icon: iconMap[dbItem.categoryText] || <Code />,
+                // Now we just pass the icon name as a string
+                iconName: dbItem.iconName,
                 link: dbItem.linkUrl ? {
                     url: dbItem.linkUrl,
                     text: dbItem.linkText || 'Link',

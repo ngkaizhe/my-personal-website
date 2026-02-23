@@ -1,5 +1,3 @@
-import { ReactNode } from 'react';
-
 export interface TimelineItem {
     year: {
         content: string;
@@ -16,7 +14,7 @@ export interface TimelineItem {
     techStack: string[];
     description: string;
     details?: string;
-    icon?: ReactNode;
+    iconName?: string; // Changed from icon: ReactNode to iconName: string
     link?: {
         url: string;
         text: string;

@@ -3,6 +3,9 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('Cleaning up existing data...');
+  await prisma.timelineItem.deleteMany();
+
   const timelineData = [
     {
       yearContent: '2019',
@@ -16,6 +19,7 @@ async function main() {
       techStack: ['Computer Science', 'Algorithms', 'Java'],
       linkUrl: 'https://example.com/degree',
       linkText: 'View Degree',
+      iconName: 'GraduationCap',
     },
     {
       yearContent: '2020',
@@ -29,6 +33,7 @@ async function main() {
       techStack: ['React', 'JavaScript', 'CSS', 'Redux'],
       linkUrl: 'https://github.com/example/project',
       linkText: 'View Project',
+      iconName: 'Briefcase',
     },
     {
       yearContent: '2022',
@@ -40,6 +45,7 @@ async function main() {
       description: 'Led a team of 5 developers to deliver a critical e-commerce platform. Implemented CI/CD pipelines.',
       details: 'As a Senior Developer, I shifted my focus from just writing code to designing systems and mentoring others. I led the development of a high-traffic e-commerce platform that handled over 100k daily users. I also introduced Docker and CI/CD pipelines, which reduced deployment time from 2 hours to 15 minutes.',
       techStack: ['Next.js', 'TypeScript', 'AWS', 'Docker'],
+      iconName: 'Code',
     },
     {
       yearContent: '2024',
@@ -53,6 +59,7 @@ async function main() {
       techStack: ['System Design', 'Node.js', 'GraphQL', 'Kubernetes'],
       linkUrl: 'https://borcelle.com',
       linkText: 'Company Website',
+      iconName: 'Code',
     },
     {
       yearContent: '2025',
@@ -64,6 +71,7 @@ async function main() {
       description: 'Leading the technology strategy for a major tech company. Driving innovation and open source contributions.',
       details: 'My long-term goal is to become a CTO where I can shape the technical vision of a company. I want to build an engineering culture that values innovation, psychological safety, and open source contribution. I plan to continue contributing to the developer community through speaking and writing.',
       techStack: ['Leadership', 'Strategy', 'AI'],
+      iconName: 'Trophy',
     },
     {
       yearContent: '2026',
@@ -75,6 +83,7 @@ async function main() {
       description: 'giving keynotes at major conferences about software architecture and team culture.',
       details: 'I aspire to be a regular speaker at major tech conferences like React Conf and AWS re:Invent. I want to share my experiences in building scalable systems and growing engineering teams. I believe that sharing knowledge is the best way to give back to the community that helped me grow.',
       techStack: ['Public Speaking', 'DevRel'],
+      iconName: 'GraduationCap',
     },
     {
       yearContent: '2027',
@@ -86,6 +95,7 @@ async function main() {
       description: 'Investing in and mentoring early-stage startups in the developer tools space.',
       details: 'Eventually, I want to use my experience and resources to help other founders succeed. I plan to focus on angel investing in the developer tools space, identifying promising startups that are solving real problems for engineers. I also want to provide mentorship to first-time technical founders.',
       techStack: ['Investing', 'Mentorship'],
+      iconName: 'Trophy',
     },
   ];
 

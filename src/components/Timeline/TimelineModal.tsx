@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { TimelineItem } from './TimelineItem';
+import { TimelineIcon } from './TimelineIcon';
 
 interface TimelineModalProps {
     selectedId: string | null;
@@ -41,13 +41,7 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
                         <div className="p-8">
                             <div className="flex items-center gap-4 mb-6">
                                 <div className={`flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 border-4 border-white shadow-lg`}>
-                                    {selectedItem.icon ? (
-                                        <div className={`${selectedItem.year.colorClass} w-8 h-8`}>
-                                            {selectedItem.icon}
-                                        </div>
-                                    ) : (
-                                        <h1 className={`font-semibold text-2xl ${selectedItem.year.colorClass}`}>#</h1>
-                                    )}
+                                    <TimelineIcon iconName={selectedItem.iconName} className={`w-8 h-8 ${selectedItem.year.colorClass}`} />
                                 </div>
                                 <div>
                                     <span className={`${selectedItem.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
