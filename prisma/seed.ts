@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Cleaning up existing data...');
   await prisma.timelineItem.deleteMany();
+  await prisma.icon.deleteMany();
 
   const timelineData = [
     {
@@ -19,7 +20,7 @@ async function main() {
       techStack: ['Computer Science', 'Algorithms', 'Java'],
       linkUrl: 'https://example.com/degree',
       linkText: 'View Degree',
-      iconName: 'GraduationCap',
+      iconName: 'school',
     },
     {
       yearContent: '2020',
@@ -33,7 +34,7 @@ async function main() {
       techStack: ['React', 'JavaScript', 'CSS', 'Redux'],
       linkUrl: 'https://github.com/example/project',
       linkText: 'View Project',
-      iconName: 'Briefcase',
+      iconName: 'briefcase',
     },
     {
       yearContent: '2022',
@@ -45,7 +46,7 @@ async function main() {
       description: 'Led a team of 5 developers to deliver a critical e-commerce platform. Implemented CI/CD pipelines.',
       details: 'As a Senior Developer, I shifted my focus from just writing code to designing systems and mentoring others. I led the development of a high-traffic e-commerce platform that handled over 100k daily users. I also introduced Docker and CI/CD pipelines, which reduced deployment time from 2 hours to 15 minutes.',
       techStack: ['Next.js', 'TypeScript', 'AWS', 'Docker'],
-      iconName: 'Code',
+      iconName: 'user-star',
     },
     {
       yearContent: '2024',
@@ -59,7 +60,7 @@ async function main() {
       techStack: ['System Design', 'Node.js', 'GraphQL', 'Kubernetes'],
       linkUrl: 'https://borcelle.com',
       linkText: 'Company Website',
-      iconName: 'Code',
+      iconName: 'code',
     },
     {
       yearContent: '2025',
@@ -71,7 +72,6 @@ async function main() {
       description: 'Leading the technology strategy for a major tech company. Driving innovation and open source contributions.',
       details: 'My long-term goal is to become a CTO where I can shape the technical vision of a company. I want to build an engineering culture that values innovation, psychological safety, and open source contribution. I plan to continue contributing to the developer community through speaking and writing.',
       techStack: ['Leadership', 'Strategy', 'AI'],
-      iconName: 'Trophy',
     },
     {
       yearContent: '2026',
@@ -83,7 +83,7 @@ async function main() {
       description: 'giving keynotes at major conferences about software architecture and team culture.',
       details: 'I aspire to be a regular speaker at major tech conferences like React Conf and AWS re:Invent. I want to share my experiences in building scalable systems and growing engineering teams. I believe that sharing knowledge is the best way to give back to the community that helped me grow.',
       techStack: ['Public Speaking', 'DevRel'],
-      iconName: 'GraduationCap',
+      iconName: 'graduation-cap',
     },
     {
       yearContent: '2027',
@@ -95,14 +95,38 @@ async function main() {
       description: 'Investing in and mentoring early-stage startups in the developer tools space.',
       details: 'Eventually, I want to use my experience and resources to help other founders succeed. I plan to focus on angel investing in the developer tools space, identifying promising startups that are solving real problems for engineers. I also want to provide mentorship to first-time technical founders.',
       techStack: ['Investing', 'Mentorship'],
-      iconName: 'Trophy',
+      iconName: 'heart',
     },
   ];
 
-  console.log('Seeding timeline items...');
+  console.log('Seeding icons and timeline items...');
+
+  // Ensure default icon exists
+  const defaultIcon = await prisma.icon.upsert({
+    where: { name: 'help-circle' },
+    update: {},
+    create: { name: 'help-circle' },
+  });
+
   for (const item of timelineData) {
+    const { iconName, ...rest } = item;
+
+    // Use specific icon or fallback to default
+    const targetIconName = iconName || 'help-circle';
+
+    // Create or find the icon
+    const icon = await prisma.icon.upsert({
+      where: { name: targetIconName },
+      update: {},
+      create: { name: targetIconName },
+    });
+
+    // Create the timeline item with the relation
     await prisma.timelineItem.create({
-      data: item,
+      data: {
+        ...rest,
+        iconId: icon.id,
+      },
     });
   }
   console.log('Seeding complete.');

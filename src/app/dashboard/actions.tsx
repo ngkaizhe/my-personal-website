@@ -6,6 +6,9 @@ import type { TimelineItem } from '@/components/Timeline/TimelineItem';
 export async function getTimelineItems() {
     try {
         const items = await prisma.timelineItem.findMany({
+            include: {
+                icon: true,
+            },
             orderBy: {
                 yearContent: 'asc',
             },
@@ -28,8 +31,8 @@ export async function getTimelineItems() {
                 description: dbItem.description,
                 details: dbItem.details || undefined,
                 techStack: dbItem.techStack,
-                // Now we just pass the icon name as a string
-                iconName: dbItem.iconName,
+                // Get the icon name from the related Icon table
+                iconName: dbItem.icon.name,
                 link: dbItem.linkUrl ? {
                     url: dbItem.linkUrl,
                     text: dbItem.linkText || 'Link',

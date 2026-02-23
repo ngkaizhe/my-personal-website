@@ -23,8 +23,15 @@ model TimelineItem {
   techStack     String[]
   linkUrl       String?
   linkText      String?
-  iconName      String?   // Store the Lucide icon name as a string
+  iconId        String?
+  icon          Icon?    @relation(fields: [iconId], references: [id])
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Icon {
+  id            String         @id @default(uuid())
+  name          String         @unique // Lucide icon name (e.g., "GraduationCap")
+  timelineItems TimelineItem[]
 }

@@ -14,7 +14,7 @@ export interface TimelineItem {
     techStack: string[];
     description: string;
     details?: string;
-    iconName?: string; // Changed from icon: ReactNode to iconName: string
+    iconName: string; // Changed from icon: ReactNode to iconName: string
     link?: {
         url: string;
         text: string;
