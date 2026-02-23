@@ -1,26 +1,26 @@
 'use client';
 
-import React from 'react';
-import { GraduationCap, Briefcase, Code, Trophy, LucideIcon } from 'lucide-react';
+import { useMemo } from 'react';
+import { DynamicIcon } from 'lucide-react/dynamic';
+import { LucideProps } from 'lucide-react';
 
-interface TimelineIconProps {
+interface TimelineIconProps extends LucideProps {
     iconName?: string;
-    className?: string;
 }
 
-const iconMap: Record<string, LucideIcon> = {
-    'GraduationCap': GraduationCap,
-    'Briefcase': Briefcase,
-    'Code': Code,
-    'Trophy': Trophy,
-};
+export const TimelineIcon = ({ iconName, ...props }: TimelineIconProps) => {
+    // Convert PascalCase/CamelCase to kebab-case (e.g., GraduationCap -> graduation-cap)
+    // as expected by the Lucide DynamicIcon component
+    const formattedName = useMemo(() => {
+        if (!iconName) return 'help-circle';
 
-export const TimelineIcon: React.FC<TimelineIconProps> = ({ iconName, className }) => {
-    const IconComponent = iconName ? iconMap[iconName] : null;
+        const name = iconName
+            .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+            .toLowerCase();
 
-    if (!IconComponent) {
-        return <Code className={className} />; // Default Icon
-    }
+        return name;
+    }, [iconName]);
 
-    return <IconComponent className={className} />;
+    return <DynamicIcon name={formattedName as any} {...props} />;
 };
