@@ -18,14 +18,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         >
           <div className="flex space-x-4">
             <Link
-              href="#"
+              href="/dashboard/journeys"
               className="
                 text-base text-slate-200
                 hover:bg-red-400 hover:text-red-800
                 rounded-md
                 p-5"
             >
-              Nav1 link
+              Journeys
             </Link>
             <Link
               href="#"
