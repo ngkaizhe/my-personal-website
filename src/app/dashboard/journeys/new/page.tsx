@@ -10,7 +10,7 @@ export default function NewJourneyPage() {
                     <p className="text-gray-600 mt-2">Create a new milestone for your timeline.</p>
                 </div>
 
-                <JourneyForm action={async (id, formData) => {
+                <JourneyForm action={async (formData) => {
                     'use server';
                     await createTimelineItem(formData);
                 }} />

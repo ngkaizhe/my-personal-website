@@ -10,12 +10,9 @@ export default async function EditJourneyPage({ params }: { params: Promise<{ id
         notFound();
     }
 
-    // Bind the ID to the server action so it can be passed safely from the client form
-    const updateAction = async (id: string | null, formData: FormData) => {
+    const updateAction = async (formData: FormData) => {
         'use server';
-        if (id) {
-            await updateTimelineItem(id, formData);
-        }
+        await updateTimelineItem(resolvedParams.id, formData);
     };
 
     return (

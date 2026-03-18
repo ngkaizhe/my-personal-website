@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function JourneyForm({ item = null, action }: { item?: any; action: (id: string | null, formData: FormData) => Promise<void> }) {
+export default function JourneyForm({ item = null, action }: { item?: any; action: (formData: FormData) => Promise<void> }) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [techStack, setTechStack] = useState<string[]>(item?.techStack || []);
@@ -15,7 +15,7 @@ export default function JourneyForm({ item = null, action }: { item?: any; actio
         techStack.forEach(t => formData.append('techStack', t));
 
         try {
-            await action(item?.id || null, formData);
+            await action(formData);
         } catch (error) {
             console.error('Failed to save journey:', error);
             setSubmitting(false);
