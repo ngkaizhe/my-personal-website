@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { JourneyFormItem } from '@/components/JourneyForm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -16,12 +17,27 @@ export async function getRawTimelineItems() {
     }
 }
 
-export async function getTimelineItem(id: string) {
+export async function getJourneyFormItem(id: string): Promise<JourneyFormItem | null> {
     try {
-        return await prisma.timelineItem.findUnique({
+        const item = await prisma.timelineItem.findUnique({
             where: { id },
             include: { icon: true },
         });
+        if (!item) return null;
+        return {
+            yearContent: item.yearContent,
+            yearColor: item.yearColor,
+            titleContent: item.titleContent,
+            titleColor: item.titleColor,
+            categoryText: item.categoryText,
+            categoryColor: item.categoryColor,
+            description: item.description,
+            details: item.details ?? '',
+            techStack: item.techStack,
+            linkUrl: item.linkUrl ?? '',
+            linkText: item.linkText ?? '',
+            iconName: item.icon?.name ?? 'help-circle',
+        };
     } catch (error) {
         console.error('Failed to fetch timeline item:', error);
         return null;

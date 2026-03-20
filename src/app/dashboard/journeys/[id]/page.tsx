@@ -1,10 +1,10 @@
-import { getTimelineItem, updateTimelineItem } from "../actions";
-import JourneyForm, { JourneyFormItem } from "@/components/JourneyForm";
+import { getJourneyFormItem, updateTimelineItem } from "../actions";
+import JourneyForm from "@/components/JourneyForm";
 import { notFound } from "next/navigation";
 
 export default async function EditJourneyPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
-    const item = await getTimelineItem(resolvedParams.id);
+    const item = await getJourneyFormItem(resolvedParams.id);
 
     if (!item) {
         notFound();
@@ -23,20 +23,7 @@ export default async function EditJourneyPage({ params }: { params: Promise<{ id
                     <p className="text-gray-600 mt-2">Update an existing milestone on your timeline.</p>
                 </div>
 
-                <JourneyForm item={{
-                    yearContent: item.yearContent,
-                    yearColor: item.yearColor,
-                    titleContent: item.titleContent,
-                    titleColor: item.titleColor,
-                    categoryText: item.categoryText,
-                    categoryColor: item.categoryColor,
-                    description: item.description,
-                    details: item.details ?? '',
-                    techStack: item.techStack,
-                    linkUrl: item.linkUrl ?? '',
-                    linkText: item.linkText ?? '',
-                    iconName: item.icon?.name ?? 'help-circle',
-                }} action={updateAction} />
+                <JourneyForm item={item} action={updateAction} />
             </div>
         </div>
     );
