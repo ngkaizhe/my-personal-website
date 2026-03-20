@@ -1,5 +1,20 @@
 import { createTimelineItem } from "../actions";
-import JourneyForm from "@/components/JourneyForm";
+import JourneyForm, { JourneyFormItem } from "@/components/JourneyForm";
+
+const emptyItem: JourneyFormItem = {
+    yearContent: '',
+    yearColor: 'text-blue-600',
+    titleContent: '',
+    titleColor: 'text-blue-600',
+    categoryText: '',
+    categoryColor: 'bg-blue-100 text-blue-800',
+    description: '',
+    details: '',
+    techStack: [],
+    linkUrl: '',
+    linkText: '',
+    iconName: 'help-circle',
+};
 
 export default function NewJourneyPage() {
     return (
@@ -10,7 +25,7 @@ export default function NewJourneyPage() {
                     <p className="text-gray-600 mt-2">Create a new milestone for your timeline.</p>
                 </div>
 
-                <JourneyForm action={async (formData) => {
+                <JourneyForm item={emptyItem} action={async (formData) => {
                     'use server';
                     await createTimelineItem(formData);
                 }} />
