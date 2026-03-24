@@ -13,11 +13,9 @@ datasource db {
 model TimelineItem {
   id            String   @id @default(uuid())
   yearContent   String
-  yearColor     String
   titleContent  String
-  titleColor    String
   categoryText  String
-  categoryColor String
+  color         String
   description   String
   details       String?
   techStack     String[]

@@ -9,16 +9,14 @@ export interface JourneySummary {
     yearContent: string;
     titleContent: string;
     categoryText: string;
-    categoryColor: string;
+    color: string;
 }
 
 export interface JourneyDetail {
     yearContent: string;
-    yearColor: string;
     titleContent: string;
-    titleColor: string;
     categoryText: string;
-    categoryColor: string;
+    color: string;
     description: string;
     details: string;
     techStack: string[];
@@ -35,7 +33,7 @@ export async function getJourneySummaries(): Promise<JourneySummary[]> {
                 yearContent: true,
                 titleContent: true,
                 categoryText: true,
-                categoryColor: true,
+                color: true,
             },
             orderBy: { yearContent: 'desc' },
         });
@@ -55,11 +53,9 @@ export async function getJourneyDetail(id: string): Promise<JourneyDetail | null
         if (!item) return null;
         return {
             yearContent: item.yearContent,
-            yearColor: item.yearColor,
             titleContent: item.titleContent,
-            titleColor: item.titleColor,
             categoryText: item.categoryText,
-            categoryColor: item.categoryColor,
+            color: item.color,
             description: item.description,
             details: item.details ?? '',
             techStack: item.techStack,
@@ -94,11 +90,9 @@ export async function createJourney(formData: FormData) {
     await prisma.timelineItem.create({
         data: {
             yearContent: rawData.yearContent as string,
-            yearColor: rawData.yearColor as string,
             titleContent: rawData.titleContent as string,
-            titleColor: rawData.titleColor as string,
             categoryText: rawData.categoryText as string,
-            categoryColor: rawData.categoryColor as string,
+            color: rawData.color as string,
             description: rawData.description as string,
             details: rawData.details ? (rawData.details as string) : null,
             techStack: techStack,
@@ -133,11 +127,9 @@ export async function updateJourney(id: string, formData: FormData) {
         where: { id },
         data: {
             yearContent: rawData.yearContent as string,
-            yearColor: rawData.yearColor as string,
             titleContent: rawData.titleContent as string,
-            titleColor: rawData.titleColor as string,
             categoryText: rawData.categoryText as string,
-            categoryColor: rawData.categoryColor as string,
+            color: rawData.color as string,
             description: rawData.description as string,
             details: rawData.details ? (rawData.details as string) : null,
             techStack: techStack,

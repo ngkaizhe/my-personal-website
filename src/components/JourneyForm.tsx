@@ -3,11 +3,34 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { JourneyDetail } from '@/app/dashboard/journeys/actions';
+import { COLOR_KEYS, getPreviewHex } from '@/lib/colors';
+
+function ColorPicker({ name, label, value, onChange }: { name: string; label: string; value: string; onChange: (v: string) => void }) {
+    return (
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+            <div className="flex flex-wrap gap-2">
+                {COLOR_KEYS.map(key => (
+                    <button
+                        key={key}
+                        type="button"
+                        onClick={() => onChange(key)}
+                        style={{ backgroundColor: getPreviewHex(key) }}
+                        className={`w-8 h-8 rounded-full transition-all ${value === key ? 'ring-2 ring-offset-2 ring-gray-900 scale-110' : 'hover:scale-110'}`}
+                        title={key}
+                    />
+                ))}
+            </div>
+            <input type="hidden" name={name} value={value} />
+        </div>
+    );
+}
 
 export default function JourneyForm({ item, action }: { item: JourneyDetail; action: (formData: FormData) => Promise<void> }) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [techStack, setTechStack] = useState<string[]>(item.techStack);
+    const [color, setColor] = useState(item.color);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -42,31 +65,18 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-sm border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Year Content (e.g., 2024)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Year (e.g., 2024)</label>
                     <input name="yearContent" defaultValue={item.yearContent} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="2024" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Year Color (e.g., text-blue-600)</label>
-                    <input name="yearColor" defaultValue={item.yearColor} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="text-blue-600" />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Title Content (e.g., Senior Developer)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Title (e.g., Senior Developer)</label>
                     <input name="titleContent" defaultValue={item.titleContent} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Senior Developer" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Title Color (e.g., text-blue-600)</label>
-                    <input name="titleColor" defaultValue={item.titleColor} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="text-blue-600" />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category Text (e.g., Work)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category (e.g., Work)</label>
                     <input name="categoryText" defaultValue={item.categoryText} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Work" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category Color (e.g., bg-blue-100 text-blue-800)</label>
-                    <input name="categoryColor" defaultValue={item.categoryColor} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="bg-blue-100 text-blue-800" />
-                </div>
+                <ColorPicker name="color" label="Color" value={color} onChange={setColor} />
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Icon Name (Lucide string, e.g., briefcase)</label>

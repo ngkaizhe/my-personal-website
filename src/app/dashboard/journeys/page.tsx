@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getJourneySummaries, deleteJourney } from "./actions";
+import { getBadgeClass } from "@/lib/colors";
 
 export default async function JourneysPage() {
     const items = await getJourneySummaries();
@@ -40,7 +41,7 @@ export default async function JourneysPage() {
                                         <td className="p-4 font-medium text-gray-900">{item.yearContent}</td>
                                         <td className="p-4 text-gray-700">{item.titleContent}</td>
                                         <td className="p-4">
-                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.categoryColor}`}>
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClass(item.color)}`}>
                                                 {item.categoryText}
                                             </span>
                                         </td>

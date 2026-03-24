@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { getTextClass, getBadgeClass } from '@/lib/colors';
 import type { TimelineItem } from '@/components/Timeline/TimelineItem';
 
 export async function getTimelineItems() {
@@ -15,18 +16,19 @@ export async function getTimelineItems() {
         });
 
         return items.map((dbItem: any): TimelineItem => {
+            const color = dbItem.color;
             return {
                 year: {
                     content: dbItem.yearContent,
-                    colorClass: dbItem.yearColor,
+                    colorClass: getTextClass(color),
                 },
                 title: {
                     content: dbItem.titleContent,
-                    colorClass: dbItem.titleColor,
+                    colorClass: getTextClass(color),
                 },
                 category: {
                     text: dbItem.categoryText,
-                    colorClass: dbItem.categoryColor,
+                    colorClass: getBadgeClass(color),
                 },
                 description: dbItem.description,
                 details: dbItem.details || undefined,

@@ -3,11 +3,9 @@ import JourneyForm from "@/components/JourneyForm";
 
 const emptyItem: JourneyDetail = {
     yearContent: '',
-    yearColor: 'text-blue-600',
     titleContent: '',
-    titleColor: 'text-blue-600',
     categoryText: '',
-    categoryColor: 'bg-blue-100 text-blue-800',
+    color: 'blue',
     description: '',
     details: '',
     techStack: [],
