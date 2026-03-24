@@ -6,12 +6,12 @@ import type { TimelineItem } from '@/components/Timeline/TimelineItem';
 
 export async function getTimelineItems() {
     try {
-        const items = await prisma.timelineItem.findMany({
+        const items = await prisma.journey.findMany({
             include: {
                 icon: true,
             },
             orderBy: {
-                yearContent: 'asc',
+                year: 'asc',
             },
         });
 
@@ -19,15 +19,15 @@ export async function getTimelineItems() {
             const color = dbItem.color;
             return {
                 year: {
-                    content: dbItem.yearContent,
+                    content: dbItem.year,
                     colorClass: getTextClass(color),
                 },
                 title: {
-                    content: dbItem.titleContent,
+                    content: dbItem.title,
                     colorClass: getTextClass(color),
                 },
                 category: {
-                    text: dbItem.categoryText,
+                    text: dbItem.tag,
                     colorClass: getBadgeClass(color),
                 },
                 description: dbItem.description,

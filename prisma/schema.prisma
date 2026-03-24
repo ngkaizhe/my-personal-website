@@ -10,26 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TimelineItem {
-  id            String   @id @default(uuid())
-  yearContent   String
-  titleContent  String
-  categoryText  String
-  color         String
-  description   String
-  details       String?
-  techStack     String[]
-  linkUrl       String?
-  linkText      String?
-  iconId        String?
-  icon          Icon?    @relation(fields: [iconId], references: [id])
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model Journey {
+  id          String   @id @default(uuid())
+  year        String
+  title       String
+  tag         String
+  color       String
+  description String
+  details     String?
+  techStack   String[]
+  linkUrl     String?
+  linkText    String?
+  iconId      String?
+  icon        Icon?    @relation(fields: [iconId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Icon {
-  id            String         @id @default(uuid())
-  name          String         @unique // Lucide icon name (e.g., "GraduationCap")
-  timelineItems TimelineItem[]
+  id       String    @id @default(uuid())
+  name     String    @unique // Lucide icon name (e.g., "GraduationCap")
+  journeys Journey[]
 }

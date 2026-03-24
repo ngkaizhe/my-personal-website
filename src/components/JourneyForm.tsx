@@ -66,15 +66,15 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Year (e.g., 2024)</label>
-                    <input name="yearContent" defaultValue={item.yearContent} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="2024" />
+                    <input name="year" defaultValue={item.year} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="2024" />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Title (e.g., Senior Developer)</label>
-                    <input name="titleContent" defaultValue={item.titleContent} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Senior Developer" />
+                    <input name="title" defaultValue={item.title} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Senior Developer" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category (e.g., Work)</label>
-                    <input name="categoryText" defaultValue={item.categoryText} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Work" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tag (e.g., Work)</label>
+                    <input name="tag" defaultValue={item.tag} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Work" />
                 </div>
                 <ColorPicker name="color" label="Color" value={color} onChange={setColor} />
 

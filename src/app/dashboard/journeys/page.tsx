@@ -24,7 +24,7 @@ export default async function JourneysPage() {
                             <tr className="bg-gray-50 border-b border-gray-200">
                                 <th className="p-4 font-semibold text-gray-600">Year</th>
                                 <th className="p-4 font-semibold text-gray-600">Title</th>
-                                <th className="p-4 font-semibold text-gray-600">Category</th>
+                                <th className="p-4 font-semibold text-gray-600">Tag</th>
                                 <th className="p-4 font-semibold text-gray-600 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -38,11 +38,11 @@ export default async function JourneysPage() {
                             ) : (
                                 items.map((item) => (
                                     <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                                        <td className="p-4 font-medium text-gray-900">{item.yearContent}</td>
-                                        <td className="p-4 text-gray-700">{item.titleContent}</td>
+                                        <td className="p-4 font-medium text-gray-900">{item.year}</td>
+                                        <td className="p-4 text-gray-700">{item.title}</td>
                                         <td className="p-4">
                                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClass(item.color)}`}>
-                                                {item.categoryText}
+                                                {item.tag}
                                             </span>
                                         </td>
                                         <td className="p-4 text-right space-x-3">

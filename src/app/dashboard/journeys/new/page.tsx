@@ -2,9 +2,9 @@ import { createJourney, JourneyDetail } from "../actions";
 import JourneyForm from "@/components/JourneyForm";
 
 const emptyItem: JourneyDetail = {
-    yearContent: '',
-    titleContent: '',
-    categoryText: '',
+    year: '',
+    title: '',
+    tag: '',
     color: 'blue',
     description: '',
     details: '',

@@ -1,9 +1,9 @@
 -- CreateTable
-CREATE TABLE "TimelineItem" (
+CREATE TABLE "Journey" (
     "id" TEXT NOT NULL,
-    "yearContent" TEXT NOT NULL,
-    "titleContent" TEXT NOT NULL,
-    "categoryText" TEXT NOT NULL,
+    "year" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "tag" TEXT NOT NULL,
     "color" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "details" TEXT,
@@ -14,7 +14,7 @@ CREATE TABLE "TimelineItem" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "TimelineItem_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Journey_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -29,4 +29,4 @@ CREATE TABLE "Icon" (
 CREATE UNIQUE INDEX "Icon_name_key" ON "Icon"("name");
 
 -- AddForeignKey
-ALTER TABLE "TimelineItem" ADD CONSTRAINT "TimelineItem_iconId_fkey" FOREIGN KEY ("iconId") REFERENCES "Icon"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Journey" ADD CONSTRAINT "Journey_iconId_fkey" FOREIGN KEY ("iconId") REFERENCES "Icon"("id") ON DELETE SET NULL ON UPDATE CASCADE;
