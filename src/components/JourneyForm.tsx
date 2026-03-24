@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { JourneyDetail } from '@/app/dashboard/journeys/actions';
@@ -34,10 +34,7 @@ function Section({ title, delay, children }: { title: string; delay: number; chi
 
 export default function JourneyForm({ item, action }: { item: JourneyDetail; action: (formData: FormData) => Promise<void> }) {
     const router = useRouter();
-    const formRef = useRef<HTMLFormElement>(null);
     const [submitting, setSubmitting] = useState(false);
-    const [techStack, setTechStack] = useState<string[]>(item.techStack);
-    const [color, setColor] = useState(item.color);
     const [preview, setPreview] = useState<PreviewData>({
         year: item.year,
         title: item.title,
@@ -51,34 +48,30 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
         linkText: item.linkText,
     });
 
-    const syncPreview = useCallback(() => {
-        if (!formRef.current) return;
-        const fd = new FormData(formRef.current);
-        setPreview({
-            year: (fd.get('year') as string) || '',
-            title: (fd.get('title') as string) || '',
-            tag: (fd.get('tag') as string) || '',
-            color: (fd.get('color') as string) || 'blue',
-            iconName: (fd.get('iconName') as string) || 'help-circle',
-            description: (fd.get('description') as string) || '',
-            details: (fd.get('details') as string) || '',
-            techStack,
-            linkUrl: (fd.get('linkUrl') as string) || '',
-            linkText: (fd.get('linkText') as string) || '',
-        });
-    }, [techStack]);
+    const updateField = (field: keyof PreviewData, value: string) => {
+        setPreview(prev => ({ ...prev, [field]: value }));
+    };
 
-    const handleColorChange = (c: string) => {
-        setColor(c);
-        // color is a hidden input, so we need to update preview manually after state settles
-        setTimeout(() => syncPreview(), 0);
+    const addTech = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = e.currentTarget.value.trim();
+            if (val && !preview.techStack.includes(val)) {
+                setPreview(prev => ({ ...prev, techStack: [...prev.techStack, val] }));
+                e.currentTarget.value = '';
+            }
+        }
+    };
+
+    const removeTech = (t: string) => {
+        setPreview(prev => ({ ...prev, techStack: prev.techStack.filter(v => v !== t) }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSubmitting(true);
         const formData = new FormData(e.currentTarget);
-        techStack.forEach(t => formData.append('techStack', t));
+        preview.techStack.forEach(t => formData.append('techStack', t));
 
         try {
             await action(formData);
@@ -88,47 +81,11 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
         }
     };
 
-    const addTech = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const val = e.currentTarget.value.trim();
-            if (val && !techStack.includes(val)) {
-                const next = [...techStack, val];
-                setTechStack(next);
-                e.currentTarget.value = '';
-                // Update preview with new tech stack
-                if (!formRef.current) return;
-                const fd = new FormData(formRef.current);
-                setPreview(prev => ({
-                    ...prev,
-                    year: (fd.get('year') as string) || '',
-                    title: (fd.get('title') as string) || '',
-                    tag: (fd.get('tag') as string) || '',
-                    color: (fd.get('color') as string) || 'blue',
-                    iconName: (fd.get('iconName') as string) || 'help-circle',
-                    description: (fd.get('description') as string) || '',
-                    details: (fd.get('details') as string) || '',
-                    techStack: next,
-                    linkUrl: (fd.get('linkUrl') as string) || '',
-                    linkText: (fd.get('linkText') as string) || '',
-                }));
-            }
-        }
-    };
-
-    const removeTech = (t: string) => {
-        const next = techStack.filter(v => v !== t);
-        setTechStack(next);
-        setPreview(prev => ({ ...prev, techStack: next }));
-    };
-
     return (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
             {/* Form */}
             <form
-                ref={formRef}
                 onSubmit={handleSubmit}
-                onChange={syncPreview}
                 className="space-y-8 bg-zinc-900/80 backdrop-blur-sm p-8 rounded-2xl border border-zinc-800 shadow-2xl shadow-black/20"
             >
                 {/* Basic Info */}
@@ -136,19 +93,19 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelClass}>Year</label>
-                            <input name="year" defaultValue={item.year} required className={inputClass} placeholder="2024" />
+                            <input name="year" value={preview.year} onChange={e => updateField('year', e.target.value)} required className={inputClass} placeholder="2024" />
                         </div>
                         <div>
                             <label className={labelClass}>Title</label>
-                            <input name="title" defaultValue={item.title} required className={inputClass} placeholder="Senior Developer" />
+                            <input name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder="Senior Developer" />
                         </div>
                         <div>
                             <label className={labelClass}>Tag</label>
-                            <input name="tag" defaultValue={item.tag} required className={inputClass} placeholder="Work" />
+                            <input name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Work" />
                         </div>
                         <div>
                             <label className={labelClass}>Icon Name</label>
-                            <input name="iconName" defaultValue={item.iconName} required className={inputClass} placeholder="briefcase" />
+                            <input name="iconName" value={preview.iconName} onChange={e => updateField('iconName', e.target.value)} required className={inputClass} placeholder="briefcase" />
                             <p className="text-xs text-zinc-500 mt-1.5">
                                 Browse icons at{' '}
                                 <a href="https://lucide.dev/icons" target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
@@ -157,24 +114,24 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                             </p>
                         </div>
                     </div>
-                    <ColorPicker name="color" label="Color" value={color} onChange={handleColorChange} />
+                    <ColorPicker name="color" label="Color" value={preview.color} onChange={c => updateField('color', c)} />
                 </Section>
 
                 {/* Content */}
                 <Section title="Content" delay={0.1}>
                     <div>
                         <label className={labelClass}>Short Description</label>
-                        <textarea name="description" defaultValue={item.description} required rows={2} className={inputClass} placeholder="Brief summary of the milestone..." />
+                        <textarea name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="Brief summary of the milestone..." />
                     </div>
                     <div>
                         <label className={labelClass}>Details <span className="text-zinc-600">(Optional)</span></label>
-                        <textarea name="details" defaultValue={item.details} rows={4} className={inputClass} placeholder="Detailed explanation..." />
+                        <textarea name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Detailed explanation..." />
                     </div>
                     <div>
                         <label className={labelClass}>Tech Stack <span className="text-zinc-600">(Press Enter to add)</span></label>
-                        {techStack.length > 0 && (
+                        {preview.techStack.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-3">
-                                {techStack.map(t => (
+                                {preview.techStack.map(t => (
                                     <motion.span
                                         key={t}
                                         initial={{ opacity: 0, scale: 0.8 }}
@@ -202,11 +159,11 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelClass}>URL <span className="text-zinc-600">(Optional)</span></label>
-                            <input type="url" name="linkUrl" defaultValue={item.linkUrl} className={inputClass} placeholder="https://example.com" />
+                            <input type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder="https://example.com" />
                         </div>
                         <div>
                             <label className={labelClass}>Link Text <span className="text-zinc-600">(Optional)</span></label>
-                            <input name="linkText" defaultValue={item.linkText} className={inputClass} placeholder="View Project" />
+                            <input name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View Project" />
                         </div>
                     </div>
                 </Section>
