@@ -1,23 +1,52 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { JourneyFormItem } from '@/components/JourneyForm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function getRawTimelineItems() {
+export interface JourneySummary {
+    id: string;
+    yearContent: string;
+    titleContent: string;
+    categoryText: string;
+    categoryColor: string;
+}
+
+export interface JourneyDetail {
+    yearContent: string;
+    yearColor: string;
+    titleContent: string;
+    titleColor: string;
+    categoryText: string;
+    categoryColor: string;
+    description: string;
+    details: string;
+    techStack: string[];
+    linkUrl: string;
+    linkText: string;
+    iconName: string;
+}
+
+export async function getJourneySummaries(): Promise<JourneySummary[]> {
     try {
-        return await prisma.timelineItem.findMany({
-            include: { icon: true },
+        const items = await prisma.timelineItem.findMany({
+            select: {
+                id: true,
+                yearContent: true,
+                titleContent: true,
+                categoryText: true,
+                categoryColor: true,
+            },
             orderBy: { yearContent: 'desc' },
         });
+        return items;
     } catch (error) {
-        console.error('Failed to fetch raw timeline items:', error);
+        console.error('Failed to fetch journey summaries:', error);
         return [];
     }
 }
 
-export async function getJourneyFormItem(id: string): Promise<JourneyFormItem | null> {
+export async function getJourneyDetail(id: string): Promise<JourneyDetail | null> {
     try {
         const item = await prisma.timelineItem.findUnique({
             where: { id },
@@ -39,12 +68,12 @@ export async function getJourneyFormItem(id: string): Promise<JourneyFormItem | 
             iconName: item.icon?.name ?? 'help-circle',
         };
     } catch (error) {
-        console.error('Failed to fetch timeline item:', error);
+        console.error('Failed to fetch journey detail:', error);
         return null;
     }
 }
 
-export async function createTimelineItem(formData: FormData) {
+export async function createJourney(formData: FormData) {
     const rawData = Object.fromEntries(formData.entries());
 
     // Process tech stack array
@@ -85,7 +114,7 @@ export async function createTimelineItem(formData: FormData) {
     redirect('/dashboard/journeys');
 }
 
-export async function updateTimelineItem(id: string, formData: FormData) {
+export async function updateJourney(id: string, formData: FormData) {
     const rawData = Object.fromEntries(formData.entries());
     const techStack = formData.getAll('techStack').map(String).filter(Boolean);
 
@@ -124,7 +153,7 @@ export async function updateTimelineItem(id: string, formData: FormData) {
     redirect('/dashboard/journeys');
 }
 
-export async function deleteTimelineItem(id: string) {
+export async function deleteJourney(id: string) {
     await prisma.timelineItem.delete({
         where: { id }
     });

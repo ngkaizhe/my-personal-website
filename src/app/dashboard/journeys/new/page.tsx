@@ -1,7 +1,7 @@
-import { createTimelineItem } from "../actions";
-import JourneyForm, { JourneyFormItem } from "@/components/JourneyForm";
+import { createJourney, JourneyDetail } from "../actions";
+import JourneyForm from "@/components/JourneyForm";
 
-const emptyItem: JourneyFormItem = {
+const emptyItem: JourneyDetail = {
     yearContent: '',
     yearColor: 'text-blue-600',
     titleContent: '',
@@ -27,7 +27,7 @@ export default function NewJourneyPage() {
 
                 <JourneyForm item={emptyItem} action={async (formData) => {
                     'use server';
-                    await createTimelineItem(formData);
+                    await createJourney(formData);
                 }} />
             </div>
         </div>

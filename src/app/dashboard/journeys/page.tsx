@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getRawTimelineItems, deleteTimelineItem } from "./actions";
+import { getJourneySummaries, deleteJourney } from "./actions";
 
 export default async function JourneysPage() {
-    const items = await getRawTimelineItems();
+    const items = await getJourneySummaries();
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
@@ -35,7 +35,7 @@ export default async function JourneysPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                items.map((item: any) => (
+                                items.map((item) => (
                                     <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
                                         <td className="p-4 font-medium text-gray-900">{item.yearContent}</td>
                                         <td className="p-4 text-gray-700">{item.titleContent}</td>
@@ -53,7 +53,7 @@ export default async function JourneysPage() {
                                             </Link>
                                             <form action={async () => {
                                                 'use server';
-                                                await deleteTimelineItem(item.id);
+                                                await deleteJourney(item.id);
                                             }} className="inline-block">
                                                 <button
                                                     type="submit"

@@ -1,10 +1,10 @@
-import { getJourneyFormItem, updateTimelineItem } from "../actions";
+import { getJourneyDetail, updateJourney } from "../actions";
 import JourneyForm from "@/components/JourneyForm";
 import { notFound } from "next/navigation";
 
 export default async function EditJourneyPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
-    const item = await getJourneyFormItem(resolvedParams.id);
+    const item = await getJourneyDetail(resolvedParams.id);
 
     if (!item) {
         notFound();
@@ -12,7 +12,7 @@ export default async function EditJourneyPage({ params }: { params: Promise<{ id
 
     const updateAction = async (formData: FormData) => {
         'use server';
-        await updateTimelineItem(resolvedParams.id, formData);
+        await updateJourney(resolvedParams.id, formData);
     };
 
     return (

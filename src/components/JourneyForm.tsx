@@ -2,23 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { JourneyDetail } from '@/app/dashboard/journeys/actions';
 
-export interface JourneyFormItem {
-    yearContent: string;
-    yearColor: string;
-    titleContent: string;
-    titleColor: string;
-    categoryText: string;
-    categoryColor: string;
-    description: string;
-    details: string;
-    techStack: string[];
-    linkUrl: string;
-    linkText: string;
-    iconName: string;
-}
-
-export default function JourneyForm({ item, action }: { item: JourneyFormItem; action: (formData: FormData) => Promise<void> }) {
+export default function JourneyForm({ item, action }: { item: JourneyDetail; action: (formData: FormData) => Promise<void> }) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [techStack, setTechStack] = useState<string[]>(item.techStack);
