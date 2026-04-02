@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { JourneyDetail } from '@/app/dashboard/journeys/actions';
 import ColorPicker from '@/components/ColorPicker';
+import TagInput from '@/components/TagInput';
 import JourneyFormPreview, { PreviewData } from '@/components/JourneyFormPreview';
 
 const inputClass = `
@@ -50,21 +51,6 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
 
     const updateField = (field: keyof PreviewData, value: string) => {
         setPreview(prev => ({ ...prev, [field]: value }));
-    };
-
-    const addTech = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const val = e.currentTarget.value.trim();
-            if (val && !preview.techStack.includes(val)) {
-                setPreview(prev => ({ ...prev, techStack: [...prev.techStack, val] }));
-                e.currentTarget.value = '';
-            }
-        }
-    };
-
-    const removeTech = (t: string) => {
-        setPreview(prev => ({ ...prev, techStack: prev.techStack.filter(v => v !== t) }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -129,28 +115,12 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                     </div>
                     <div>
                         <label className={labelClass}>Tech Stack <span className="text-zinc-600">(Press Enter to add)</span></label>
-                        {preview.techStack.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
-                                {preview.techStack.map(t => (
-                                    <motion.span
-                                        key={t}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-sm flex items-center gap-1.5"
-                                    >
-                                        {t}
-                                        <button
-                                            type="button"
-                                            onClick={() => removeTech(t)}
-                                            className="text-blue-400/60 hover:text-red-400 transition-colors cursor-pointer"
-                                        >
-                                            &times;
-                                        </button>
-                                    </motion.span>
-                                ))}
-                            </div>
-                        )}
-                        <input type="text" onKeyDown={addTech} className={inputClass} placeholder="Type a technology and press Enter..." />
+                        <TagInput
+                            values={preview.techStack}
+                            onChange={techStack => setPreview(prev => ({ ...prev, techStack }))}
+                            placeholder="Type a technology and press Enter..."
+                            className={inputClass}
+                        />
                     </div>
                 </Section>
 
