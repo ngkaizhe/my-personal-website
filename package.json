@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "generate:icons": "node scripts/generate-icon-names.js",
+    "postinstall": "prisma generate && npm run generate:icons"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

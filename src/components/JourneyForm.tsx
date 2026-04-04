@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { JourneyDetail } from '@/app/dashboard/journeys/actions';
 import ColorPicker from '@/components/ColorPicker';
 import TagInput from '@/components/TagInput';
+import IconPicker from '@/components/IconPicker';
 import JourneyFormPreview, { PreviewData } from '@/components/JourneyFormPreview';
 
 const inputClass = `
@@ -90,14 +91,8 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                             <input name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Work" />
                         </div>
                         <div>
-                            <label className={labelClass}>Icon Name</label>
-                            <input name="iconName" value={preview.iconName} onChange={e => updateField('iconName', e.target.value)} required className={inputClass} placeholder="briefcase" />
-                            <p className="text-xs text-zinc-500 mt-1.5">
-                                Browse icons at{' '}
-                                <a href="https://lucide.dev/icons" target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
-                                    lucide.dev
-                                </a>
-                            </p>
+                            <label className={labelClass}>Icon</label>
+                            <IconPicker name="iconName" value={preview.iconName} onChange={v => updateField('iconName', v)} className={inputClass} />
                         </div>
                     </div>
                     <ColorPicker name="color" label="Color" value={preview.color} onChange={c => updateField('color', c)} />
