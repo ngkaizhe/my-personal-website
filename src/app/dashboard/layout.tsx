@@ -2,55 +2,24 @@ import Link from "next/link";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="box-border m-0 p-0">
-      <header
-        className="
-          sticky
-          z-50
-          top-0 w-full"
-      >
-        <div
-          className="
-            bg-black
-            flex justify-between items-center
-            px-6 py-4
-            rounded-bl-xl border-b-4 border-l-4 border-sky-600"
-        >
-          <div className="flex space-x-4">
+    <div>
+      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-white/10">
+        <nav className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3">
+          <div className="flex items-center gap-1">
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all duration-200"
+            >
+              Timeline
+            </Link>
             <Link
               href="/dashboard/journeys"
-              className="
-                text-base text-slate-200
-                hover:bg-red-400 hover:text-red-800
-                rounded-md
-                p-5"
+              className="text-sm font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all duration-200"
             >
               Journeys
             </Link>
-            <Link
-              href="#"
-              className="
-                text-base text-slate-200
-                hover:bg-red-400 hover:text-red-800
-                rounded-md
-                p-5"
-            >
-              Nav2 link
-            </Link>
-            <p className="text-base text-slate-200 p-5">Coming Soon...</p>
           </div>
-          <Link
-            href="#"
-            className="
-              text-base text-slate-200
-              hover:bg-green-400 hover:text-green-800
-              px-5 py-3
-              bg-gray-700
-              rounded-3xl"
-          >
-            Logout
-          </Link>
-        </div>
+        </nav>
       </header>
       {children}
     </div>
