@@ -16,11 +16,11 @@ const emptyItem: JourneyDetail = {
 
 export default function NewJourneyPage() {
     return (
-        <div className="p-8 bg-zinc-950 min-h-screen">
+        <div className="p-8 bg-gray-50 dark:bg-zinc-950 min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-zinc-100">Add New Journey</h1>
-                    <p className="text-zinc-500 mt-2">Create a new milestone for your timeline.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-zinc-100">Add New Journey</h1>
+                    <p className="text-gray-600 dark:text-zinc-500 mt-2">Create a new milestone for your timeline.</p>
                 </div>
 
                 <JourneyForm item={emptyItem} action={async (formData) => {

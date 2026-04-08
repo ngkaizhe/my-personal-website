@@ -14,10 +14,10 @@ const Timeline = ({ items }: TimelineProps) => {
 
     return (
         <div className="container mx-auto px-4 py-8 relative">
-            <h2 className="text-4xl font-bold text-center mb-12 uppercase tracking-wider">My Journey</h2>
+            <h2 className="text-4xl font-bold text-center mb-12 uppercase tracking-wider dark:text-white">My Journey</h2>
 
             <div className="relative wrap overflow-hidden p-10 h-full">
-                <div className="border-2-2 absolute border-opacity-20 border-gray-700 h-full border left-1/2"></div>
+                <div className="border-2-2 absolute border-opacity-20 border-gray-300 dark:border-zinc-700 h-full border left-1/2"></div>
 
                 {items.map((item, index) => (
                     <TimelineRow key={index} item={item} index={index} isRight={index % 2 !== 0} setSelectedId={setSelectedId} />

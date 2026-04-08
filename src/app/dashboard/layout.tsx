@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -18,6 +19,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             >
               Journeys
             </Link>
+          </div>
+          <div className="flex items-center">
+            <ThemeToggle />
           </div>
         </nav>
       </header>
