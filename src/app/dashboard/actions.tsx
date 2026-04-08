@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getTextClass, getBadgeClass } from '@/lib/colors';
-import type { TimelineItem } from '@/components/Timeline/TimelineItem';
+import type { TimelineItem } from '@/lib/types';
 
 export async function getTimelineItems() {
     try {

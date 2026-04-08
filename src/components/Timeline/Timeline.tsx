@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TimelineItem } from './TimelineItem';
+import { TimelineItem } from '@/lib/types';
 import { TimelineRow } from './TimelineRow';
 import { TimelineModal } from './TimelineModal';
 

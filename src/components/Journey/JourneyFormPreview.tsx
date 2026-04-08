@@ -1,7 +1,7 @@
 'use client';
 
 import { getTextClass, getBadgeClass } from '@/lib/colors';
-import JourneyCard from '@/components/JourneyCard';
+import JourneyCard from '@/components/Journey/JourneyCard';
 
 export interface PreviewData {
     year: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { TimelineIcon } from '@/components/Timeline/TimelineIcon';
+import { LucideIcon } from '@/components/ui/LucideIcon';
 
 export interface JourneyCardProps {
     year: string;
@@ -22,7 +22,7 @@ export default function JourneyCard({ year, title, tag, textColorClass, badgeCol
             {/* Header */}
             <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 border-4 border-white shadow-lg">
-                    <TimelineIcon iconName={iconName} className={`w-8 h-8 ${textColorClass}`} />
+                    <LucideIcon iconName={iconName} className={`w-8 h-8 ${textColorClass}`} />
                 </div>
                 <div>
                     {tag && (

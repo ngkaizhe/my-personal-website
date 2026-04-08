@@ -2,8 +2,8 @@
 
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
-import { TimelineItem } from './TimelineItem';
-import JourneyCard from '@/components/JourneyCard';
+import { TimelineItem } from '@/lib/types';
+import JourneyCard from '@/components/Journey/JourneyCard';
 
 interface TimelineModalProps {
     selectedId: string | null;

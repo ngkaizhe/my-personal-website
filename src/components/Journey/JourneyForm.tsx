@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { JourneyDetail } from '@/app/dashboard/journeys/actions';
-import ColorPicker from '@/components/ColorPicker';
-import TagInput from '@/components/TagInput';
-import IconPicker from '@/components/IconPicker';
-import JourneyFormPreview, { PreviewData } from '@/components/JourneyFormPreview';
+import ColorPicker from '@/components/ui/ColorPicker';
+import TagInput from '@/components/ui/TagInput';
+import IconPicker from '@/components/ui/IconPicker';
+import JourneyFormPreview, { PreviewData } from '@/components/Journey/JourneyFormPreview';
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl

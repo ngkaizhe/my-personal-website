@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { iconNames } from '@/lib/iconNames';
-import { TimelineIcon } from '@/components/Timeline/TimelineIcon';
+import { LucideIcon } from '@/components/ui/LucideIcon';
 
 interface IconPickerProps {
     name: string;
@@ -43,7 +43,7 @@ export default function IconPicker({ name, value, onChange, className = '' }: Ic
         >
             <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-700/50 border border-zinc-600 shrink-0">
-                    <TimelineIcon iconName={value || 'help-circle'} className="w-5 h-5 text-zinc-300" />
+                    <LucideIcon iconName={value || 'help-circle'} className="w-5 h-5 text-zinc-300" />
                 </div>
                 <input
                     name={name}
@@ -67,7 +67,7 @@ export default function IconPicker({ name, value, onChange, className = '' }: Ic
                                 iconName === value ? 'bg-blue-500/10 text-blue-400' : 'text-zinc-300'
                             }`}
                         >
-                            <TimelineIcon iconName={iconName} className="w-5 h-5 shrink-0" />
+                            <LucideIcon iconName={iconName} className="w-5 h-5 shrink-0" />
                             <span className="text-sm truncate">{iconName}</span>
                         </button>
                     ))}

@@ -1,5 +1,5 @@
 import { getJourneyDetail, updateJourney } from "../actions";
-import JourneyForm from "@/components/JourneyForm";
+import JourneyForm from "@/components/Journey/JourneyForm";
 import { notFound } from "next/navigation";
 
 export default async function EditJourneyPage({ params }: { params: Promise<{ id: string }> }) {

@@ -1,5 +1,5 @@
 import { createJourney, JourneyDetail } from "../actions";
-import JourneyForm from "@/components/JourneyForm";
+import JourneyForm from "@/components/Journey/JourneyForm";
 
 const emptyItem: JourneyDetail = {
     year: '',

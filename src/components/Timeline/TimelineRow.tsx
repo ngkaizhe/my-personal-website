@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { TimelineItem } from './TimelineItem';
+import { TimelineItem } from '@/lib/types';
 import { TimelineCard } from './TimelineCard';
-import { TimelineIcon } from './TimelineIcon';
+import { LucideIcon } from '@/components/ui/LucideIcon';
 
 interface TimelineRowProps {
     item: TimelineItem;
@@ -30,7 +30,7 @@ export const TimelineRow = ({
             <div className="order-1 w-5/12"></div>
 
             <div className={`z-20 flex items-center order-1 bg-white shadow-xl w-12 h-12 rounded-full border-4 border-white justify-center group-hover:scale-110 transition-transform`}>
-                <TimelineIcon iconName={item.iconName} className={`w-6 h-6 ${item.year.colorClass}`} />
+                <LucideIcon iconName={item.iconName} className={`w-6 h-6 ${item.year.colorClass}`} />
             </div>
 
             <TimelineCard

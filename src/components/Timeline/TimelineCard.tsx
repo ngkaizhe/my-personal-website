@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { TimelineItem } from './TimelineItem'
+import { TimelineItem } from '@/lib/types'
 
 interface TimelineCardProps {
     item: TimelineItem;
