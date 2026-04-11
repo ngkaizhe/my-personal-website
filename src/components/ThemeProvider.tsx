@@ -4,7 +4,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type Theme = 'light' | 'dark' | 'sepia';
 
-export const THEMES: Theme[] = ['light', 'dark', 'sepia'];
+export interface ThemeMeta {
+    value: Theme;
+    label: string;
+    iconName: 'Sun' | 'Moon' | 'BookOpen';
+}
+
+export const THEME_OPTIONS: ThemeMeta[] = [
+    { value: 'light', label: 'Light', iconName: 'Sun' },
+    { value: 'dark', label: 'Dark', iconName: 'Moon' },
+    { value: 'sepia', label: 'Sepia', iconName: 'BookOpen' },
+];
+
+export const THEMES: Theme[] = THEME_OPTIONS.map(t => t.value);
 
 interface ThemeContextType {
     theme: Theme;
