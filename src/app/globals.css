@@ -148,3 +148,10 @@
   --color-form-cancel-text-hover: #3c2a14;
   --color-form-cancel-border-hover: #b8a890;
 }
+
+/* ===== Background Texture ===== */
+
+.bg-page {
+  background-image: radial-gradient(var(--color-border-timeline) 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
