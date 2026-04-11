@@ -9,13 +9,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-1">
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-header-text hover:text-header-text-hover px-4 py-2 rounded-lg hover:bg-white/5 transition-all duration-200"
+              className="text-sm font-medium text-header-text hover:text-header-text-hover px-4 py-2 rounded-lg hover:bg-black/5 transition-all duration-200"
             >
               Timeline
             </Link>
             <Link
               href="/dashboard/journeys"
-              className="text-sm font-medium text-header-text hover:text-header-text-hover px-4 py-2 rounded-lg hover:bg-white/5 transition-all duration-200"
+              className="text-sm font-medium text-header-text hover:text-header-text-hover px-4 py-2 rounded-lg hover:bg-black/5 transition-all duration-200"
             >
               Journeys
             </Link>

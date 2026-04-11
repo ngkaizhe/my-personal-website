@@ -26,27 +26,27 @@
   --color-badge-bg: #eff6ff;
   --color-badge-text: #1d4ed8;
 
-  --color-input-bg: rgba(39, 39, 42, 0.5);
-  --color-input-border: #3f3f46;
-  --color-input-border-hover: #52525b;
-  --color-input-text: #f4f4f5;
-  --color-input-placeholder: #71717a;
+  --color-input-bg: #ffffff;
+  --color-input-border: #d1d5db;
+  --color-input-border-hover: #9ca3af;
+  --color-input-text: #111827;
+  --color-input-placeholder: #9ca3af;
 
-  --color-header-bg: rgba(0, 0, 0, 0.6);
-  --color-header-border: rgba(255, 255, 255, 0.1);
-  --color-header-text: #d4d4d8;
-  --color-header-text-hover: #ffffff;
+  --color-header-bg: rgba(255, 255, 255, 0.8);
+  --color-header-border: rgba(0, 0, 0, 0.08);
+  --color-header-text: #6b7280;
+  --color-header-text-hover: #111827;
 
-  --color-form-bg: rgba(24, 24, 27, 0.8);
-  --color-form-border: #27272a;
-  --color-form-section-text: #e4e4e7;
-  --color-form-section-border: rgba(63, 63, 70, 0.5);
-  --color-form-label: #a1a1aa;
-  --color-form-action-border: #27272a;
-  --color-form-cancel-border: #3f3f46;
-  --color-form-cancel-text: #a1a1aa;
-  --color-form-cancel-text-hover: #e4e4e7;
-  --color-form-cancel-border-hover: #71717a;
+  --color-form-bg: rgba(255, 255, 255, 0.9);
+  --color-form-border: #e5e7eb;
+  --color-form-section-text: #111827;
+  --color-form-section-border: rgba(229, 231, 235, 0.5);
+  --color-form-label: #6b7280;
+  --color-form-action-border: #e5e7eb;
+  --color-form-cancel-border: #d1d5db;
+  --color-form-cancel-text: #6b7280;
+  --color-form-cancel-text-hover: #111827;
+  --color-form-cancel-border-hover: #9ca3af;
 }
 
 /* ===== Theme Overrides ===== */
