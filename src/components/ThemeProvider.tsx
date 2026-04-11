@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type Theme = 'light' | 'dark' | 'sepia';
 
-const THEMES: Theme[] = ['light', 'dark', 'sepia'];
+export const THEMES: Theme[] = ['light', 'dark', 'sepia'];
 
 interface ThemeContextType {
     theme: Theme;

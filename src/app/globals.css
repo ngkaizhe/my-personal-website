@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
-/* ===== Theme Design Tokens ===== */
-
-:root,
-.light {
+@theme {
   --color-page: #f9fafb;
   --color-surface: #ffffff;
   --color-surface-elevated: #f9fafb;
@@ -22,7 +19,6 @@
   --color-btn-primary-bg-hover: #1f2937;
   --color-btn-primary-text: #ffffff;
   --color-btn-primary-shadow: rgba(229, 231, 235, 1);
-
   --color-btn-secondary-bg: #f3f4f6;
   --color-btn-secondary-bg-hover: #e5e7eb;
   --color-btn-secondary-text: #4b5563;
@@ -53,6 +49,8 @@
   --color-form-cancel-border-hover: #71717a;
 }
 
+/* ===== Theme Overrides ===== */
+
 .dark {
   --color-page: #09090b;
   --color-surface: #18181b;
@@ -72,7 +70,6 @@
   --color-btn-primary-bg-hover: #e4e4e7;
   --color-btn-primary-text: #18181b;
   --color-btn-primary-shadow: none;
-
   --color-btn-secondary-bg: #27272a;
   --color-btn-secondary-bg-hover: #3f3f46;
   --color-btn-secondary-text: #d4d4d8;
@@ -122,7 +119,6 @@
   --color-btn-primary-bg-hover: #4a3c2c;
   --color-btn-primary-text: #fef9ef;
   --color-btn-primary-shadow: rgba(224, 213, 196, 1);
-
   --color-btn-secondary-bg: #f0e8d8;
   --color-btn-secondary-bg-hover: #e0d5c4;
   --color-btn-secondary-text: #5c4b37;
