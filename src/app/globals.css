@@ -149,6 +149,17 @@
   --color-form-cancel-border-hover: #b8a890;
 }
 
+/* ===== Sepia dynamic color adjustments ===== */
+
+.sepia [class*="bg-"][class*="-100"] {
+  filter: saturate(1.6) contrast(1.05);
+}
+
+.sepia [class*="text-"][class*="-600"],
+.sepia [class*="text-"][class*="-800"] {
+  filter: saturate(1.4);
+}
+
 /* ===== Background Texture ===== */
 
 .bg-page {
