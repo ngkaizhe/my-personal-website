@@ -28,13 +28,13 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
 
                     <motion.div
                         layoutId={selectedId}
-                        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden relative z-10"
+                        className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden relative z-10"
                     >
                         <button
                             onClick={(e) => { e.stopPropagation(); onClose(); }}
-                            className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors z-20"
+                            className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-zinc-800 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors z-20"
                         >
-                            <X size={20} className="text-gray-600" />
+                            <X size={20} className="text-gray-600 dark:text-gray-300" />
                         </button>
 
                         <JourneyCard
