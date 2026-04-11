@@ -25,8 +25,8 @@ export const TimelineRow = ({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
-            className={`mb-8 flex justify-between items-center w-full
-                flex-row md:${isRight ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`mb-8 flex justify-between items-center w-full flex-row
+                ${isRight ? 'md:flex-row-reverse' : ''}`}
         >
             <div className="order-1 w-5/12 hidden md:block"></div>
 
