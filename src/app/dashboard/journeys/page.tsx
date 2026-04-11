@@ -6,10 +6,10 @@ export default async function JourneysPage() {
     const items = await getJourneySummaries();
 
     return (
-        <div className="p-8 bg-gray-50 dark:bg-zinc-950 min-h-screen">
+        <div className="p-8 bg-page min-h-screen">
             <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-zinc-100">Manage Journeys</h1>
+                    <h1 className="text-3xl font-bold text-text-primary">Manage Journeys</h1>
                     <Link
                         href="/dashboard/journeys/new"
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -18,28 +18,28 @@ export default async function JourneysPage() {
                     </Link>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden">
+                <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
-                                <th className="p-4 font-semibold text-gray-600 dark:text-zinc-400">Year</th>
-                                <th className="p-4 font-semibold text-gray-600 dark:text-zinc-400">Title</th>
-                                <th className="p-4 font-semibold text-gray-600 dark:text-zinc-400">Tag</th>
-                                <th className="p-4 font-semibold text-gray-600 dark:text-zinc-400 text-right">Actions</th>
+                            <tr className="bg-surface-elevated border-b border-border-light">
+                                <th className="p-4 font-semibold text-text-muted">Year</th>
+                                <th className="p-4 font-semibold text-text-muted">Title</th>
+                                <th className="p-4 font-semibold text-text-muted">Tag</th>
+                                <th className="p-4 font-semibold text-text-muted text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {items.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="p-8 text-center text-gray-500 dark:text-zinc-500">
+                                    <td colSpan={4} className="p-8 text-center text-text-muted">
                                         No journey items found. Add one to get started!
                                     </td>
                                 </tr>
                             ) : (
                                 items.map((item) => (
-                                    <tr key={item.id} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
-                                        <td className="p-4 font-medium text-gray-900 dark:text-zinc-100">{item.year}</td>
-                                        <td className="p-4 text-gray-700 dark:text-zinc-300">{item.title}</td>
+                                    <tr key={item.id} className="border-b border-border-light hover:bg-surface-elevated/50">
+                                        <td className="p-4 font-medium text-text-primary">{item.year}</td>
+                                        <td className="p-4 text-text-secondary">{item.title}</td>
                                         <td className="p-4">
                                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClass(item.color)}`}>
                                                 {item.tag}

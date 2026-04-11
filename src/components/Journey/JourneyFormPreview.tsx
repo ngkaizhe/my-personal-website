@@ -18,7 +18,7 @@ export interface PreviewData {
 
 export default function JourneyFormPreview({ data }: { data: PreviewData }) {
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden">
+        <div className="bg-surface rounded-xl shadow-2xl overflow-hidden">
             <JourneyCard
                 year={data.year || '2024'}
                 title={data.title || 'Untitled'}

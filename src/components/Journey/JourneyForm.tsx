@@ -11,14 +11,14 @@ import JourneyFormPreview, { PreviewData } from '@/components/Journey/JourneyFor
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
-    bg-zinc-800/50 border border-zinc-700
-    text-zinc-100 placeholder-zinc-500
+    bg-input-bg border border-input-border
+    text-input-text placeholder-input-placeholder
     focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50
     outline-none transition-all duration-200
-    hover:border-zinc-600
+    hover:border-input-border-hover
 `;
 
-const labelClass = 'block text-sm font-medium text-zinc-400 mb-2';
+const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 function Section({ title, delay, children }: { title: string; delay: number; children: React.ReactNode }) {
     return (
@@ -28,7 +28,7 @@ function Section({ title, delay, children }: { title: string; delay: number; chi
             transition={{ duration: 0.4, delay }}
             className="space-y-5"
         >
-            <h3 className="text-lg font-semibold text-zinc-200 border-b border-zinc-700/50 pb-2">{title}</h3>
+            <h3 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">{title}</h3>
             {children}
         </motion.div>
     );
@@ -73,7 +73,7 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
             {/* Form */}
             <form
                 onSubmit={handleSubmit}
-                className="space-y-8 bg-zinc-900/80 backdrop-blur-sm p-8 rounded-2xl border border-zinc-800 shadow-2xl shadow-black/20"
+                className="space-y-8 bg-form-bg backdrop-blur-sm p-8 rounded-2xl border border-form-border shadow-2xl shadow-black/20"
             >
                 {/* Basic Info */}
                 <Section title="Basic Info" delay={0}>
@@ -105,11 +105,11 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                         <textarea name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="Brief summary of the milestone..." />
                     </div>
                     <div>
-                        <label className={labelClass}>Details <span className="text-zinc-600">(Optional)</span></label>
+                        <label className={labelClass}>Details <span className="text-text-faint">(Optional)</span></label>
                         <textarea name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Detailed explanation..." />
                     </div>
                     <div>
-                        <label className={labelClass}>Tech Stack <span className="text-zinc-600">(Press Enter to add)</span></label>
+                        <label className={labelClass}>Tech Stack <span className="text-text-faint">(Press Enter to add)</span></label>
                         <TagInput
                             values={preview.techStack}
                             onChange={techStack => setPreview(prev => ({ ...prev, techStack }))}
@@ -123,11 +123,11 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 <Section title="Links" delay={0.2}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className={labelClass}>URL <span className="text-zinc-600">(Optional)</span></label>
+                            <label className={labelClass}>URL <span className="text-text-faint">(Optional)</span></label>
                             <input type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder="https://example.com" />
                         </div>
                         <div>
-                            <label className={labelClass}>Link Text <span className="text-zinc-600">(Optional)</span></label>
+                            <label className={labelClass}>Link Text <span className="text-text-faint">(Optional)</span></label>
                             <input name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View Project" />
                         </div>
                     </div>
@@ -138,12 +138,12 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="flex justify-end gap-3 pt-6 border-t border-zinc-800"
+                    className="flex justify-end gap-3 pt-6 border-t border-form-action-border"
                 >
                     <button
                         type="button"
                         onClick={() => router.back()}
-                        className="px-6 py-2.5 rounded-xl border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 font-medium transition-all duration-200 cursor-pointer"
+                        className="px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer"
                     >
                         Cancel
                     </button>
@@ -159,7 +159,7 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
 
             {/* Live Preview */}
             <div className="sticky top-24">
-                <p className="text-sm font-medium text-zinc-500 mb-3 uppercase tracking-wide">Preview</p>
+                <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">Preview</p>
                 <JourneyFormPreview data={preview} />
             </div>
         </div>

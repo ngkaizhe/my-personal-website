@@ -42,8 +42,8 @@ export default function IconPicker({ name, value, onChange, className = '' }: Ic
             }}
         >
             <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-700/50 border border-zinc-600 shrink-0">
-                    <LucideIcon iconName={value || 'help-circle'} className="w-5 h-5 text-zinc-300" />
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-input-bg border border-input-border shrink-0">
+                    <LucideIcon iconName={value || 'help-circle'} className="w-5 h-5 text-text-muted" />
                 </div>
                 <input
                     name={name}
@@ -57,14 +57,14 @@ export default function IconPicker({ name, value, onChange, className = '' }: Ic
             </div>
 
             {open && suggestions.length > 0 && (
-                <div className="absolute z-50 mt-2 w-full bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl shadow-black/40 max-h-60 overflow-y-auto">
+                <div className="absolute z-50 mt-2 w-full bg-surface-elevated border border-border-light rounded-xl shadow-2xl max-h-60 overflow-y-auto">
                     {suggestions.map(iconName => (
                         <button
                             key={iconName}
                             type="button"
                             onClick={() => select(iconName)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left cursor-pointer transition-colors hover:bg-zinc-700/50 ${
-                                iconName === value ? 'bg-blue-500/10 text-blue-400' : 'text-zinc-300'
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left cursor-pointer transition-colors hover:bg-surface-elevated/80 ${
+                                iconName === value ? 'bg-blue-500/10 text-blue-400' : 'text-text-secondary'
                             }`}
                         >
                             <LucideIcon iconName={iconName} className="w-5 h-5 shrink-0" />
