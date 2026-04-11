@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { MapPin } from 'lucide-react';
 import { TimelineItem } from '@/lib/types';
 import { TimelineRow } from './TimelineRow';
 import { TimelineModal } from './TimelineModal';
@@ -24,19 +25,29 @@ const Timeline = ({ items }: TimelineProps) => {
                 </p>
             </div>
 
-            <div className="relative wrap overflow-hidden px-4 py-10 md:p-10 h-full">
-                <div className="border-2-2 absolute border-opacity-20 border-border-timeline h-full border left-5 md:left-1/2"></div>
+            {items.length === 0 ? (
+                <div className="text-center py-20">
+                    <MapPin className="w-12 h-12 text-text-faint mx-auto mb-4" />
+                    <p className="text-text-muted text-lg mb-2">No milestones yet</p>
+                    <p className="text-text-faint text-sm">Start adding journey items to build your timeline.</p>
+                </div>
+            ) : (
+                <>
+                    <div className="relative wrap overflow-hidden px-4 py-10 md:p-10 h-full">
+                        <div className="border-2-2 absolute border-opacity-20 border-border-timeline h-full border left-5 md:left-1/2"></div>
 
-                {items.map((item, index) => (
-                    <TimelineRow key={index} item={item} index={index} isRight={index % 2 !== 0} setSelectedId={setSelectedId} />
-                ))}
-            </div>
+                        {items.map((item, index) => (
+                            <TimelineRow key={index} item={item} index={index} isRight={index % 2 !== 0} setSelectedId={setSelectedId} />
+                        ))}
+                    </div>
 
-            <TimelineModal
-                selectedId={selectedId}
-                items={items}
-                onClose={() => setSelectedId(null)}
-            />
+                    <TimelineModal
+                        selectedId={selectedId}
+                        items={items}
+                        onClose={() => setSelectedId(null)}
+                    />
+                </>
+            )}
         </div>
     );
 };
