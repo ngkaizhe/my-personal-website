@@ -1,16 +1,8 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
-
+// Page transition wrapper. Framer Motion's initial+animate sometimes gets
+// stuck in a Next.js 16 + React 19 environment, so we use a CSS keyframe
+// fallback that always runs on mount and respects prefers-reduced-motion.
 export default function Template({ children }: { children: React.ReactNode }) {
-    const reduceMotion = useReducedMotion();
-    return (
-        <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-        >
-            {children}
-        </motion.div>
-    );
+    return <div className="page-fade-in">{children}</div>;
 }

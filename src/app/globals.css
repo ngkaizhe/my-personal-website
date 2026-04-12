@@ -164,6 +164,33 @@
   filter: saturate(1.5) contrast(1.05);
 }
 
+/* ===== Page fade-in (CSS fallback for Framer Motion issues) ===== */
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-fade-in {
+  animation: page-fade-in 0.3s ease-out both;
+}
+
+@keyframes timeline-row-reveal {
+  from { opacity: 0; transform: translateY(50px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.timeline-row-reveal {
+  animation: timeline-row-reveal 0.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fade-in,
+  .timeline-row-reveal {
+    animation: none;
+  }
+}
+
 /* ===== Background Texture ===== */
 
 .bg-page {

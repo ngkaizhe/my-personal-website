@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion, useReducedMotion } from 'motion/react';
 import { TimelineItem } from '@/lib/types';
 import { TimelineCard } from './TimelineCard';
 import { LucideIcon } from '@/components/ui/LucideIcon';
@@ -19,15 +18,11 @@ export const TimelineRow = ({
     isRight,
     setSelectedId
 }: TimelineRowProps) => {
-    const reduceMotion = useReducedMotion();
-    const delay = reduceMotion ? 0 : Math.min(index * 0.1, 0.8);
+    const delay = Math.min(index * 0.08, 0.6);
     return (
-        <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 50 }}
-            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.3, delay }}
-            className="mb-8 flex items-center w-full relative"
+        <div
+            className="timeline-row-reveal mb-8 flex items-center w-full relative"
+            style={{ animationDelay: `${delay}s` }}
         >
             {/* Icon: mobile = inline left; desktop = absolute centered on timeline */}
             <div className="shrink-0 z-20 flex items-center justify-center bg-surface shadow-xl rounded-full border-4 border-surface
@@ -45,6 +40,6 @@ export const TimelineRow = ({
                     onClick={() => setSelectedId(`card-${index}`)}
                 />
             </div>
-        </motion.div>
+        </div>
     );
 };
