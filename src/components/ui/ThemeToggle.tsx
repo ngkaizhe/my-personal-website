@@ -75,7 +75,7 @@ export const ThemeToggle = () => {
                 aria-haspopup="menu"
                 aria-expanded={open}
                 aria-label={`Change theme, current: ${current.label}`}
-                className="w-11 h-11 flex items-center justify-center text-header-text hover:text-header-text-hover hover:bg-black/5 rounded-lg transition-all duration-200 cursor-pointer
+                className="w-11 h-11 flex items-center justify-center text-header-text hover:text-header-text-hover hover:bg-nav-hover rounded-lg transition-all duration-200 cursor-pointer
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
                 <ThemeIcon name={current.iconName} className="w-4 h-4" />

@@ -14,6 +14,7 @@
   --color-border: #e5e7eb;
   --color-border-light: #f3f4f6;
   --color-border-timeline: #d1d5db;
+  --color-dot-pattern: rgba(17, 24, 39, 0.08);
 
   --color-btn-primary-bg: #111827;
   --color-btn-primary-bg-hover: #1f2937;
@@ -36,6 +37,7 @@
   --color-header-border: rgba(0, 0, 0, 0.08);
   --color-header-text: #6b7280;
   --color-header-text-hover: #111827;
+  --color-nav-hover: rgba(0, 0, 0, 0.06);
 
   --color-form-bg: rgba(255, 255, 255, 0.9);
   --color-form-border: #e5e7eb;
@@ -65,6 +67,7 @@
   --color-border: #27272a;
   --color-border-light: #3f3f46;
   --color-border-timeline: #3f3f46;
+  --color-dot-pattern: rgba(255, 255, 255, 0.04);
 
   --color-btn-primary-bg: #f4f4f5;
   --color-btn-primary-bg-hover: #e4e4e7;
@@ -87,6 +90,7 @@
   --color-header-border: rgba(255, 255, 255, 0.1);
   --color-header-text: #d4d4d8;
   --color-header-text-hover: #ffffff;
+  --color-nav-hover: rgba(255, 255, 255, 0.08);
 
   --color-form-bg: rgba(24, 24, 27, 0.8);
   --color-form-border: #27272a;
@@ -114,6 +118,7 @@
   --color-border: #e0d5c4;
   --color-border-light: #ebe3d5;
   --color-border-timeline: #cdc0ab;
+  --color-dot-pattern: rgba(92, 75, 55, 0.1);
 
   --color-btn-primary-bg: #5c4b37;
   --color-btn-primary-bg-hover: #4a3c2c;
@@ -136,6 +141,7 @@
   --color-header-border: rgba(254, 249, 239, 0.15);
   --color-header-text: #e0d5c4;
   --color-header-text-hover: #fef9ef;
+  --color-nav-hover: rgba(254, 249, 239, 0.12);
 
   --color-form-bg: rgba(92, 75, 55, 0.08);
   --color-form-border: #e0d5c4;
@@ -163,6 +169,6 @@
 /* ===== Background Texture ===== */
 
 .bg-page {
-  background-image: radial-gradient(var(--color-border-timeline) 0.5px, transparent 0.5px);
+  background-image: radial-gradient(var(--color-dot-pattern) 0.5px, transparent 0.5px);
   background-size: 24px 24px;
 }
