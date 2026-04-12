@@ -14,7 +14,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <nav className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3" aria-label="Primary navigation">
           <div className="flex items-center gap-1">
             <NavLink href="/dashboard" exact>Timeline</NavLink>
-            <NavLink href="/dashboard/journeys">Journeys</NavLink>
+            <NavLink href="/dashboard/entries">Entries</NavLink>
+            <NavLink href="/dashboard/employers">Employers</NavLink>
+            <NavLink href="/dashboard/resume">Resume</NavLink>
           </div>
           <div className="flex items-center">
             <ThemeToggle />

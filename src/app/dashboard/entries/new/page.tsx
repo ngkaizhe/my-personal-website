@@ -1,36 +1,45 @@
-import { createJourney, JourneyDetail } from "../actions";
-import JourneyForm from "@/components/Journey/JourneyForm";
+import { createEntry, getEmployerOptions, EntryDetail } from "../actions";
+import EntryForm from "@/components/Entry/EntryForm";
 
 export const metadata = {
-  title: "Add New Journey",
+    title: "Add Entry",
 };
 
-const emptyItem: JourneyDetail = {
-    year: '',
+const emptyItem: EntryDetail = {
+    date: new Date().toISOString().substring(0, 10),
     title: '',
+    actionVerb: '',
+    description: '',
+    impact: '',
+    details: '',
     tag: '',
     color: 'blue',
-    description: '',
-    details: '',
     techStack: [],
     linkUrl: '',
     linkText: '',
     iconName: 'help-circle',
+    employerId: '',
 };
 
-export default function NewJourneyPage() {
+export default async function NewEntryPage() {
+    const employers = await getEmployerOptions();
+
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary">Add New Journey</h1>
-                    <p className="text-text-muted mt-2">Create a new milestone for your timeline.</p>
+                    <h1 className="text-3xl font-bold text-text-primary">Add Entry</h1>
+                    <p className="text-text-muted mt-2">Log a new achievement or milestone.</p>
                 </div>
 
-                <JourneyForm item={emptyItem} action={async (formData) => {
-                    'use server';
-                    await createJourney(formData);
-                }} />
+                <EntryForm
+                    item={emptyItem}
+                    employers={employers}
+                    action={async (formData) => {
+                        'use server';
+                        await createEntry(formData);
+                    }}
+                />
             </div>
         </div>
     );

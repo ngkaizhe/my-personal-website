@@ -3,11 +3,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'motion/react';
-import { JourneyDetail } from '@/app/dashboard/journeys/actions';
+import { EntryDetail } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
 import IconPicker from '@/components/ui/IconPicker';
-import JourneyFormPreview, { PreviewData } from '@/components/Journey/JourneyFormPreview';
+import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPreview';
+
+export interface EmployerOption {
+    id: string;
+    name: string;
+    role: string;
+}
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
@@ -36,26 +42,37 @@ function Section({ title, delay, children }: { title: string; delay: number; chi
     );
 }
 
-export default function JourneyForm({ item, action }: { item: JourneyDetail; action: (formData: FormData) => Promise<void> }) {
+interface Props {
+    item: EntryDetail;
+    employers: EmployerOption[];
+    action: (formData: FormData) => Promise<void>;
+}
+
+export default function EntryForm({ item, employers, action }: Props) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [preview, setPreview] = useState<PreviewData>({
-        year: item.year,
+        date: item.date,
         title: item.title,
+        actionVerb: item.actionVerb,
+        description: item.description,
+        impact: item.impact,
+        details: item.details,
         tag: item.tag,
         color: item.color,
         iconName: item.iconName,
-        description: item.description,
-        details: item.details,
         techStack: item.techStack,
         linkUrl: item.linkUrl,
         linkText: item.linkText,
+        employerId: item.employerId,
     });
 
-    const updateField = (field: keyof PreviewData, value: string) => {
+    const updateField = <K extends keyof PreviewData>(field: K, value: PreviewData[K]) => {
         setPreview(prev => ({ ...prev, [field]: value }));
     };
+
+    const selectedEmployer = employers.find(e => e.id === preview.employerId);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -67,15 +84,14 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
         try {
             await action(formData);
         } catch (err) {
-            console.error('Failed to save journey:', err);
-            setError(err instanceof Error ? err.message : 'Failed to save journey. Please try again.');
+            console.error('Failed to save entry:', err);
+            setError(err instanceof Error ? err.message : 'Failed to save entry. Please try again.');
             setSubmitting(false);
         }
     };
 
     return (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
-            {/* Form */}
             <form
                 onSubmit={handleSubmit}
                 className="space-y-8 bg-form-bg backdrop-blur-sm p-4 md:p-8 rounded-2xl border border-form-border shadow-2xl"
@@ -84,16 +100,29 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 <Section title="Basic Info" delay={0}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label htmlFor="field-year" className={labelClass}>Year</label>
-                            <input id="field-year" name="year" value={preview.year} onChange={e => updateField('year', e.target.value)} required className={inputClass} placeholder="2024" />
+                            <label htmlFor="field-date" className={labelClass}>Date</label>
+                            <input id="field-date" type="date" name="date" value={preview.date} onChange={e => updateField('date', e.target.value)} required className={inputClass} />
+                        </div>
+                        <div>
+                            <label htmlFor="field-employer" className={labelClass}>Employer <span className="text-text-faint">(Optional)</span></label>
+                            <select id="field-employer" name="employerId" value={preview.employerId} onChange={e => updateField('employerId', e.target.value)} className={inputClass}>
+                                <option value="">— None (personal / outside work) —</option>
+                                {employers.map(emp => (
+                                    <option key={emp.id} value={emp.id}>{emp.name} — {emp.role}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label htmlFor="field-action-verb" className={labelClass}>Action Verb <span className="text-text-faint">(e.g. Led, Shipped, Reduced)</span></label>
+                            <input id="field-action-verb" name="actionVerb" value={preview.actionVerb} onChange={e => updateField('actionVerb', e.target.value)} className={inputClass} placeholder="Shipped" />
                         </div>
                         <div>
                             <label htmlFor="field-title" className={labelClass}>Title</label>
-                            <input id="field-title" name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder="Senior Developer" />
+                            <input id="field-title" name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder="Migrated checkout to Zustand" />
                         </div>
                         <div>
                             <label htmlFor="field-tag" className={labelClass}>Tag</label>
-                            <input id="field-tag" name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Work" />
+                            <input id="field-tag" name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Engineering" />
                         </div>
                         <div>
                             <label htmlFor="field-icon" className={labelClass}>Icon</label>
@@ -107,14 +136,20 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 <Section title="Content" delay={0.1}>
                     <div>
                         <label htmlFor="field-description" className={labelClass}>Short Description</label>
-                        <textarea id="field-description" name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="Brief summary of the milestone..." />
+                        <textarea id="field-description" name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="What did you do?" />
+                    </div>
+                    <div>
+                        <label htmlFor="field-impact" className={labelClass}>
+                            Impact <span className="text-text-faint">(Quantified outcome)</span>
+                        </label>
+                        <input id="field-impact" name="impact" value={preview.impact} onChange={e => updateField('impact', e.target.value)} className={inputClass} placeholder="Reduced bundle size by 40KB" />
                     </div>
                     <div>
                         <label htmlFor="field-details" className={labelClass}>Details <span className="text-text-faint">(Optional)</span></label>
-                        <textarea id="field-details" name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Detailed explanation..." />
+                        <textarea id="field-details" name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Context, approach, learnings..." />
                     </div>
                     <div>
-                        <label htmlFor="field-techstack" className={labelClass}>Tech Stack <span className="text-text-faint">(Press Enter to add)</span></label>
+                        <label htmlFor="field-techstack" className={labelClass}>Tech Stack / Skills <span className="text-text-faint">(Press Enter to add)</span></label>
                         <TagInput
                             id="field-techstack"
                             values={preview.techStack}
@@ -134,7 +169,7 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                         </div>
                         <div>
                             <label htmlFor="field-linktext" className={labelClass}>Link Text <span className="text-text-faint">(Optional)</span></label>
-                            <input id="field-linktext" name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View Project" />
+                            <input id="field-linktext" name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View PR" />
                         </div>
                     </div>
                 </Section>
@@ -145,7 +180,6 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                     </div>
                 )}
 
-                {/* Actions */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
@@ -165,7 +199,7 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                         disabled={submitting}
                         className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30"
                     >
-                        {submitting ? 'Saving...' : 'Save Journey'}
+                        {submitting ? 'Saving...' : 'Save Entry'}
                     </button>
                 </motion.div>
             </form>
@@ -173,7 +207,7 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
             {/* Live Preview */}
             <div className="sticky top-24">
                 <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">Preview</p>
-                <JourneyFormPreview data={preview} />
+                <EntryFormPreview data={preview} employerName={selectedEmployer?.name} employerRole={selectedEmployer?.role} />
             </div>
         </div>
     );

@@ -5,21 +5,26 @@ import { useState, useTransition } from 'react';
 import { X } from 'lucide-react';
 import { getBadgeClass } from '@/lib/colors';
 
-export interface JourneySummary {
+export interface EntrySummary {
     id: string;
-    year: string;
+    date: string;
     title: string;
     tag: string;
     color: string;
+    employerName?: string;
 }
 
 interface Props {
-    items: JourneySummary[];
+    items: EntrySummary[];
     deleteAction: (id: string) => Promise<void>;
 }
 
-export default function JourneyList({ items, deleteAction }: Props) {
-    const [toDelete, setToDelete] = useState<JourneySummary | null>(null);
+function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+export default function EntryList({ items, deleteAction }: Props) {
+    const [toDelete, setToDelete] = useState<EntrySummary | null>(null);
     const [isPending, startTransition] = useTransition();
 
     const confirmDelete = () => {
@@ -34,7 +39,7 @@ export default function JourneyList({ items, deleteAction }: Props) {
     if (items.length === 0) {
         return (
             <div className="bg-surface rounded-xl shadow-sm border border-border p-12 text-center text-text-muted">
-                No journey items found. Add one to get started!
+                No entries found. Add one to get started!
             </div>
         );
     }
@@ -46,8 +51,9 @@ export default function JourneyList({ items, deleteAction }: Props) {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-surface-elevated border-b border-border-light">
-                            <th className="p-4 font-semibold text-text-muted">Year</th>
+                            <th className="p-4 font-semibold text-text-muted">Date</th>
                             <th className="p-4 font-semibold text-text-muted">Title</th>
+                            <th className="p-4 font-semibold text-text-muted">Employer</th>
                             <th className="p-4 font-semibold text-text-muted">Tag</th>
                             <th className="p-4 font-semibold text-text-muted text-right">Actions</th>
                         </tr>
@@ -55,16 +61,17 @@ export default function JourneyList({ items, deleteAction }: Props) {
                     <tbody>
                         {items.map((item) => (
                             <tr key={item.id} className="border-b border-border-light hover:bg-surface-elevated/50">
-                                <td className="p-4 font-medium text-text-primary">{item.year}</td>
+                                <td className="p-4 font-medium text-text-primary whitespace-nowrap">{formatDate(item.date)}</td>
                                 <td className="p-4 text-text-secondary">{item.title}</td>
+                                <td className="p-4 text-text-muted text-sm">{item.employerName || '—'}</td>
                                 <td className="p-4">
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClass(item.color)}`}>
                                         {item.tag}
                                     </span>
                                 </td>
-                                <td className="p-4 text-right space-x-2">
+                                <td className="p-4 text-right space-x-2 whitespace-nowrap">
                                     <Link
-                                        href={`/dashboard/journeys/${item.id}`}
+                                        href={`/dashboard/entries/${item.id}`}
                                         className="inline-block px-3 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
                                     >
                                         Edit
@@ -87,10 +94,13 @@ export default function JourneyList({ items, deleteAction }: Props) {
             <div className="md:hidden space-y-3">
                 {items.map((item) => (
                     <div key={item.id} className="bg-surface rounded-xl shadow-sm border border-border p-4">
-                        <div className="flex items-start justify-between mb-2">
-                            <div>
-                                <div className="font-bold text-lg text-text-primary">{item.year}</div>
-                                <div className="text-text-secondary text-sm">{item.title}</div>
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="min-w-0">
+                                <div className="text-xs text-text-muted mb-0.5">{formatDate(item.date)}</div>
+                                <div className="font-semibold text-text-primary">{item.title}</div>
+                                {item.employerName && (
+                                    <div className="text-text-muted text-sm">{item.employerName}</div>
+                                )}
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 ${getBadgeClass(item.color)}`}>
                                 {item.tag}
@@ -98,7 +108,7 @@ export default function JourneyList({ items, deleteAction }: Props) {
                         </div>
                         <div className="flex gap-2 mt-3 pt-3 border-t border-border-light">
                             <Link
-                                href={`/dashboard/journeys/${item.id}`}
+                                href={`/dashboard/entries/${item.id}`}
                                 className="flex-1 text-center px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
                             >
                                 Edit
@@ -137,10 +147,10 @@ export default function JourneyList({ items, deleteAction }: Props) {
                             <X size={20} />
                         </button>
                         <h2 id="delete-title" className="text-xl font-bold text-text-primary mb-2">
-                            Delete journey?
+                            Delete entry?
                         </h2>
                         <p className="text-text-secondary mb-6">
-                            Are you sure you want to delete <span className="font-semibold">{toDelete.year} — {toDelete.title}</span>? This action cannot be undone.
+                            Are you sure you want to delete <span className="font-semibold">{toDelete.title}</span>? This action cannot be undone.
                         </p>
                         <div className="flex justify-end gap-3">
                             <button

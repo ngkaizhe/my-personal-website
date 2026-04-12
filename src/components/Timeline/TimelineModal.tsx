@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { TimelineItem } from '@/lib/types';
-import JourneyCard from '@/components/Journey/JourneyCard';
+import EntryCard from '@/components/Entry/EntryCard';
 
 interface TimelineModalProps {
     selectedId: string | null;
@@ -80,18 +80,22 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
                             <X size={20} className="text-text-muted" />
                         </button>
 
-                        <JourneyCard
+                        <EntryCard
                             titleId={titleId}
-                            year={selectedItem.year.content}
+                            date={new Date(selectedItem.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                             title={selectedItem.title.content}
+                            actionVerb={selectedItem.actionVerb}
                             tag={selectedItem.category.text}
                             textColorClass={selectedItem.year.colorClass}
                             badgeColorClass={selectedItem.category.colorClass}
                             iconName={selectedItem.iconName}
                             description={selectedItem.description}
+                            impact={selectedItem.impact}
                             details={selectedItem.details}
                             techStack={selectedItem.techStack}
                             link={selectedItem.link}
+                            employerName={selectedItem.employer?.name}
+                            employerRole={selectedItem.employer?.role}
                         />
                     </motion.div>
                 </div>
