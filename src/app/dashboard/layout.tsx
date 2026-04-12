@@ -12,8 +12,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </a>
       <header className="sticky top-0 z-50 bg-header-bg backdrop-blur-md border-b border-header-border">
         <nav className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3" aria-label="Primary navigation">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto">
             <NavLink href="/dashboard" exact>Timeline</NavLink>
+            <NavLink href="/dashboard/quick-add">Quick Add</NavLink>
             <NavLink href="/dashboard/entries">Entries</NavLink>
             <NavLink href="/dashboard/employers">Employers</NavLink>
             <NavLink href="/dashboard/resume">Resume</NavLink>
