@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { TimelineItem } from '@/lib/types';
 import { TimelineCard } from './TimelineCard';
 import { LucideIcon } from '@/components/ui/LucideIcon';
@@ -19,12 +19,14 @@ export const TimelineRow = ({
     isRight,
     setSelectedId
 }: TimelineRowProps) => {
+    const reduceMotion = useReducedMotion();
+    const delay = reduceMotion ? 0 : Math.min(index * 0.1, 0.8);
     return (
         <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 50 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
+            transition={{ duration: 0.3, delay }}
             className="mb-8 relative flex items-center w-full"
         >
             {/* Desktop: icon centered on timeline */}

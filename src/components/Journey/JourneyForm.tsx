@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { JourneyDetail } from '@/app/dashboard/journeys/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -21,11 +21,12 @@ const inputClass = `
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 function Section({ title, delay, children }: { title: string; delay: number; children: React.ReactNode }) {
+    const reduceMotion = useReducedMotion();
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay }}
+            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: reduceMotion ? 0 : delay }}
             className="space-y-5"
         >
             <h3 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">{title}</h3>
