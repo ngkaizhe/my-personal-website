@@ -1,6 +1,10 @@
 import { createJourney, JourneyDetail } from "../actions";
 import JourneyForm from "@/components/Journey/JourneyForm";
 
+export const metadata = {
+  title: "Add New Journey",
+};
+
 const emptyItem: JourneyDetail = {
     year: '',
     title: '',

@@ -2,6 +2,10 @@ import { getJourneyDetail, updateJourney } from "../actions";
 import JourneyForm from "@/components/Journey/JourneyForm";
 import { notFound } from "next/navigation";
 
+export const metadata = {
+  title: "Edit Journey",
+};
+
 export default async function EditJourneyPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     const item = await getJourneyDetail(resolvedParams.id);

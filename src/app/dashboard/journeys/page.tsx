@@ -2,6 +2,10 @@ import Link from "next/link";
 import { getJourneySummaries, deleteJourney } from "./actions";
 import { getBadgeClass } from "@/lib/colors";
 
+export const metadata = {
+  title: "Manage Journeys",
+};
+
 export default async function JourneysPage() {
     const items = await getJourneySummaries();
 
