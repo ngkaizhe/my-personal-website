@@ -77,7 +77,7 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
             {/* Form */}
             <form
                 onSubmit={handleSubmit}
-                className="space-y-8 bg-form-bg backdrop-blur-sm p-8 rounded-2xl border border-form-border shadow-2xl shadow-black/20"
+                className="space-y-8 bg-form-bg backdrop-blur-sm p-8 rounded-2xl border border-form-border shadow-2xl"
             >
                 {/* Basic Info */}
                 <Section title="Basic Info" delay={0}>
