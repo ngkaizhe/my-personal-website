@@ -14,28 +14,55 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-This is a personal portfolio website built with **Next.js 16 (App Router), TypeScript, Tailwind CSS v4, and Prisma (PostgreSQL)**.
+This is a **personal achievement log + resume builder** built with **Next.js 16 (App Router), TypeScript, Tailwind CSS v4, Prisma (PostgreSQL), and the Anthropic SDK**.
+
+### Product intent
+
+The site is not just a decorative timeline — it's a **work log** the user fills out over time (ideally daily or weekly) so that later they can **generate resume bullets** from the accumulated entries. Key user flows:
+
+1. **Quick Add** — describe what you did in one sentence, Claude parses it into structured fields
+2. **Entries CRUD** — manage detailed entries with date, action verb, impact metric, employer, skills
+3. **Employers** — group entries under jobs/clients so resume export can render them as Experience sections
+4. **Resume Builder** — filter by employer + date range, generate markdown bullets + aggregated skills, copy or download
 
 ### Routing
 
 - `/` redirects to `/dashboard`
-- `/dashboard` — public-facing timeline page showing journey items (server component that fetches from DB)
-- `/dashboard/journeys` — CRUD management for timeline items
-- `/dashboard/journeys/new` — create new journey
-- `/dashboard/journeys/[id]` — edit existing journey
+- `/dashboard` — public-facing timeline page (chronological display of all entries with Framer Motion animations and a detail modal)
+- `/dashboard/quick-add` — one-sentence input → AI parse → review → save
+- `/dashboard/entries` — CRUD list for all entries
+- `/dashboard/entries/new` — manual entry creation with full form
+- `/dashboard/entries/[id]` — edit existing entry
+- `/dashboard/employers` — CRUD list for employers/jobs/projects
+- `/dashboard/employers/new` — create employer
+- `/dashboard/employers/[id]` — edit employer
+- `/dashboard/resume` — resume builder with filters, preview, and markdown export
 
 ### Key patterns
 
-- **Server Actions:** All database mutations live in `src/app/dashboard/journeys/actions.ts` (create, update, delete timeline items). The public read action is in `src/app/dashboard/actions.tsx`.
+- **Server Actions:** Entries live in `src/app/dashboard/entries/actions.ts`, employers in `src/app/dashboard/employers/actions.ts`, resume aggregation in `src/app/dashboard/resume/actions.ts`. The public timeline read action is in `src/app/dashboard/actions.tsx`.
 - **Prisma singleton:** `src/lib/prisma.ts` exports a singleton Prisma client (cached on `globalThis` in dev to survive HMR).
 - **Path alias:** `@/*` maps to `./src/*`.
-- **Data model:** Two Prisma models — `Journey` (entries with year, title, tag, description, tech stack, links) and `Icon` (Lucide icon names, related 1:many to Journey).
-- **Timeline component:** `src/components/Timeline/` is a client-side component tree (Timeline → TimelineRow → TimelineCard) with a TimelineModal. Uses Framer Motion (`motion` package) for animations.
+- **Data model:**
+  - `Entry` — the core unit. Fields: `date` (DateTime, not a year string), `title`, `actionVerb?`, `description`, `impact?` (quantified outcome like "Reduced bundle by 40KB"), `details?`, `tag`, `color`, `techStack[]`, optional `link`, optional `employerId`.
+  - `Employer` — jobs/clients/projects that group entries. Fields: `name`, `role`, `startDate`, `endDate?`, `description?`, `color`. Deleting an employer unlinks entries (onDelete: SetNull).
+  - `Icon` — Lucide icon names (1:many to Entry).
+- **Components:**
+  - `src/components/Timeline/` — public timeline display (Timeline → TimelineRow → TimelineCard) with TimelineModal
+  - `src/components/Entry/` — EntryCard (detail view used in modal and preview), EntryForm (full CRUD form), EntryFormPreview, EntryList, QuickAdd (AI parse flow)
+  - `src/components/Employer/` — EmployerForm, EmployerList
+  - `src/components/Resume/` — ResumeBuilder
+- **AI parse route:** `src/app/api/parse-entry/route.ts` — POST a raw sentence, returns structured fields using `claude-haiku-4-5-20251001` with an ephemerally-cached system prompt. Requires `ANTHROPIC_API_KEY` env var.
 - **Font:** Montserrat loaded via `next/font/google` with weights 400/500/600/700.
 
-### Database
+### Database & env
 
-PostgreSQL via Prisma. Connection string from `DATABASE_URL` env var. Schema in `prisma/schema.prisma`, seed in `prisma/seed.ts`.
+- **PostgreSQL** via Prisma. Connection string from `DATABASE_URL` env var. Schema in `prisma/schema.prisma`, seed in `prisma/seed.ts`.
+- **Seed config** is in `package.json` under `"prisma": { "seed": "ts-node ..." }`. Run with `npx prisma db seed`.
+- **Schema push** (dev): use `npx prisma db push --accept-data-loss` for non-interactive schema changes. `prisma migrate dev` requires interactive confirmation and fails in automated environments.
+- **Env vars required:**
+  - `DATABASE_URL` — Postgres connection string
+  - `ANTHROPIC_API_KEY` — for the Quick Add AI parse route (`/api/parse-entry`). Without it the parse endpoint returns 500.
 
 ## Theme System (important — non-obvious)
 
@@ -78,11 +105,32 @@ For sepia mode, elements that need saturation boost are marked with `data-palett
 
 ## WSL / Windows development quirks
 
-**Project path is on `/mnt/c/`** (Windows filesystem mounted in WSL). This causes several issues:
+**Project path is on `/mnt/c/`** (Windows filesystem mounted in WSL). The user runs the dev server on **Windows PowerShell**. This causes several issues:
 
-- **`node_modules` native binaries:** Running `npm install` in WSL installs Linux binaries; running on Windows installs Windows binaries. They conflict. Generally, run the dev server on **Windows** (PowerShell) to avoid `Cannot find module 'lightningcss.linux-x64-gnu.node'` errors.
+### 🚫 NEVER run `npm install` or `npm install <pkg>` from WSL
+
+This is the single most important rule. The user's dev server runs on Windows and needs Windows-native binaries (`lightningcss.win32-x64-msvc.node`, etc.). Running `npm install` from WSL:
+
+1. Installs Linux binaries (`lightningcss.linux-x64-gnu.node`) into **nested** `node_modules/@tailwindcss/node/node_modules/lightningcss/` locations
+2. Those nested paths are not touched by a subsequent `npm install` on Windows — npm sees them as "already installed" and skips
+3. Result: the Windows dev server fails with `Cannot find module '../lightningcss.win32-x64-msvc.node'`
+
+**If you need to add a dependency, ask the user to run `npm install <pkg>` from PowerShell.** Do not do it yourself from WSL.
+
+**If you've already broken it** (you ran `npm install` from WSL by accident), the fix requires a full nuke-and-reinstall on Windows:
+
+```powershell
+Remove-Item -Recurse -Force node_modules
+Remove-Item -Force package-lock.json
+npm install
+```
+
+Partial reinstalls will NOT fix the nested binary problem.
+
+### Other quirks
+
 - **Line endings:** `.gitattributes` enforces LF for all text files. If you see huge diffs with `10000 insertions / 10000 deletions`, it's a CRLF issue — run `git checkout -- .` and it should resolve.
-- **Playwright MCP from WSL → Windows dev server:** Playwright's Chromium runs in WSL, but `localhost:3000` there won't reach a dev server on Windows. Start the Windows dev server with `npx next dev -H 0.0.0.0` and access it from WSL using the Windows host IP (`ip route show default | awk '{print $3}'`, typically `172.30.192.1` or similar). Example: `http://172.30.192.1:3000/dashboard`.
+- **Playwright MCP from WSL → Windows dev server:** Playwright's Chromium runs in WSL, but `localhost:3000` there won't reach a dev server on Windows. Ask the user to start the Windows dev server with `npx next dev -H 0.0.0.0` and access it from WSL using the Windows host IP (`ip route show default | awk '{print $3}'`, typically `172.30.192.1` or similar). Example: `http://172.30.192.1:3000/dashboard`.
 - **Playwright artifacts:** `.playwright-mcp/` directory is gitignored. Do not commit screenshots from it.
 
 ## Git conventions
