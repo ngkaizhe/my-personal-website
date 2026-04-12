@@ -38,6 +38,7 @@ function Section({ title, delay, children }: { title: string; delay: number; chi
 export default function JourneyForm({ item, action }: { item: JourneyDetail; action: (formData: FormData) => Promise<void> }) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [preview, setPreview] = useState<PreviewData>({
         year: item.year,
         title: item.title,
@@ -58,13 +59,15 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSubmitting(true);
+        setError(null);
         const formData = new FormData(e.currentTarget);
         preview.techStack.forEach(t => formData.append('techStack', t));
 
         try {
             await action(formData);
-        } catch (error) {
-            console.error('Failed to save journey:', error);
+        } catch (err) {
+            console.error('Failed to save journey:', err);
+            setError(err instanceof Error ? err.message : 'Failed to save journey. Please try again.');
             setSubmitting(false);
         }
     };
@@ -80,20 +83,20 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 <Section title="Basic Info" delay={0}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className={labelClass}>Year</label>
-                            <input name="year" value={preview.year} onChange={e => updateField('year', e.target.value)} required className={inputClass} placeholder="2024" />
+                            <label htmlFor="field-year" className={labelClass}>Year</label>
+                            <input id="field-year" name="year" value={preview.year} onChange={e => updateField('year', e.target.value)} required className={inputClass} placeholder="2024" />
                         </div>
                         <div>
-                            <label className={labelClass}>Title</label>
-                            <input name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder="Senior Developer" />
+                            <label htmlFor="field-title" className={labelClass}>Title</label>
+                            <input id="field-title" name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder="Senior Developer" />
                         </div>
                         <div>
-                            <label className={labelClass}>Tag</label>
-                            <input name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Work" />
+                            <label htmlFor="field-tag" className={labelClass}>Tag</label>
+                            <input id="field-tag" name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Work" />
                         </div>
                         <div>
-                            <label className={labelClass}>Icon</label>
-                            <IconPicker name="iconName" value={preview.iconName} onChange={v => updateField('iconName', v)} className={inputClass} />
+                            <label htmlFor="field-icon" className={labelClass}>Icon</label>
+                            <IconPicker id="field-icon" name="iconName" value={preview.iconName} onChange={v => updateField('iconName', v)} className={inputClass} />
                         </div>
                     </div>
                     <ColorPicker name="color" label="Color" value={preview.color} onChange={c => updateField('color', c)} />
@@ -102,16 +105,17 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 {/* Content */}
                 <Section title="Content" delay={0.1}>
                     <div>
-                        <label className={labelClass}>Short Description</label>
-                        <textarea name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="Brief summary of the milestone..." />
+                        <label htmlFor="field-description" className={labelClass}>Short Description</label>
+                        <textarea id="field-description" name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="Brief summary of the milestone..." />
                     </div>
                     <div>
-                        <label className={labelClass}>Details <span className="text-text-faint">(Optional)</span></label>
-                        <textarea name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Detailed explanation..." />
+                        <label htmlFor="field-details" className={labelClass}>Details <span className="text-text-faint">(Optional)</span></label>
+                        <textarea id="field-details" name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Detailed explanation..." />
                     </div>
                     <div>
-                        <label className={labelClass}>Tech Stack <span className="text-text-faint">(Press Enter to add)</span></label>
+                        <label htmlFor="field-techstack" className={labelClass}>Tech Stack <span className="text-text-faint">(Press Enter to add)</span></label>
                         <TagInput
+                            id="field-techstack"
                             values={preview.techStack}
                             onChange={techStack => setPreview(prev => ({ ...prev, techStack }))}
                             placeholder="Type a technology and press Enter..."
@@ -124,15 +128,21 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 <Section title="Links" delay={0.2}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className={labelClass}>URL <span className="text-text-faint">(Optional)</span></label>
-                            <input type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder="https://example.com" />
+                            <label htmlFor="field-linkurl" className={labelClass}>URL <span className="text-text-faint">(Optional)</span></label>
+                            <input id="field-linkurl" type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder="https://example.com" />
                         </div>
                         <div>
-                            <label className={labelClass}>Link Text <span className="text-text-faint">(Optional)</span></label>
-                            <input name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View Project" />
+                            <label htmlFor="field-linktext" className={labelClass}>Link Text <span className="text-text-faint">(Optional)</span></label>
+                            <input id="field-linktext" name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View Project" />
                         </div>
                     </div>
                 </Section>
+
+                {error && (
+                    <div role="alert" className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                        {error}
+                    </div>
+                )}
 
                 {/* Actions */}
                 <motion.div

@@ -5,6 +5,7 @@ import { iconNames } from '@/lib/iconNames';
 import { LucideIcon } from '@/components/ui/LucideIcon';
 
 interface IconPickerProps {
+    id?: string;
     name: string;
     value: string;
     onChange: (value: string) => void;
@@ -13,7 +14,7 @@ interface IconPickerProps {
 
 const MAX_SUGGESTIONS = 30;
 
-export default function IconPicker({ name, value, onChange, className = '' }: IconPickerProps) {
+export default function IconPicker({ id, name, value, onChange, className = '' }: IconPickerProps) {
     const [open, setOpen] = useState(false);
 
     const suggestions = value
@@ -46,6 +47,7 @@ export default function IconPicker({ name, value, onChange, className = '' }: Ic
                     <LucideIcon iconName={value || 'help-circle'} className="w-5 h-5 text-text-muted" />
                 </div>
                 <input
+                    id={id}
                     name={name}
                     value={value}
                     onChange={e => { onChange(e.target.value); setOpen(true); }}
