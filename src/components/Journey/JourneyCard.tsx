@@ -14,9 +14,10 @@ export interface JourneyCardProps {
     details?: string;
     techStack: string[];
     link?: { url: string; text: string } | null;
+    titleId?: string;
 }
 
-export default function JourneyCard({ year, title, tag, textColorClass, badgeColorClass, iconName, description, details, techStack, link }: JourneyCardProps) {
+export default function JourneyCard({ year, title, tag, textColorClass, badgeColorClass, iconName, description, details, techStack, link, titleId }: JourneyCardProps) {
     return (
         <div className="p-8">
             {/* Header */}
@@ -30,7 +31,7 @@ export default function JourneyCard({ year, title, tag, textColorClass, badgeCol
                             {tag}
                         </span>
                     )}
-                    <h3 className={`mt-1 font-bold ${textColorClass} text-3xl`}>{year}</h3>
+                    <h3 id={titleId} className={`mt-1 font-bold ${textColorClass} text-3xl`}>{year}</h3>
                     <p className="text-text-muted">{title}</p>
                 </div>
             </div>
