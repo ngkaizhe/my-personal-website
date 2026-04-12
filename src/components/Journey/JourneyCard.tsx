@@ -66,6 +66,7 @@ export default function JourneyCard({ year, title, tag, textColorClass, badgeCol
                     <Link
                         href={link.url}
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-btn-primary-text bg-btn-primary-bg rounded-lg hover:bg-btn-primary-bg-hover transition-all hover:scale-105 shadow-lg"
                         style={{ boxShadow: `0 10px 15px -3px var(--color-btn-primary-shadow)` }}
                     >
