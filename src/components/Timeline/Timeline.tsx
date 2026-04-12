@@ -16,9 +16,9 @@ const Timeline = ({ items }: TimelineProps) => {
     return (
         <div className="container mx-auto px-4 py-8 relative">
             <div className="text-center mb-16 pt-8">
-                <h2 className="text-5xl md:text-6xl font-bold uppercase tracking-wider text-text-primary mb-4">
+                <h1 className="text-5xl md:text-6xl font-bold uppercase tracking-wider text-text-primary mb-4">
                     My Journey
-                </h2>
+                </h1>
                 <div className="w-16 h-1 bg-blue-500 mx-auto mb-4 rounded-full"></div>
                 <p className="text-text-muted text-lg font-normal max-w-md mx-auto">
                     A timeline of milestones, growth, and the path that shaped who I am today.

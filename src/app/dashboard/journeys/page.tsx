@@ -15,7 +15,7 @@ export default async function JourneysPage() {
     };
 
     return (
-        <main className="p-8 bg-page min-h-screen">
+        <div className="p-8 bg-page min-h-screen">
             <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold text-text-primary">Manage Journeys</h1>
@@ -29,6 +29,6 @@ export default async function JourneysPage() {
 
                 <JourneyList items={items} deleteAction={deleteAction} />
             </div>
-        </main>
+        </div>
     );
 }
