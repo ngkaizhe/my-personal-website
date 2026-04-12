@@ -27,6 +27,21 @@ export const metadata: Metadata = {
   },
 };
 
+const themeInitScript = `
+(function() {
+  try {
+    var t = localStorage.getItem('theme');
+    if (t === 'dark' || t === 'light' || t === 'sepia') {
+      document.documentElement.classList.add(t);
+    } else {
+      document.documentElement.classList.add('light');
+    }
+  } catch (e) {
+    document.documentElement.classList.add('light');
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: {
@@ -34,6 +49,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className={montserrat.className}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
