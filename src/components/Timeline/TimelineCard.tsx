@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'motion/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { TimelineItem } from '@/lib/types'
 
@@ -17,15 +16,13 @@ function formatShortDate(iso: string) {
 
 export const TimelineCard = ({
     item,
-    index,
     isRight,
     onClick
 }: TimelineCardProps) => {
     const desktopAlign = isRight ? 'md:text-right' : 'md:text-left';
     const desktopJustify = isRight ? 'md:justify-end' : 'md:justify-start';
     return (
-        <motion.div
-            layoutId={`card-${index}`}
+        <div
             onClick={onClick}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -74,6 +71,6 @@ export const TimelineCard = ({
                 <span>View details</span>
                 <ArrowRight className="w-3 h-3" />
             </div>
-        </motion.div>
+        </div>
     );
 };

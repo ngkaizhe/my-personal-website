@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { TimelineItem } from '@/lib/types';
 import EntryCard from '@/components/Entry/EntryCard';
@@ -47,59 +46,53 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [selectedId, onClose]);
 
+    if (!selectedId || !selectedItem) return null;
+
     return (
-        <AnimatePresence>
-            {selectedId && selectedItem && (
-                <div
-                    className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby={titleId}
+        <div
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-fade-in"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+        >
+            <div
+                onClick={onClose}
+                className="absolute inset-0 bg-overlay backdrop-blur-sm"
+                aria-hidden="true"
+            />
+
+            <div
+                ref={modalRef}
+                className="bg-surface rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 modal-pop-in"
+            >
+                <button
+                    ref={closeButtonRef}
+                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    className="absolute top-4 right-4 p-2 bg-btn-secondary-bg rounded-full hover:bg-btn-secondary-bg-hover transition-colors z-20
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    aria-label="Close details dialog"
                 >
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="absolute inset-0 bg-overlay backdrop-blur-sm"
-                        aria-hidden="true"
-                    />
+                    <X size={20} className="text-text-muted" />
+                </button>
 
-                    <motion.div
-                        ref={modalRef}
-                        layoutId={selectedId}
-                        className="bg-surface rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden relative z-10"
-                    >
-                        <button
-                            ref={closeButtonRef}
-                            onClick={(e) => { e.stopPropagation(); onClose(); }}
-                            className="absolute top-4 right-4 p-2 bg-btn-secondary-bg rounded-full hover:bg-btn-secondary-bg-hover transition-colors z-20
-                                focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                            aria-label="Close details dialog"
-                        >
-                            <X size={20} className="text-text-muted" />
-                        </button>
-
-                        <EntryCard
-                            titleId={titleId}
-                            date={new Date(selectedItem.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                            title={selectedItem.title.content}
-                            actionVerb={selectedItem.actionVerb}
-                            tag={selectedItem.category.text}
-                            textColorClass={selectedItem.year.colorClass}
-                            badgeColorClass={selectedItem.category.colorClass}
-                            iconName={selectedItem.iconName}
-                            description={selectedItem.description}
-                            impact={selectedItem.impact}
-                            details={selectedItem.details}
-                            techStack={selectedItem.techStack}
-                            link={selectedItem.link}
-                            employerName={selectedItem.employer?.name}
-                            employerRole={selectedItem.employer?.role}
-                        />
-                    </motion.div>
-                </div>
-            )}
-        </AnimatePresence>
+                <EntryCard
+                    titleId={titleId}
+                    date={new Date(selectedItem.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                    title={selectedItem.title.content}
+                    actionVerb={selectedItem.actionVerb}
+                    tag={selectedItem.category.text}
+                    textColorClass={selectedItem.year.colorClass}
+                    badgeColorClass={selectedItem.category.colorClass}
+                    iconName={selectedItem.iconName}
+                    description={selectedItem.description}
+                    impact={selectedItem.impact}
+                    details={selectedItem.details}
+                    techStack={selectedItem.techStack}
+                    link={selectedItem.link}
+                    employerName={selectedItem.employer?.name}
+                    employerRole={selectedItem.employer?.role}
+                />
+            </div>
+        </div>
     );
 };
