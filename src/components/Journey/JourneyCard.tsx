@@ -27,11 +27,11 @@ export default function JourneyCard({ year, title, tag, textColorClass, badgeCol
                 </div>
                 <div>
                     {tag && (
-                        <span className={`${badgeColorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
+                        <span data-palette-accent className={`${badgeColorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
                             {tag}
                         </span>
                     )}
-                    <h3 id={titleId} className={`mt-1 font-bold ${textColorClass} text-3xl`}>{year}</h3>
+                    <h3 id={titleId} data-palette-accent className={`mt-1 font-bold ${textColorClass} text-3xl`}>{year}</h3>
                     <p className="text-text-muted">{title}</p>
                 </div>
             </div>

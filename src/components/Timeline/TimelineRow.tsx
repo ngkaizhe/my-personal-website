@@ -31,7 +31,7 @@ export const TimelineRow = ({
         >
             {/* Desktop: icon centered on timeline */}
             <div className="hidden md:flex z-20 absolute left-1/2 -translate-x-1/2 items-center bg-surface shadow-xl w-12 h-12 rounded-full border-4 border-surface justify-center">
-                <LucideIcon iconName={item.iconName} className={`w-6 h-6 ${item.year.colorClass}`} />
+                <LucideIcon data-palette-accent iconName={item.iconName} className={`w-6 h-6 ${item.year.colorClass}`} />
             </div>
 
             {/* Desktop: card on left or right */}
@@ -49,7 +49,7 @@ export const TimelineRow = ({
             {/* Mobile: icon left, card right */}
             <div className="flex md:hidden items-center w-full">
                 <div className="z-20 shrink-0 flex items-center bg-surface shadow-xl w-10 h-10 rounded-full border-4 border-surface justify-center">
-                    <LucideIcon iconName={item.iconName} className={`w-5 h-5 ${item.year.colorClass}`} />
+                    <LucideIcon data-palette-accent iconName={item.iconName} className={`w-5 h-5 ${item.year.colorClass}`} />
                 </div>
                 <div className="flex-1 ml-4">
                     <TimelineCard

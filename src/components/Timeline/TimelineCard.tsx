@@ -36,11 +36,11 @@ export const TimelineCard = ({
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
         >
             <div className={`mb-3 ${isRight ? 'flex justify-end' : 'flex justify-start'}`}>
-                <span className={`${item.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
+                <span data-palette-accent className={`${item.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
                     {item.category.text}
                 </span>
             </div>
-            <h3 className={`mb-1 font-bold ${item.title.colorClass} text-xl`}>{item.year.content}</h3>
+            <h3 data-palette-accent className={`mb-1 font-bold ${item.title.colorClass} text-xl`}>{item.year.content}</h3>
             <p className="text-text-faint text-sm mb-2">{item.title.content}</p>
             <p className="text-sm leading-snug tracking-wide text-text-primary">
                 {item.description}

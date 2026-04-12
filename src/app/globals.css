@@ -156,14 +156,12 @@
 }
 
 /* ===== Sepia dynamic color adjustments ===== */
+/* Boost saturation of Tailwind palette colors inside journey content so
+   badges and year accents remain visible against the warm sepia background.
+   Scoped to elements explicitly marked with data-palette-accent. */
 
-.sepia [class*="bg-"][class*="-100"] {
-  filter: saturate(1.6) contrast(1.05);
-}
-
-.sepia [class*="text-"][class*="-600"],
-.sepia [class*="text-"][class*="-800"] {
-  filter: saturate(1.4);
+.sepia [data-palette-accent] {
+  filter: saturate(1.5) contrast(1.05);
 }
 
 /* ===== Background Texture ===== */
