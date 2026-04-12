@@ -35,7 +35,7 @@ export async function getJourneySummaries(): Promise<JourneySummary[]> {
                 tag: true,
                 color: true,
             },
-            orderBy: { year: 'desc' },
+            orderBy: { year: 'asc' },
         });
         return items;
     } catch (error) {
