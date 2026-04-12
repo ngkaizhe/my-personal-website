@@ -19,7 +19,7 @@ const Timeline = ({ items }: TimelineProps) => {
                 <h1 className="text-5xl md:text-6xl font-bold uppercase tracking-wider text-text-primary mb-4">
                     My Journey
                 </h1>
-                <div className="w-16 h-1 bg-blue-500 mx-auto mb-4 rounded-full"></div>
+                <div className="w-16 h-1 bg-text-primary mx-auto mb-4 rounded-full opacity-60"></div>
                 <p className="text-text-muted text-lg font-normal max-w-md mx-auto">
                     A timeline of milestones, growth, and the path that shaped who I am today.
                 </p>
@@ -34,7 +34,7 @@ const Timeline = ({ items }: TimelineProps) => {
             ) : (
                 <>
                     <div className="relative wrap overflow-hidden px-4 py-10 md:p-10 h-full">
-                        <div className="border-2-2 absolute border-opacity-20 border-border-timeline h-full border left-5 md:left-1/2"></div>
+                        <div className="absolute h-full border-l-2 border-border-timeline opacity-40 left-5 md:left-1/2 md:-translate-x-1/2"></div>
 
                         {items.map((item, index) => (
                             <TimelineRow key={index} item={item} index={index} isRight={index % 2 !== 0} setSelectedId={setSelectedId} />
