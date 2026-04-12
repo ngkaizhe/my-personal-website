@@ -64,6 +64,23 @@ The site is not just a decorative timeline — it's a **work log** the user fill
   - `DATABASE_URL` — Postgres connection string
   - `ANTHROPIC_API_KEY` — for the Quick Add AI parse route (`/api/parse-entry`). Without it the parse endpoint returns 500.
 
+### Entry content conventions
+
+`Entry.title` and `Entry.actionVerb` are rendered side-by-side in cards, modals, and resume bullets as `<verb> <title>`. **Do not include the verb in the title.** Good:
+
+```ts
+{ actionVerb: 'Migrated', title: 'legacy jQuery codebase to React' }
+// renders: "Migrated legacy jQuery codebase to React"
+```
+
+Bad (will render duplicated):
+```ts
+{ actionVerb: 'Migrated', title: 'Migrated legacy jQuery codebase to React' }
+// renders: "Migrated Migrated legacy jQuery codebase to React"
+```
+
+The AI parse prompt in `src/app/api/parse-entry/route.ts` already instructs Claude to return them separately, but seed data must follow the same rule.
+
 ## Theme System (important — non-obvious)
 
 The project supports **three themes** (light, dark, sepia) via a CSS-variable-based design token system. This is **not** a typical `dark:` prefix setup.
@@ -92,6 +109,26 @@ For sepia mode, elements that need saturation boost are marked with `data-palett
 ### Important: Tailwind v4 gotcha
 
 **Do NOT define colors in `tailwind.config.js`.** Tailwind v4 does not read custom colors from the config file. Colors must be declared in `@theme { ... }` inside `globals.css`. The config file is only used for `content` paths.
+
+## Framer Motion is effectively banned — use CSS keyframes instead
+
+**Motion 12.38 + Next.js 16 + React 19 has a bug where `whileInView`, `animate`, and `AnimatePresence` do not fire their mount animations reliably.** Elements get stuck at their `initial` state (opacity 0, translated) and never transition. The issue is deterministic, not flaky.
+
+What was affected and removed:
+- `TimelineRow` entrance animation (`whileInView`) → replaced with CSS `.timeline-row-reveal` keyframe
+- Dashboard `template.tsx` page transition (`initial`/`animate`) → replaced with `.page-fade-in` keyframe
+- `TimelineModal` fade-in (`AnimatePresence` + `motion.div` overlay) → replaced with `.modal-fade-in` and `.modal-pop-in` keyframes
+- `TimelineCard` used `motion.div` with `layoutId` for shared-element animation into the modal → replaced with plain `div`. The shared layout animation is **gone**; the modal just pops in with a scale animation instead.
+
+All CSS keyframes live in `src/app/globals.css` and respect `prefers-reduced-motion: reduce`. When you need a new animation in this project, **use CSS, not Framer Motion**. Do not reintroduce `motion.div` / `whileInView` / `AnimatePresence` without first verifying they work on mount — they probably don't.
+
+The remaining Framer Motion import (`TagInput.tsx` tag entry animation) still works because it animates in response to a React state change (new tag added), not on mount. Those are fine.
+
+## Next.js 16 dev server gotchas
+
+- **`allowedDevOrigins`** in `next.config.js` must include any non-localhost IP that the dev server is accessed from (e.g. `172.30.192.1` for WSL → Windows bridge). Without it Next.js blocks `_next/*` resources and the HMR WebSocket, which prevents React hydration entirely — the page renders as static HTML and nothing is interactive (clicks, modals, forms all dead). Symptom: `__reactProps` and `__reactFiber` are absent from all DOM elements, and the console shows `WebSocket connection to 'ws://<host>:3000/_next/webpack-hmr' failed`.
+- **Cross-origin warning logs** look like: `⚠ Cross origin request detected from 172.30.192.1 to /_next/* resource.` Treat that as a hard error for interactive pages even though Next prints it as a warning.
+- **`prisma migrate dev`** fails in non-interactive environments (e.g. when invoked via Claude's Bash tool). Use `npx prisma db push --accept-data-loss` for schema changes instead.
 
 ## Accessibility conventions (established)
 
