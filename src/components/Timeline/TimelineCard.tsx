@@ -47,7 +47,8 @@ export const TimelineCard = ({
             <p className="text-sm leading-snug tracking-wide text-text-primary">
                 {item.description}
             </p>
-            <div className={`mt-2 flex items-center gap-1 text-xs text-text-faint opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity
+            <div className={`mt-2 flex items-center gap-1 text-xs text-text-faint transition-opacity
+                opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus:opacity-100
                 justify-start ${desktopJustify}`}>
                 <span>View details</span>
                 <ArrowRight className="w-3 h-3" />
