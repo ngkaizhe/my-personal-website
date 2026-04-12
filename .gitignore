@@ -37,3 +37,6 @@ next-env.d.ts
 # claude code
 .claude/settings.local.json
 __pycache__/
+
+# playwright mcp artifacts
+.playwright-mcp/
