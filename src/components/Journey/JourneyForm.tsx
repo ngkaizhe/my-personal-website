@@ -23,15 +23,16 @@ const labelClass = 'block text-sm font-medium text-form-label mb-2';
 function Section({ title, delay, children }: { title: string; delay: number; children: React.ReactNode }) {
     const reduceMotion = useReducedMotion();
     return (
-        <motion.div
+        <motion.section
             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.4, delay: reduceMotion ? 0 : delay }}
             className="space-y-5"
         >
             <h3 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">{title}</h3>
             {children}
-        </motion.div>
+        </motion.section>
     );
 }
 
@@ -147,7 +148,8 @@ export default function JourneyForm({ item, action }: { item: JourneyDetail; act
                 {/* Actions */}
                 <motion.div
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
                     transition={{ delay: 0.3 }}
                     className="flex justify-end gap-3 pt-6 border-t border-form-action-border"
                 >
