@@ -20,7 +20,7 @@ const emptyItem: JourneyDetail = {
 
 export default function NewJourneyPage() {
     return (
-        <div className="p-8 bg-page min-h-screen">
+        <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-text-primary">Add New Journey</h1>
