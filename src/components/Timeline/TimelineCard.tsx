@@ -17,6 +17,8 @@ export const TimelineCard = ({
     isRight,
     onClick
 }: TimelineCardProps) => {
+    const desktopAlign = isRight ? 'md:text-right' : 'md:text-left';
+    const desktopJustify = isRight ? 'md:justify-end' : 'md:justify-start';
     return (
         <motion.div
             layoutId={`card-${index}`}
@@ -31,11 +33,11 @@ export const TimelineCard = ({
             tabIndex={0}
             aria-label={`View details for ${item.year.content} — ${item.title.content}`}
             className={`px-6 py-4 bg-surface rounded-lg shadow-xl
-                ${isRight ? 'text-right' : 'text-left'}
+                text-left ${desktopAlign}
                 cursor-pointer group hover:shadow-2xl transition-shadow
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
         >
-            <div className={`mb-3 ${isRight ? 'flex justify-end' : 'flex justify-start'}`}>
+            <div className={`mb-3 flex justify-start ${desktopJustify}`}>
                 <span data-palette-accent className={`${item.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
                     {item.category.text}
                 </span>
@@ -46,7 +48,7 @@ export const TimelineCard = ({
                 {item.description}
             </p>
             <div className={`mt-2 flex items-center gap-1 text-xs text-text-faint opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity
-                ${isRight ? 'justify-end' : 'justify-start'}`}>
+                justify-start ${desktopJustify}`}>
                 <span>View details</span>
                 <ArrowRight className="w-3 h-3" />
             </div>

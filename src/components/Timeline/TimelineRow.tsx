@@ -27,38 +27,23 @@ export const TimelineRow = ({
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.3, delay }}
-            className="mb-8 relative flex items-center w-full"
+            className="mb-8 flex items-center w-full relative"
         >
-            {/* Desktop: icon centered on timeline */}
-            <div className="hidden md:flex z-20 absolute left-1/2 -translate-x-1/2 items-center bg-surface shadow-xl w-12 h-12 rounded-full border-4 border-surface justify-center">
-                <LucideIcon data-palette-accent iconName={item.iconName} className={`w-6 h-6 ${item.year.colorClass}`} />
+            {/* Icon: mobile = inline left; desktop = absolute centered on timeline */}
+            <div className="shrink-0 z-20 flex items-center justify-center bg-surface shadow-xl rounded-full border-4 border-surface
+                w-10 h-10 md:w-12 md:h-12
+                md:absolute md:left-1/2 md:-translate-x-1/2">
+                <LucideIcon data-palette-accent iconName={item.iconName} className={`w-5 h-5 md:w-6 md:h-6 ${item.year.colorClass}`} />
             </div>
 
-            {/* Desktop: card on left or right */}
-            <div className={`hidden md:flex w-full ${isRight ? 'justify-end' : 'justify-start'}`}>
-                <div className="w-5/12">
-                    <TimelineCard
-                        item={item}
-                        index={index}
-                        isRight={isRight}
-                        onClick={() => setSelectedId(`card-${index}`)}
-                    />
-                </div>
-            </div>
-
-            {/* Mobile: icon left, card right */}
-            <div className="flex md:hidden items-center w-full">
-                <div className="z-20 shrink-0 flex items-center bg-surface shadow-xl w-10 h-10 rounded-full border-4 border-surface justify-center">
-                    <LucideIcon data-palette-accent iconName={item.iconName} className={`w-5 h-5 ${item.year.colorClass}`} />
-                </div>
-                <div className="flex-1 ml-4">
-                    <TimelineCard
-                        item={item}
-                        index={index}
-                        isRight={false}
-                        onClick={() => setSelectedId(`card-${index}`)}
-                    />
-                </div>
+            {/* Card: mobile = flex-1 right of icon; desktop = 5/12 width, positioned via ml-auto for right cards */}
+            <div className={`flex-1 ml-4 md:flex-none md:w-5/12 md:ml-0 ${isRight ? 'md:ml-auto' : ''}`}>
+                <TimelineCard
+                    item={item}
+                    index={index}
+                    isRight={isRight}
+                    onClick={() => setSelectedId(`card-${index}`)}
+                />
             </div>
         </motion.div>
     );
