@@ -43,7 +43,7 @@ async function main() {
     // ==== Pre-work: university ====
     {
       date: new Date('2019-06-15'),
-      title: 'Graduated with a degree in Computer Science',
+      title: 'with a degree in Computer Science',
       actionVerb: 'Graduated',
       description: 'Specialized in web development and algorithms. Led the university coding club and organized two hackathons.',
       impact: null,
@@ -60,7 +60,7 @@ async function main() {
     // ==== Startup entries ====
     {
       date: new Date('2020-06-15'),
-      title: 'Joined as Junior Frontend Developer',
+      title: 'as Junior Frontend Developer',
       actionVerb: 'Joined',
       description: 'Onboarded into a small team responsible for the main product UI.',
       impact: null,
@@ -75,7 +75,7 @@ async function main() {
     },
     {
       date: new Date('2021-02-10'),
-      title: 'Migrated legacy jQuery codebase to React',
+      title: 'legacy jQuery codebase to React',
       actionVerb: 'Migrated',
       description: "Drove the migration of the company's legacy frontend to React with proper component reusability.",
       impact: 'Reduced production bugs by 40% after shipping',
@@ -92,8 +92,8 @@ async function main() {
     // ==== E-commerce employer entries ====
     {
       date: new Date('2022-04-01'),
-      title: 'Promoted to Senior Developer',
-      actionVerb: 'Promoted to',
+      title: 'to Senior Developer',
+      actionVerb: 'Promoted',
       description: 'Shifted focus from just writing code to designing systems and mentoring others.',
       impact: null,
       details: null,
@@ -107,7 +107,7 @@ async function main() {
     },
     {
       date: new Date('2022-09-20'),
-      title: 'Led team of 5 to ship e-commerce platform',
+      title: 'team of 5 to ship e-commerce platform',
       actionVerb: 'Led',
       description: 'Delivered a critical e-commerce platform end-to-end with a small cross-functional team.',
       impact: 'Handles 100k+ daily active users in production',
@@ -122,7 +122,7 @@ async function main() {
     },
     {
       date: new Date('2023-01-15'),
-      title: 'Introduced Docker and CI/CD pipelines',
+      title: 'Docker and CI/CD pipelines',
       actionVerb: 'Introduced',
       description: 'Set up automated deployment with GitHub Actions and containerized every service.',
       impact: 'Reduced deployment time from 2 hours to 15 minutes (87% reduction)',
@@ -137,7 +137,7 @@ async function main() {
     },
     {
       date: new Date('2024-03-10'),
-      title: 'Redesigned core authentication to microservices',
+      title: 'core authentication to microservices',
       actionVerb: 'Redesigned',
       description: 'Broke the monolithic auth service into independent microservices for scalability.',
       impact: 'Improved auth endpoint reliability from 99.5% to 99.99%',
@@ -152,7 +152,7 @@ async function main() {
     },
     {
       date: new Date('2024-11-01'),
-      title: 'Revamped engineering onboarding process',
+      title: 'engineering onboarding process',
       actionVerb: 'Revamped',
       description: 'Rebuilt the new-hire ramp up with a progressive guided path and paired mentorship.',
       impact: 'Cut new-hire time-to-first-PR from 3 weeks to 5 days',
