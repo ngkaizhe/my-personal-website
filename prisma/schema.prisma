@@ -10,26 +10,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Journey {
+model Employer {
+  id          String    @id @default(uuid())
+  name        String
+  role        String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  color       String    @default("blue")
+  entries     Entry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Entry {
   id          String   @id @default(uuid())
-  year        String
+  date        DateTime
   title       String
+  actionVerb  String?
+  description String
+  impact      String?
+  details     String?
   tag         String
   color       String
-  description String
-  details     String?
   techStack   String[]
   linkUrl     String?
   linkText    String?
   iconId      String?
   icon        Icon?    @relation(fields: [iconId], references: [id])
+  employerId  String?
+  employer    Employer? @relation(fields: [employerId], references: [id], onDelete: SetNull)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Icon {
-  id       String    @id @default(uuid())
-  name     String    @unique // Lucide icon name (e.g., "GraduationCap")
-  journeys Journey[]
+  id      String  @id @default(uuid())
+  name    String  @unique // Lucide icon name (e.g., "GraduationCap")
+  entries Entry[]
 }
