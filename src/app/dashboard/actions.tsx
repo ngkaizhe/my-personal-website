@@ -4,22 +4,26 @@ import { prisma } from '@/lib/prisma';
 import { getTextClass, getBadgeClass } from '@/lib/colors';
 import type { TimelineItem } from '@/lib/types';
 
-export async function getTimelineItems() {
+export async function getTimelineItems(): Promise<TimelineItem[]> {
     try {
-        const items = await prisma.journey.findMany({
+        const items = await prisma.entry.findMany({
             include: {
                 icon: true,
+                employer: true,
             },
             orderBy: {
-                year: 'asc',
+                date: 'asc',
             },
         });
 
-        return items.map((dbItem: any): TimelineItem => {
+        return items.map((dbItem): TimelineItem => {
             const color = dbItem.color;
+            const year = dbItem.date.getFullYear().toString();
             return {
+                id: dbItem.id,
+                date: dbItem.date.toISOString(),
                 year: {
-                    content: dbItem.year,
+                    content: year,
                     colorClass: getTextClass(color),
                 },
                 title: {
@@ -30,11 +34,17 @@ export async function getTimelineItems() {
                     text: dbItem.tag,
                     colorClass: getBadgeClass(color),
                 },
+                actionVerb: dbItem.actionVerb || undefined,
                 description: dbItem.description,
+                impact: dbItem.impact || undefined,
                 details: dbItem.details || undefined,
                 techStack: dbItem.techStack,
-                // Get the icon name from the related Icon table
-                iconName: dbItem.icon.name,
+                iconName: dbItem.icon?.name ?? 'help-circle',
+                employer: dbItem.employer ? {
+                    id: dbItem.employer.id,
+                    name: dbItem.employer.name,
+                    role: dbItem.employer.role,
+                } : undefined,
                 link: dbItem.linkUrl ? {
                     url: dbItem.linkUrl,
                     text: dbItem.linkText || 'Link',
