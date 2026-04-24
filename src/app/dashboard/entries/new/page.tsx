@@ -1,4 +1,4 @@
-import { createEntry, getEmployerOptions, EntryDetail } from "../actions";
+import { createEntry, getExperienceOptions, EntryDetail } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
 
 export const metadata = {
@@ -18,11 +18,11 @@ const emptyItem: EntryDetail = {
     linkUrl: '',
     linkText: '',
     iconName: 'help-circle',
-    employerId: '',
+    experienceId: '',
 };
 
 export default async function NewEntryPage() {
-    const employers = await getEmployerOptions();
+    const experiences = await getExperienceOptions();
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
@@ -34,7 +34,7 @@ export default async function NewEntryPage() {
 
                 <EntryForm
                     item={emptyItem}
-                    employers={employers}
+                    experiences={experiences}
                     action={async (formData) => {
                         'use server';
                         await createEntry(formData);

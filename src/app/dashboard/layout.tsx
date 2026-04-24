@@ -16,7 +16,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <NavLink href="/dashboard" exact>Timeline</NavLink>
             <NavLink href="/dashboard/quick-add">Quick Add</NavLink>
             <NavLink href="/dashboard/entries">Entries</NavLink>
-            <NavLink href="/dashboard/employers">Employers</NavLink>
+            <NavLink href="/dashboard/experiences">Experiences</NavLink>
             <NavLink href="/dashboard/resume">Resume</NavLink>
           </div>
           <div className="flex items-center">

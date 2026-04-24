@@ -10,7 +10,7 @@ export interface EntrySummary {
     title: string;
     tag: string;
     color: string;
-    employerName?: string;
+    experienceName?: string;
 }
 
 export interface EntryDetail {
@@ -26,7 +26,7 @@ export interface EntryDetail {
     linkUrl: string;
     linkText: string;
     iconName: string;
-    employerId: string;
+    experienceId: string;
 }
 
 export async function getEntrySummaries(): Promise<EntrySummary[]> {
@@ -38,7 +38,7 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
                 title: true,
                 tag: true,
                 color: true,
-                employer: { select: { name: true } },
+                experience: { select: { name: true } },
             },
             orderBy: { date: 'asc' },
         });
@@ -48,7 +48,7 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
             title: i.title,
             tag: i.tag,
             color: i.color,
-            employerName: i.employer?.name,
+            experienceName: i.experience?.name,
         }));
     } catch (error) {
         console.error('Failed to fetch entry summaries:', error);
@@ -76,7 +76,7 @@ export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
             linkUrl: item.linkUrl ?? '',
             linkText: item.linkText ?? '',
             iconName: item.icon?.name ?? 'help-circle',
-            employerId: item.employerId ?? '',
+            experienceId: item.experienceId ?? '',
         };
     } catch (error) {
         console.error('Failed to fetch entry detail:', error);
@@ -109,7 +109,7 @@ function extractFormData(formData: FormData) {
         techStack,
         linkUrl: (raw.linkUrl as string) || null,
         linkText: (raw.linkText as string) || null,
-        employerId: (raw.employerId as string) || null,
+        experienceId: (raw.experienceId as string) || null,
         iconName: (raw.iconName as string) || 'help-circle',
     };
 }
@@ -151,15 +151,15 @@ export async function deleteEntry(id: string) {
     revalidatePath('/dashboard');
 }
 
-export async function getEmployerOptions() {
+export async function getExperienceOptions() {
     try {
-        const employers = await prisma.employer.findMany({
+        const experiences = await prisma.experience.findMany({
             select: { id: true, name: true, role: true },
             orderBy: { startDate: 'desc' },
         });
-        return employers;
+        return experiences;
     } catch (error) {
-        console.error('Failed to fetch employer options:', error);
+        console.error('Failed to fetch experience options:', error);
         return [];
     }
 }

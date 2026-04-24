@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Cleaning up existing data...');
   await prisma.entry.deleteMany();
-  await prisma.employer.deleteMany();
+  await prisma.experience.deleteMany();
   await prisma.icon.deleteMany();
 
   // Ensure default icon exists
@@ -15,9 +15,9 @@ async function main() {
     create: { name: 'help-circle' },
   });
 
-  console.log('Seeding employers...');
+  console.log('Seeding experiences...');
 
-  const startup = await prisma.employer.create({
+  const startup = await prisma.experience.create({
     data: {
       name: 'TechStartup Co.',
       role: 'Junior Frontend Developer',
@@ -28,7 +28,7 @@ async function main() {
     },
   });
 
-  const ecommerce = await prisma.employer.create({
+  const ecommerce = await prisma.experience.create({
     data: {
       name: 'Borcelle Commerce',
       role: 'Senior / Full Stack Architect',
@@ -54,7 +54,7 @@ async function main() {
       linkUrl: 'https://example.com/degree',
       linkText: 'View Degree',
       iconName: 'school',
-      employerId: null,
+      experienceId: null,
     },
 
     // ==== Startup entries ====
@@ -71,7 +71,7 @@ async function main() {
       linkUrl: null,
       linkText: null,
       iconName: 'briefcase',
-      employerId: startup.id,
+      experienceId: startup.id,
     },
     {
       date: new Date('2021-02-10'),
@@ -86,10 +86,10 @@ async function main() {
       linkUrl: 'https://github.com/example/project',
       linkText: 'View Project',
       iconName: 'refresh-cw',
-      employerId: startup.id,
+      experienceId: startup.id,
     },
 
-    // ==== E-commerce employer entries ====
+    // ==== E-commerce experience entries ====
     {
       date: new Date('2022-04-01'),
       title: 'to Senior Developer',
@@ -103,7 +103,7 @@ async function main() {
       linkUrl: null,
       linkText: null,
       iconName: 'user-star',
-      employerId: ecommerce.id,
+      experienceId: ecommerce.id,
     },
     {
       date: new Date('2022-09-20'),
@@ -118,7 +118,7 @@ async function main() {
       linkUrl: null,
       linkText: null,
       iconName: 'rocket',
-      employerId: ecommerce.id,
+      experienceId: ecommerce.id,
     },
     {
       date: new Date('2023-01-15'),
@@ -133,7 +133,7 @@ async function main() {
       linkUrl: null,
       linkText: null,
       iconName: 'package',
-      employerId: ecommerce.id,
+      experienceId: ecommerce.id,
     },
     {
       date: new Date('2024-03-10'),
@@ -148,7 +148,7 @@ async function main() {
       linkUrl: 'https://borcelle.com',
       linkText: 'Company Website',
       iconName: 'code',
-      employerId: ecommerce.id,
+      experienceId: ecommerce.id,
     },
     {
       date: new Date('2024-11-01'),
@@ -163,7 +163,7 @@ async function main() {
       linkUrl: null,
       linkText: null,
       iconName: 'users',
-      employerId: ecommerce.id,
+      experienceId: ecommerce.id,
     },
   ];
 

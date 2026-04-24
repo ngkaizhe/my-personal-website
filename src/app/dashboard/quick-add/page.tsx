@@ -1,4 +1,4 @@
-import { createEntry, getEmployerOptions } from "../entries/actions";
+import { createEntry, getExperienceOptions } from "../entries/actions";
 import QuickAdd from "@/components/Entry/QuickAdd";
 
 export const metadata = {
@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 export default async function QuickAddPage() {
-    const employers = await getEmployerOptions();
+    const experiences = await getExperienceOptions();
 
     const action = async (formData: FormData) => {
         'use server';
@@ -23,7 +23,7 @@ export default async function QuickAddPage() {
                     </p>
                 </div>
 
-                <QuickAdd employers={employers} action={action} />
+                <QuickAdd experiences={experiences} action={action} />
             </div>
         </div>
     );

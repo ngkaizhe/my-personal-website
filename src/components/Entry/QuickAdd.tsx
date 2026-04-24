@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import EntryFormPreview from '@/components/Entry/EntryFormPreview';
 import TagInput from '@/components/ui/TagInput';
-import { EmployerOption } from '@/components/Entry/EntryForm';
+import { ExperienceOption } from '@/components/Entry/EntryForm';
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
@@ -29,20 +29,20 @@ interface ParsedFields {
 }
 
 interface Props {
-    employers: EmployerOption[];
+    experiences: ExperienceOption[];
     action: (formData: FormData) => Promise<void>;
 }
 
-export default function QuickAdd({ employers, action }: Props) {
+export default function QuickAdd({ experiences, action }: Props) {
     const [input, setInput] = useState('');
     const [parsing, setParsing] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [parsed, setParsed] = useState<ParsedFields | null>(null);
     const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
-    const [employerId, setEmployerId] = useState('');
+    const [experienceId, setExperienceId] = useState('');
 
-    const selectedEmployer = employers.find(e => e.id === employerId);
+    const selectedExperience = experiences.find(e => e.id === experienceId);
 
     const parse = async () => {
         if (!input.trim()) return;
@@ -133,11 +133,11 @@ export default function QuickAdd({ employers, action }: Props) {
                                 <input id="qa-date" type="date" name="date" value={date} onChange={e => setDate(e.target.value)} required className={inputClass} />
                             </div>
                             <div>
-                                <label htmlFor="qa-employer" className={labelClass}>Employer</label>
-                                <select id="qa-employer" name="employerId" value={employerId} onChange={e => setEmployerId(e.target.value)} className={inputClass}>
+                                <label htmlFor="qa-experience" className={labelClass}>Experience</label>
+                                <select id="qa-experience" name="experienceId" value={experienceId} onChange={e => setExperienceId(e.target.value)} className={inputClass}>
                                     <option value="">— None —</option>
-                                    {employers.map(emp => (
-                                        <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                    {experiences.map(exp => (
+                                        <option key={exp.id} value={exp.id}>{exp.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -225,10 +225,10 @@ export default function QuickAdd({ employers, action }: Props) {
                                 techStack: parsed.techStack,
                                 linkUrl: '',
                                 linkText: '',
-                                employerId,
+                                experienceId,
                             }}
-                            employerName={selectedEmployer?.name}
-                            employerRole={selectedEmployer?.role}
+                            experienceName={selectedExperience?.name}
+                            experienceRole={selectedExperience?.role}
                         />
                     </div>
                 </form>

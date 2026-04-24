@@ -1,4 +1,4 @@
-import { getEntryDetail, updateEntry, getEmployerOptions } from "../actions";
+import { getEntryDetail, updateEntry, getExperienceOptions } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
 import { notFound } from "next/navigation";
 
@@ -8,9 +8,9 @@ export const metadata = {
 
 export default async function EditEntryPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
-    const [item, employers] = await Promise.all([
+    const [item, experiences] = await Promise.all([
         getEntryDetail(resolvedParams.id),
-        getEmployerOptions(),
+        getExperienceOptions(),
     ]);
 
     if (!item) {
@@ -30,7 +30,7 @@ export default async function EditEntryPage({ params }: { params: Promise<{ id: 
                     <p className="text-text-muted mt-2">Update an existing entry.</p>
                 </div>
 
-                <EntryForm item={item} employers={employers} action={updateAction} />
+                <EntryForm item={item} experiences={experiences} action={updateAction} />
             </div>
         </div>
     );

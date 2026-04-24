@@ -9,7 +9,7 @@ export async function getTimelineItems(): Promise<TimelineItem[]> {
         const items = await prisma.entry.findMany({
             include: {
                 icon: true,
-                employer: true,
+                experience: true,
             },
             orderBy: {
                 date: 'asc',
@@ -40,10 +40,10 @@ export async function getTimelineItems(): Promise<TimelineItem[]> {
                 details: dbItem.details || undefined,
                 techStack: dbItem.techStack,
                 iconName: dbItem.icon?.name ?? 'help-circle',
-                employer: dbItem.employer ? {
-                    id: dbItem.employer.id,
-                    name: dbItem.employer.name,
-                    role: dbItem.employer.role,
+                experience: dbItem.experience ? {
+                    id: dbItem.experience.id,
+                    name: dbItem.experience.name,
+                    role: dbItem.experience.role,
                 } : undefined,
                 link: dbItem.linkUrl ? {
                     url: dbItem.linkUrl,

@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { X } from 'lucide-react';
-import { EmployerSummary } from '@/app/dashboard/employers/actions';
+import { ExperienceSummary } from '@/app/dashboard/experiences/actions';
 import { getBadgeClass } from '@/lib/colors';
 
 interface Props {
-    items: EmployerSummary[];
+    items: ExperienceSummary[];
     deleteAction: (id: string) => Promise<void>;
 }
 
@@ -17,8 +17,8 @@ function formatRange(start: string, end: string | null) {
     return `${s} – ${e}`;
 }
 
-export default function EmployerList({ items, deleteAction }: Props) {
-    const [toDelete, setToDelete] = useState<EmployerSummary | null>(null);
+export default function ExperienceList({ items, deleteAction }: Props) {
+    const [toDelete, setToDelete] = useState<ExperienceSummary | null>(null);
     const [isPending, startTransition] = useTransition();
 
     const confirmDelete = () => {
@@ -33,7 +33,7 @@ export default function EmployerList({ items, deleteAction }: Props) {
     if (items.length === 0) {
         return (
             <div className="bg-surface rounded-xl shadow-sm border border-border p-12 text-center text-text-muted">
-                No employers yet. Add one to start grouping your entries.
+                No experiences yet. Add one to start grouping your entries.
             </div>
         );
     }
@@ -55,7 +55,7 @@ export default function EmployerList({ items, deleteAction }: Props) {
                         </div>
                         <div className="flex gap-2 mt-4 pt-4 border-t border-border-light">
                             <Link
-                                href={`/dashboard/employers/${item.id}`}
+                                href={`/dashboard/experiences/${item.id}`}
                                 className="flex-1 text-center px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
                             >
                                 Edit
@@ -73,7 +73,7 @@ export default function EmployerList({ items, deleteAction }: Props) {
             </div>
 
             {toDelete && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-emp-title">
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-exp-title">
                     <div className="absolute inset-0 bg-overlay backdrop-blur-sm" onClick={() => !isPending && setToDelete(null)} />
                     <div className="relative bg-surface rounded-xl shadow-2xl max-w-md w-full p-6 z-10">
                         <button
@@ -84,7 +84,7 @@ export default function EmployerList({ items, deleteAction }: Props) {
                         >
                             <X size={20} />
                         </button>
-                        <h2 id="delete-emp-title" className="text-xl font-bold text-text-primary mb-2">Delete employer?</h2>
+                        <h2 id="delete-exp-title" className="text-xl font-bold text-text-primary mb-2">Delete experience?</h2>
                         <p className="text-text-secondary mb-6">
                             Are you sure you want to delete <span className="font-semibold">{toDelete.name}</span>? Entries linked to it will be kept but unlinked.
                         </p>

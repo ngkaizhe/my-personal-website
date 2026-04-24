@@ -89,8 +89,8 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
                     details={selectedItem.details}
                     techStack={selectedItem.techStack}
                     link={selectedItem.link}
-                    employerName={selectedItem.employer?.name}
-                    employerRole={selectedItem.employer?.role}
+                    experienceName={selectedItem.experience?.name}
+                    experienceRole={selectedItem.experience?.role}
                 />
             </div>
         </div>

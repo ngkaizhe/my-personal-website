@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Copy, Check, Download } from 'lucide-react';
-import type { ResumeData, ResumeEntry, ResumeEmployer } from '@/app/dashboard/resume/actions';
+import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 
 const inputClass = `
     w-full px-4 py-2.5 rounded-xl
@@ -12,7 +12,7 @@ const inputClass = `
     outline-none transition-all duration-200
 `;
 
-function formatEmployerRange(start: string, end: string | null) {
+function formatExperienceRange(start: string, end: string | null) {
     const s = new Date(start).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
     const e = end ? new Date(end).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : 'Present';
     return `${s} – ${e}`;
@@ -39,13 +39,13 @@ function inRange(iso: string, from: string, to: string) {
 export default function ResumeBuilder({ data }: { data: ResumeData }) {
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
-    const [selectedEmployers, setSelectedEmployers] = useState<Set<string>>(
-        new Set(['unlinked', ...data.employers.map(e => e.id)])
+    const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
+        new Set(['unlinked', ...data.experiences.map(e => e.id)])
     );
     const [copied, setCopied] = useState(false);
 
-    const toggleEmployer = (id: string) => {
-        setSelectedEmployers(prev => {
+    const toggleExperience = (id: string) => {
+        setSelectedExperiences(prev => {
             const next = new Set(prev);
             if (next.has(id)) next.delete(id);
             else next.add(id);
@@ -54,20 +54,20 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     };
 
     const filtered = useMemo(() => {
-        const employers: ResumeEmployer[] = data.employers
-            .filter(emp => selectedEmployers.has(emp.id))
-            .map(emp => ({
-                ...emp,
-                entries: emp.entries.filter(e => inRange(e.date, from, to)),
+        const experiences: ResumeExperience[] = data.experiences
+            .filter(exp => selectedExperiences.has(exp.id))
+            .map(exp => ({
+                ...exp,
+                entries: exp.entries.filter(e => inRange(e.date, from, to)),
             }))
-            .filter(emp => emp.entries.length > 0);
+            .filter(exp => exp.entries.length > 0);
 
-        const unlinked = selectedEmployers.has('unlinked')
+        const unlinked = selectedExperiences.has('unlinked')
             ? data.unlinkedEntries.filter(e => inRange(e.date, from, to))
             : [];
 
         const usedSkills = new Map<string, number>();
-        const allEntries = [...employers.flatMap(e => e.entries), ...unlinked];
+        const allEntries = [...experiences.flatMap(e => e.entries), ...unlinked];
         for (const entry of allEntries) {
             for (const skill of entry.techStack) {
                 usedSkills.set(skill, (usedSkills.get(skill) ?? 0) + 1);
@@ -77,23 +77,23 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
             .map(([name, count]) => ({ name, count }))
             .sort((a, b) => b.count - a.count);
 
-        return { employers, unlinked, skills };
-    }, [data, from, to, selectedEmployers]);
+        return { experiences, unlinked, skills };
+    }, [data, from, to, selectedExperiences]);
 
     const markdown = useMemo(() => {
         const lines: string[] = [];
         lines.push('# Experience');
         lines.push('');
 
-        for (const emp of filtered.employers) {
-            lines.push(`## ${emp.name} — ${emp.role}`);
-            lines.push(`*${formatEmployerRange(emp.startDate, emp.endDate)}*`);
-            if (emp.description) {
+        for (const exp of filtered.experiences) {
+            lines.push(`## ${exp.name} — ${exp.role}`);
+            lines.push(`*${formatExperienceRange(exp.startDate, exp.endDate)}*`);
+            if (exp.description) {
                 lines.push('');
-                lines.push(emp.description);
+                lines.push(exp.description);
             }
             lines.push('');
-            for (const entry of emp.entries) {
+            for (const entry of exp.entries) {
                 lines.push(bulletFromEntry(entry));
             }
             lines.push('');
@@ -149,29 +149,29 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                 <div>
                     <label className="block text-sm font-medium text-form-label mb-2">Include</label>
                     <div className="space-y-2">
-                        {data.employers.map(emp => (
-                            <label key={emp.id} className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
+                        {data.experiences.map(exp => (
+                            <label key={exp.id} className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    checked={selectedEmployers.has(emp.id)}
-                                    onChange={() => toggleEmployer(emp.id)}
+                                    checked={selectedExperiences.has(exp.id)}
+                                    onChange={() => toggleExperience(exp.id)}
                                     className="mt-0.5"
                                 />
                                 <span>
-                                    <span className="font-medium text-text-primary">{emp.name}</span>
-                                    <span className="text-text-muted block text-xs">{emp.entries.length} entries</span>
+                                    <span className="font-medium text-text-primary">{exp.name}</span>
+                                    <span className="text-text-muted block text-xs">{exp.entries.length} entries</span>
                                 </span>
                             </label>
                         ))}
                         <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
                             <input
                                 type="checkbox"
-                                checked={selectedEmployers.has('unlinked')}
-                                onChange={() => toggleEmployer('unlinked')}
+                                checked={selectedExperiences.has('unlinked')}
+                                onChange={() => toggleExperience('unlinked')}
                                 className="mt-0.5"
                             />
                             <span>
-                                <span className="font-medium text-text-primary">Other (no employer)</span>
+                                <span className="font-medium text-text-primary">Other (no experience)</span>
                                 <span className="text-text-muted block text-xs">{data.unlinkedEntries.length} entries</span>
                             </span>
                         </label>
@@ -214,20 +214,20 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                         Preview
                     </h2>
 
-                    {filtered.employers.length === 0 && filtered.unlinked.length === 0 ? (
+                    {filtered.experiences.length === 0 && filtered.unlinked.length === 0 ? (
                         <p className="text-text-muted text-center py-12">No entries match your filters.</p>
                     ) : (
                         <div className="space-y-6">
                             <h3 className="text-2xl font-bold text-text-primary">Experience</h3>
-                            {filtered.employers.map(emp => (
-                                <div key={emp.id} className="space-y-2">
+                            {filtered.experiences.map(exp => (
+                                <div key={exp.id} className="space-y-2">
                                     <div>
-                                        <div className="font-bold text-text-primary text-lg">{emp.name} — {emp.role}</div>
-                                        <div className="text-text-muted text-sm italic">{formatEmployerRange(emp.startDate, emp.endDate)}</div>
+                                        <div className="font-bold text-text-primary text-lg">{exp.name} — {exp.role}</div>
+                                        <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate)}</div>
                                     </div>
-                                    {emp.description && <p className="text-text-secondary text-sm">{emp.description}</p>}
+                                    {exp.description && <p className="text-text-secondary text-sm">{exp.description}</p>}
                                     <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
-                                        {emp.entries.map(e => (
+                                        {exp.entries.map(e => (
                                             <li key={e.id} className="text-text-secondary text-sm">
                                                 {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
                                                 {e.title}

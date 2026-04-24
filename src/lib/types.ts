@@ -19,7 +19,7 @@ export interface TimelineItem {
     details?: string;
     techStack: string[];
     iconName: string;
-    employer?: {
+    experience?: {
         id: string;
         name: string;
         role: string;

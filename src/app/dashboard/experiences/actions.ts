@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export interface EmployerSummary {
+export interface ExperienceSummary {
     id: string;
     name: string;
     role: string;
@@ -14,7 +14,7 @@ export interface EmployerSummary {
     color: string;
 }
 
-export interface EmployerDetail {
+export interface ExperienceDetail {
     name: string;
     role: string;
     startDate: string;     // YYYY-MM-DD
@@ -23,13 +23,13 @@ export interface EmployerDetail {
     color: string;
 }
 
-export async function getEmployers(): Promise<EmployerSummary[]> {
+export async function getExperiences(): Promise<ExperienceSummary[]> {
     try {
-        const employers = await prisma.employer.findMany({
+        const experiences = await prisma.experience.findMany({
             include: { _count: { select: { entries: true } } },
             orderBy: { startDate: 'desc' },
         });
-        return employers.map((e) => ({
+        return experiences.map((e) => ({
             id: e.id,
             name: e.name,
             role: e.role,
@@ -39,25 +39,25 @@ export async function getEmployers(): Promise<EmployerSummary[]> {
             color: e.color,
         }));
     } catch (error) {
-        console.error('Failed to fetch employers:', error);
+        console.error('Failed to fetch experiences:', error);
         return [];
     }
 }
 
-export async function getEmployerDetail(id: string): Promise<EmployerDetail | null> {
+export async function getExperienceDetail(id: string): Promise<ExperienceDetail | null> {
     try {
-        const employer = await prisma.employer.findUnique({ where: { id } });
-        if (!employer) return null;
+        const experience = await prisma.experience.findUnique({ where: { id } });
+        if (!experience) return null;
         return {
-            name: employer.name,
-            role: employer.role,
-            startDate: employer.startDate.toISOString().substring(0, 10),
-            endDate: employer.endDate?.toISOString().substring(0, 10) ?? '',
-            description: employer.description ?? '',
-            color: employer.color,
+            name: experience.name,
+            role: experience.role,
+            startDate: experience.startDate.toISOString().substring(0, 10),
+            endDate: experience.endDate?.toISOString().substring(0, 10) ?? '',
+            description: experience.description ?? '',
+            color: experience.color,
         };
     } catch (error) {
-        console.error('Failed to fetch employer detail:', error);
+        console.error('Failed to fetch experience detail:', error);
         return null;
     }
 }
@@ -75,26 +75,26 @@ function extractFormData(formData: FormData) {
     };
 }
 
-export async function createEmployer(formData: FormData) {
+export async function createExperience(formData: FormData) {
     const data = extractFormData(formData);
-    await prisma.employer.create({ data });
-    revalidatePath('/dashboard/employers');
+    await prisma.experience.create({ data });
+    revalidatePath('/dashboard/experiences');
     revalidatePath('/dashboard/entries');
-    redirect('/dashboard/employers');
+    redirect('/dashboard/experiences');
 }
 
-export async function updateEmployer(id: string, formData: FormData) {
+export async function updateExperience(id: string, formData: FormData) {
     const data = extractFormData(formData);
-    await prisma.employer.update({ where: { id }, data });
-    revalidatePath('/dashboard/employers');
+    await prisma.experience.update({ where: { id }, data });
+    revalidatePath('/dashboard/experiences');
     revalidatePath('/dashboard/entries');
     revalidatePath('/dashboard');
-    redirect('/dashboard/employers');
+    redirect('/dashboard/experiences');
 }
 
-export async function deleteEmployer(id: string) {
-    await prisma.employer.delete({ where: { id } });
-    revalidatePath('/dashboard/employers');
+export async function deleteExperience(id: string) {
+    await prisma.experience.delete({ where: { id } });
+    revalidatePath('/dashboard/experiences');
     revalidatePath('/dashboard/entries');
     revalidatePath('/dashboard');
 }

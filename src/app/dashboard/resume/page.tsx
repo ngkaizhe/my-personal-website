@@ -14,7 +14,7 @@ export default async function ResumePage() {
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-text-primary">Resume Builder</h1>
                     <p className="text-text-muted mt-2">
-                        Generate resume bullets from your entries. Filter by employer and date, then copy the markdown or download a .md file.
+                        Generate resume bullets from your entries. Filter by experience and date, then copy the markdown or download a .md file.
                     </p>
                 </div>
 

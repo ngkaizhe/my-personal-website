@@ -16,16 +16,16 @@ export interface PreviewData {
     techStack: string[];
     linkUrl: string;
     linkText: string;
-    employerId: string;
+    experienceId: string;
 }
 
 interface Props {
     data: PreviewData;
-    employerName?: string;
-    employerRole?: string;
+    experienceName?: string;
+    experienceRole?: string;
 }
 
-export default function EntryFormPreview({ data, employerName, employerRole }: Props) {
+export default function EntryFormPreview({ data, experienceName, experienceRole }: Props) {
     const displayDate = data.date
         ? new Date(data.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
         : 'Today';
@@ -44,8 +44,8 @@ export default function EntryFormPreview({ data, employerName, employerRole }: P
                 details={data.details || undefined}
                 techStack={data.techStack}
                 link={data.linkUrl ? { url: data.linkUrl, text: data.linkText || 'Link' } : null}
-                employerName={employerName}
-                employerRole={employerRole}
+                experienceName={experienceName}
+                experienceRole={experienceRole}
             />
         </div>
     );

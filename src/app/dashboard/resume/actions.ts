@@ -12,7 +12,7 @@ export interface ResumeEntry {
     techStack: string[];
 }
 
-export interface ResumeEmployer {
+export interface ResumeExperience {
     id: string;
     name: string;
     role: string;
@@ -23,14 +23,14 @@ export interface ResumeEmployer {
 }
 
 export interface ResumeData {
-    employers: ResumeEmployer[];
+    experiences: ResumeExperience[];
     unlinkedEntries: ResumeEntry[];
     skills: { name: string; count: number }[];
 }
 
 export async function getResumeData(): Promise<ResumeData> {
-    const [employers, entries] = await Promise.all([
-        prisma.employer.findMany({
+    const [experiences, entries] = await Promise.all([
+        prisma.experience.findMany({
             orderBy: { startDate: 'desc' },
             include: {
                 entries: {
@@ -39,7 +39,7 @@ export async function getResumeData(): Promise<ResumeData> {
             },
         }),
         prisma.entry.findMany({
-            where: { employerId: null },
+            where: { experienceId: null },
             orderBy: { date: 'desc' },
         }),
     ]);
@@ -55,7 +55,7 @@ export async function getResumeData(): Promise<ResumeData> {
     });
 
     // Aggregate skills from ALL entries
-    const allEntries = [...entries, ...employers.flatMap(e => e.entries)];
+    const allEntries = [...entries, ...experiences.flatMap(e => e.entries)];
     const skillCounts = new Map<string, number>();
     for (const entry of allEntries) {
         for (const skill of entry.techStack) {
@@ -67,14 +67,14 @@ export async function getResumeData(): Promise<ResumeData> {
         .sort((a, b) => b.count - a.count);
 
     return {
-        employers: employers.map(emp => ({
-            id: emp.id,
-            name: emp.name,
-            role: emp.role,
-            startDate: emp.startDate.toISOString(),
-            endDate: emp.endDate?.toISOString() ?? null,
-            description: emp.description,
-            entries: emp.entries.map(toResumeEntry),
+        experiences: experiences.map(exp => ({
+            id: exp.id,
+            name: exp.name,
+            role: exp.role,
+            startDate: exp.startDate.toISOString(),
+            endDate: exp.endDate?.toISOString() ?? null,
+            description: exp.description,
+            entries: exp.entries.map(toResumeEntry),
         })),
         unlinkedEntries: entries.map(toResumeEntry),
         skills,

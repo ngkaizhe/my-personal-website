@@ -21,9 +21,9 @@ This is a **personal achievement log + resume builder** built with **Next.js 16 
 The site is not just a decorative timeline — it's a **work log** the user fills out over time (ideally daily or weekly) so that later they can **generate resume bullets** from the accumulated entries. Key user flows:
 
 1. **Quick Add** — describe what you did in one sentence, Claude parses it into structured fields
-2. **Entries CRUD** — manage detailed entries with date, action verb, impact metric, employer, skills
-3. **Employers** — group entries under jobs/clients so resume export can render them as Experience sections
-4. **Resume Builder** — filter by employer + date range, generate markdown bullets + aggregated skills, copy or download
+2. **Entries CRUD** — manage detailed entries with date, action verb, impact metric, experience, skills
+3. **Experiences** — group entries under jobs/clients so resume export can render them as Experience sections
+4. **Resume Builder** — filter by experience + date range, generate markdown bullets + aggregated skills, copy or download
 
 ### Routing
 
@@ -33,24 +33,24 @@ The site is not just a decorative timeline — it's a **work log** the user fill
 - `/dashboard/entries` — CRUD list for all entries
 - `/dashboard/entries/new` — manual entry creation with full form
 - `/dashboard/entries/[id]` — edit existing entry
-- `/dashboard/employers` — CRUD list for employers/jobs/projects
-- `/dashboard/employers/new` — create employer
-- `/dashboard/employers/[id]` — edit employer
+- `/dashboard/experiences` — CRUD list for experiences (jobs/clients/projects)
+- `/dashboard/experiences/new` — create experience
+- `/dashboard/experiences/[id]` — edit experience
 - `/dashboard/resume` — resume builder with filters, preview, and markdown export
 
 ### Key patterns
 
-- **Server Actions:** Entries live in `src/app/dashboard/entries/actions.ts`, employers in `src/app/dashboard/employers/actions.ts`, resume aggregation in `src/app/dashboard/resume/actions.ts`. The public timeline read action is in `src/app/dashboard/actions.tsx`.
+- **Server Actions:** Entries live in `src/app/dashboard/entries/actions.ts`, experiences in `src/app/dashboard/experiences/actions.ts`, resume aggregation in `src/app/dashboard/resume/actions.ts`. The public timeline read action is in `src/app/dashboard/actions.tsx`.
 - **Prisma singleton:** `src/lib/prisma.ts` exports a singleton Prisma client (cached on `globalThis` in dev to survive HMR).
 - **Path alias:** `@/*` maps to `./src/*`.
 - **Data model:**
-  - `Entry` — the core unit. Fields: `date` (DateTime, not a year string), `title`, `actionVerb?`, `description`, `impact?` (quantified outcome like "Reduced bundle by 40KB"), `details?`, `tag`, `color`, `techStack[]`, optional `link`, optional `employerId`.
-  - `Employer` — jobs/clients/projects that group entries. Fields: `name`, `role`, `startDate`, `endDate?`, `description?`, `color`. Deleting an employer unlinks entries (onDelete: SetNull).
+  - `Entry` — the core unit. Fields: `date` (DateTime, not a year string), `title`, `actionVerb?`, `description`, `impact?` (quantified outcome like "Reduced bundle by 40KB"), `details?`, `tag`, `color`, `techStack[]`, optional `link`, optional `experienceId`.
+  - `Experience` — jobs/clients/projects that group entries. Fields: `name`, `role`, `startDate`, `endDate?`, `description?`, `color`. Deleting an experience unlinks entries (onDelete: SetNull).
   - `Icon` — Lucide icon names (1:many to Entry).
 - **Components:**
   - `src/components/Timeline/` — public timeline display (Timeline → TimelineRow → TimelineCard) with TimelineModal
   - `src/components/Entry/` — EntryCard (detail view used in modal and preview), EntryForm (full CRUD form), EntryFormPreview, EntryList, QuickAdd (AI parse flow)
-  - `src/components/Employer/` — EmployerForm, EmployerList
+  - `src/components/Experience/` — ExperienceForm, ExperienceList
   - `src/components/Resume/` — ResumeBuilder
 - **AI parse route:** `src/app/api/parse-entry/route.ts` — POST a raw sentence, returns structured fields using `claude-haiku-4-5-20251001` with an ephemerally-cached system prompt. Requires `ANTHROPIC_API_KEY` env var.
 - **Font:** Montserrat loaded via `next/font/google` with weights 400/500/600/700.

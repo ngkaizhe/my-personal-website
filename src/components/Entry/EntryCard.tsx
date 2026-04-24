@@ -17,8 +17,8 @@ export interface EntryCardProps {
     details?: string;
     techStack: string[];
     link?: { url: string; text: string } | null;
-    employerName?: string;
-    employerRole?: string;
+    experienceName?: string;
+    experienceRole?: string;
     titleId?: string;
 }
 
@@ -35,8 +35,8 @@ export default function EntryCard({
     details,
     techStack,
     link,
-    employerName,
-    employerRole,
+    experienceName,
+    experienceRole,
     titleId,
 }: EntryCardProps) {
     return (
@@ -59,9 +59,9 @@ export default function EntryCard({
                         {actionVerb && <span data-palette-accent className={`${textColorClass} mr-1.5`}>{actionVerb}</span>}
                         {title}
                     </h3>
-                    {employerName && (
+                    {experienceName && (
                         <p className="text-text-muted text-sm mt-1">
-                            {employerRole ? `${employerRole} · ` : ''}{employerName}
+                            {experienceRole ? `${experienceRole} · ` : ''}{experienceName}
                         </p>
                     )}
                 </div>

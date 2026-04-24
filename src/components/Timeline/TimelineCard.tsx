@@ -50,9 +50,9 @@ export const TimelineCard = ({
                 )}
                 {item.title.content}
             </h3>
-            {item.employer && (
+            {item.experience && (
                 <p className="text-text-muted text-xs mb-2">
-                    {item.employer.role} · {item.employer.name}
+                    {item.experience.role} · {item.experience.name}
                 </p>
             )}
             <p className="text-sm leading-snug tracking-wide text-text-secondary">

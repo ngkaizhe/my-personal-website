@@ -9,7 +9,7 @@ import TagInput from '@/components/ui/TagInput';
 import IconPicker from '@/components/ui/IconPicker';
 import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPreview';
 
-export interface EmployerOption {
+export interface ExperienceOption {
     id: string;
     name: string;
     role: string;
@@ -44,11 +44,11 @@ function Section({ title, delay, children }: { title: string; delay: number; chi
 
 interface Props {
     item: EntryDetail;
-    employers: EmployerOption[];
+    experiences: ExperienceOption[];
     action: (formData: FormData) => Promise<void>;
 }
 
-export default function EntryForm({ item, employers, action }: Props) {
+export default function EntryForm({ item, experiences, action }: Props) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -65,14 +65,14 @@ export default function EntryForm({ item, employers, action }: Props) {
         techStack: item.techStack,
         linkUrl: item.linkUrl,
         linkText: item.linkText,
-        employerId: item.employerId,
+        experienceId: item.experienceId,
     });
 
     const updateField = <K extends keyof PreviewData>(field: K, value: PreviewData[K]) => {
         setPreview(prev => ({ ...prev, [field]: value }));
     };
 
-    const selectedEmployer = employers.find(e => e.id === preview.employerId);
+    const selectedExperience = experiences.find(e => e.id === preview.experienceId);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -104,11 +104,11 @@ export default function EntryForm({ item, employers, action }: Props) {
                             <input id="field-date" type="date" name="date" value={preview.date} onChange={e => updateField('date', e.target.value)} required className={inputClass} />
                         </div>
                         <div>
-                            <label htmlFor="field-employer" className={labelClass}>Employer <span className="text-text-faint">(Optional)</span></label>
-                            <select id="field-employer" name="employerId" value={preview.employerId} onChange={e => updateField('employerId', e.target.value)} className={inputClass}>
+                            <label htmlFor="field-experience" className={labelClass}>Experience <span className="text-text-faint">(Optional)</span></label>
+                            <select id="field-experience" name="experienceId" value={preview.experienceId} onChange={e => updateField('experienceId', e.target.value)} className={inputClass}>
                                 <option value="">— None (personal / outside work) —</option>
-                                {employers.map(emp => (
-                                    <option key={emp.id} value={emp.id}>{emp.name} — {emp.role}</option>
+                                {experiences.map(exp => (
+                                    <option key={exp.id} value={exp.id}>{exp.name} — {exp.role}</option>
                                 ))}
                             </select>
                         </div>
@@ -207,7 +207,7 @@ export default function EntryForm({ item, employers, action }: Props) {
             {/* Live Preview */}
             <div className="sticky top-24">
                 <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">Preview</p>
-                <EntryFormPreview data={preview} employerName={selectedEmployer?.name} employerRole={selectedEmployer?.role} />
+                <EntryFormPreview data={preview} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role} />
             </div>
         </div>
     );

@@ -11,7 +11,7 @@ export interface EntrySummary {
     title: string;
     tag: string;
     color: string;
-    employerName?: string;
+    experienceName?: string;
 }
 
 interface Props {
@@ -53,7 +53,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                         <tr className="bg-surface-elevated border-b border-border-light">
                             <th className="p-4 font-semibold text-text-muted">Date</th>
                             <th className="p-4 font-semibold text-text-muted">Title</th>
-                            <th className="p-4 font-semibold text-text-muted">Employer</th>
+                            <th className="p-4 font-semibold text-text-muted">Experience</th>
                             <th className="p-4 font-semibold text-text-muted">Tag</th>
                             <th className="p-4 font-semibold text-text-muted text-right">Actions</th>
                         </tr>
@@ -63,7 +63,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                             <tr key={item.id} className="border-b border-border-light hover:bg-surface-elevated/50">
                                 <td className="p-4 font-medium text-text-primary whitespace-nowrap">{formatDate(item.date)}</td>
                                 <td className="p-4 text-text-secondary">{item.title}</td>
-                                <td className="p-4 text-text-muted text-sm">{item.employerName || '—'}</td>
+                                <td className="p-4 text-text-muted text-sm">{item.experienceName || '—'}</td>
                                 <td className="p-4">
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClass(item.color)}`}>
                                         {item.tag}
@@ -98,8 +98,8 @@ export default function EntryList({ items, deleteAction }: Props) {
                             <div className="min-w-0">
                                 <div className="text-xs text-text-muted mb-0.5">{formatDate(item.date)}</div>
                                 <div className="font-semibold text-text-primary">{item.title}</div>
-                                {item.employerName && (
-                                    <div className="text-text-muted text-sm">{item.employerName}</div>
+                                {item.experienceName && (
+                                    <div className="text-text-muted text-sm">{item.experienceName}</div>
                                 )}
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 ${getBadgeClass(item.color)}`}>
