@@ -58,11 +58,18 @@ The site is not just a decorative timeline — it's a **work log** the user fill
 ### Database & env
 
 - **PostgreSQL** via Prisma. Connection string from `DATABASE_URL` env var. Schema in `prisma/schema.prisma`, seed in `prisma/seed.ts`.
-- **Seed config** is in `package.json` under `"prisma": { "seed": "ts-node ..." }`. Run with `npx prisma db seed`.
-- **Schema push** (dev): use `npx prisma db push --accept-data-loss` for non-interactive schema changes. `prisma migrate dev` requires interactive confirmation and fails in automated environments.
-- **Env vars required:**
+- **Secrets live in `.env.local`** (gitignored via Next.js's `.env*.local` pattern). `.env` is untracked — do not put real credentials there.
+- **Prisma CLI does not read `.env.local`** — Next.js runtime does. So manual Prisma commands must go through the `dotenv-cli`-wrapped npm scripts:
+  - `npm run db:push` — sync schema (`prisma db push --accept-data-loss`)
+  - `npm run db:seed` — seed data (`prisma db seed`)
+  - `npm run db:studio` — DB GUI on port 5555 (`prisma studio --browser none`)
+  - `npx prisma db push` **without** the wrapper will fail with `Environment variable not found: DATABASE_URL`.
+- **Schema push** (dev): `npm run db:push` is non-interactive and preferred. `prisma migrate dev` requires interactive confirmation and fails in automated environments.
+- **Env vars required** (all in `.env.local`):
   - `DATABASE_URL` — Postgres connection string
   - `ANTHROPIC_API_KEY` — for the Quick Add AI parse route (`/api/parse-entry`). Without it the parse endpoint returns 500.
+  - `AUTH_SECRET` — NextAuth JWT signing secret. Generate with `openssl rand -base64 32`.
+  - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth credentials from Google Cloud Console (see https://console.cloud.google.com/apis/credentials). Redirect URI must be `http://localhost:3000/api/auth/callback/google`.
 
 ### Entry content conventions
 
