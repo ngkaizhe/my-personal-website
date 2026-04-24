@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SessionProviderWrapper } from "@/components/SessionProviderWrapper";
 
 import "./globals.css";
 
@@ -53,7 +54,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className={montserrat.className}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <SessionProviderWrapper>
+          <ThemeProvider>{children}</ThemeProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
