@@ -60,7 +60,8 @@ The site is not just a decorative timeline — it's a **work log** the user fill
 - **PostgreSQL** via Prisma. Connection string from `DATABASE_URL` env var. Schema in `prisma/schema.prisma`, seed in `prisma/seed.ts`.
 - **Secrets live in `.env.local`** (gitignored via Next.js's `.env*.local` pattern). `.env` is untracked — do not put real credentials there.
 - **Prisma CLI does not read `.env.local`** — Next.js runtime does. So manual Prisma commands must go through the `dotenv-cli`-wrapped npm scripts:
-  - `npm run db:push` — sync schema (`prisma db push --accept-data-loss`)
+  - `npm run db:push` — sync schema (`prisma db push --accept-data-loss`). Refuses to add a required column without a default to a non-empty table — use `db:reset` for that.
+  - `npm run db:reset` — wipe DB (`--force-reset`) then re-seed. Use when adding a required FK to existing rows.
   - `npm run db:seed` — seed data (`prisma db seed`)
   - `npm run db:studio` — DB GUI on port 5555 (`prisma studio --browser none`)
   - `npx prisma db push` **without** the wrapper will fail with `Environment variable not found: DATABASE_URL`.
