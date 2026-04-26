@@ -4,8 +4,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Cleaning up existing data...');
-  await prisma.entry.deleteMany();
-  await prisma.experience.deleteMany();
+  // Cascade from User wipes Experience + Entry + Account + Session via onDelete: Cascade.
+  await prisma.user.deleteMany();
   await prisma.icon.deleteMany();
 
   // Ensure default icon exists
@@ -15,10 +15,21 @@ async function main() {
     create: { name: 'help-circle' },
   });
 
+  console.log('Seeding demo user...');
+
+  const demoUser = await prisma.user.create({
+    data: {
+      name: 'Demo User',
+      email: 'demo@example.com',
+      username: 'demo',
+    },
+  });
+
   console.log('Seeding experiences...');
 
   const startup = await prisma.experience.create({
     data: {
+      userId: demoUser.id,
       name: 'TechStartup Co.',
       role: 'Junior Frontend Developer',
       startDate: new Date('2020-06-01'),
@@ -30,6 +41,7 @@ async function main() {
 
   const ecommerce = await prisma.experience.create({
     data: {
+      userId: demoUser.id,
       name: 'Borcelle Commerce',
       role: 'Senior / Full Stack Architect',
       startDate: new Date('2022-04-01'),
@@ -179,12 +191,15 @@ async function main() {
     await prisma.entry.create({
       data: {
         ...rest,
+        userId: demoUser.id,
         iconId: icon.id,
       },
     });
   }
 
   console.log('Seeding complete.');
+  console.log(`  Demo user: id=${demoUser.id}, username=demo, email=demo@example.com`);
+  console.log(`  Public profile URL (after Task 3): /@demo`);
 }
 
 main()

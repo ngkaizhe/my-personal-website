@@ -11,14 +11,16 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String       @id @default(uuid())
   name          String?
-  email         String?   @unique
+  email         String?      @unique
   emailVerified DateTime?
   image         String?
-  username      String?   @unique
+  username      String?      @unique
   accounts      Account[]
   sessions      Session[]
+  experiences   Experience[]
+  entries       Entry[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -70,8 +72,13 @@ model Experience {
   color       String    @default("blue")
   entries     Entry[]
 
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Entry {
@@ -92,8 +99,13 @@ model Entry {
   experienceId  String?
   experience    Experience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
 
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Icon {

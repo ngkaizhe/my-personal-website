@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserId } from '@/lib/currentUser';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -115,13 +116,14 @@ function extractFormData(formData: FormData) {
 }
 
 export async function createEntry(formData: FormData) {
+    const userId = await getCurrentUserId();
     const data = extractFormData(formData);
     const iconId = await getOrCreateIcon(data.iconName);
     const { iconName: _iconName, ...rest } = data;
     void _iconName;
 
     await prisma.entry.create({
-        data: { ...rest, iconId },
+        data: { ...rest, userId, iconId },
     });
 
     revalidatePath('/dashboard/entries');

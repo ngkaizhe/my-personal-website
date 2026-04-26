@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserId } from '@/lib/currentUser';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -76,8 +77,9 @@ function extractFormData(formData: FormData) {
 }
 
 export async function createExperience(formData: FormData) {
+    const userId = await getCurrentUserId();
     const data = extractFormData(formData);
-    await prisma.experience.create({ data });
+    await prisma.experience.create({ data: { ...data, userId } });
     revalidatePath('/dashboard/experiences');
     revalidatePath('/dashboard/entries');
     redirect('/dashboard/experiences');
