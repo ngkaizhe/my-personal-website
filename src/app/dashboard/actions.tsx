@@ -1,12 +1,15 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserId } from '@/lib/currentUser';
 import { getTextClass, getBadgeClass } from '@/lib/colors';
 import type { TimelineItem } from '@/lib/types';
 
 export async function getTimelineItems(): Promise<TimelineItem[]> {
+    const userId = await getCurrentUserId();
     try {
         const items = await prisma.entry.findMany({
+            where: { userId },
             include: {
                 icon: true,
                 experience: true,

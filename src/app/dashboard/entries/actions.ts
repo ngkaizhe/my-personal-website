@@ -31,8 +31,10 @@ export interface EntryDetail {
 }
 
 export async function getEntrySummaries(): Promise<EntrySummary[]> {
+    const userId = await getCurrentUserId();
     try {
         const items = await prisma.entry.findMany({
+            where: { userId },
             select: {
                 id: true,
                 date: true,
@@ -58,9 +60,10 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
 }
 
 export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
+    const userId = await getCurrentUserId();
     try {
-        const item = await prisma.entry.findUnique({
-            where: { id },
+        const item = await prisma.entry.findFirst({
+            where: { id, userId },
             include: { icon: true },
         });
         if (!item) return null;
@@ -132,15 +135,19 @@ export async function createEntry(formData: FormData) {
 }
 
 export async function updateEntry(id: string, formData: FormData) {
+    const userId = await getCurrentUserId();
     const data = extractFormData(formData);
     const iconId = await getOrCreateIcon(data.iconName);
     const { iconName: _iconName, ...rest } = data;
     void _iconName;
 
-    await prisma.entry.update({
-        where: { id },
+    const result = await prisma.entry.updateMany({
+        where: { id, userId },
         data: { ...rest, iconId },
     });
+    if (result.count === 0) {
+        throw new Error('Entry not found or not owned by current user');
+    }
 
     revalidatePath('/dashboard/entries');
     revalidatePath('/dashboard');
@@ -148,14 +155,20 @@ export async function updateEntry(id: string, formData: FormData) {
 }
 
 export async function deleteEntry(id: string) {
-    await prisma.entry.delete({ where: { id } });
+    const userId = await getCurrentUserId();
+    const result = await prisma.entry.deleteMany({ where: { id, userId } });
+    if (result.count === 0) {
+        throw new Error('Entry not found or not owned by current user');
+    }
     revalidatePath('/dashboard/entries');
     revalidatePath('/dashboard');
 }
 
 export async function getExperienceOptions() {
+    const userId = await getCurrentUserId();
     try {
         const experiences = await prisma.experience.findMany({
+            where: { userId },
             select: { id: true, name: true, role: true },
             orderBy: { startDate: 'desc' },
         });

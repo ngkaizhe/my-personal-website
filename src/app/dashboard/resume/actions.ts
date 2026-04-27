@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserId } from '@/lib/currentUser';
 
 export interface ResumeEntry {
     id: string;
@@ -29,8 +30,10 @@ export interface ResumeData {
 }
 
 export async function getResumeData(): Promise<ResumeData> {
+    const userId = await getCurrentUserId();
     const [experiences, entries] = await Promise.all([
         prisma.experience.findMany({
+            where: { userId },
             orderBy: { startDate: 'desc' },
             include: {
                 entries: {
@@ -39,7 +42,7 @@ export async function getResumeData(): Promise<ResumeData> {
             },
         }),
         prisma.entry.findMany({
-            where: { experienceId: null },
+            where: { userId, experienceId: null },
             orderBy: { date: 'desc' },
         }),
     ]);

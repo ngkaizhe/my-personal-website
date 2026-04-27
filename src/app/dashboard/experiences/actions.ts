@@ -25,8 +25,10 @@ export interface ExperienceDetail {
 }
 
 export async function getExperiences(): Promise<ExperienceSummary[]> {
+    const userId = await getCurrentUserId();
     try {
         const experiences = await prisma.experience.findMany({
+            where: { userId },
             include: { _count: { select: { entries: true } } },
             orderBy: { startDate: 'desc' },
         });
@@ -46,8 +48,9 @@ export async function getExperiences(): Promise<ExperienceSummary[]> {
 }
 
 export async function getExperienceDetail(id: string): Promise<ExperienceDetail | null> {
+    const userId = await getCurrentUserId();
     try {
-        const experience = await prisma.experience.findUnique({ where: { id } });
+        const experience = await prisma.experience.findFirst({ where: { id, userId } });
         if (!experience) return null;
         return {
             name: experience.name,
@@ -86,8 +89,15 @@ export async function createExperience(formData: FormData) {
 }
 
 export async function updateExperience(id: string, formData: FormData) {
+    const userId = await getCurrentUserId();
     const data = extractFormData(formData);
-    await prisma.experience.update({ where: { id }, data });
+    const result = await prisma.experience.updateMany({
+        where: { id, userId },
+        data,
+    });
+    if (result.count === 0) {
+        throw new Error('Experience not found or not owned by current user');
+    }
     revalidatePath('/dashboard/experiences');
     revalidatePath('/dashboard/entries');
     revalidatePath('/dashboard');
@@ -95,7 +105,11 @@ export async function updateExperience(id: string, formData: FormData) {
 }
 
 export async function deleteExperience(id: string) {
-    await prisma.experience.delete({ where: { id } });
+    const userId = await getCurrentUserId();
+    const result = await prisma.experience.deleteMany({ where: { id, userId } });
+    if (result.count === 0) {
+        throw new Error('Experience not found or not owned by current user');
+    }
     revalidatePath('/dashboard/experiences');
     revalidatePath('/dashboard/entries');
     revalidatePath('/dashboard');
