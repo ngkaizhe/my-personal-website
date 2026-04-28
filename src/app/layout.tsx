@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProviderWrapper } from "@/components/SessionProviderWrapper";
 
@@ -50,10 +51,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className={montserrat.className}>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
         <SessionProviderWrapper>
           <ThemeProvider>{children}</ThemeProvider>
         </SessionProviderWrapper>
