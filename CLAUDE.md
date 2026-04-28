@@ -114,7 +114,7 @@ The project supports **three themes** (light, dark, sepia) via a CSS-variable-ba
 1. **Tokens defined in `src/app/globals.css`** using Tailwind v4's `@theme` block for default (light) values, plus `.dark` and `.sepia` class selectors that override the same variables.
 2. **Tailwind utilities** like `bg-surface`, `text-text-primary`, `border-border-light` are auto-generated from the `@theme` variable names.
 3. **`ThemeProvider.tsx`** toggles the class on `<html>` and persists to localStorage.
-4. **FOUC prevention:** An inline blocking script in `src/app/layout.tsx` (`themeInitScript`) reads localStorage and applies the class before React hydrates. The `<html>` has `suppressHydrationWarning` because of this intentional mutation.
+4. **FOUC prevention:** Theme is stored in a `theme` cookie. `RootLayout` reads it via `cookies()` and stamps the class on `<html>` server-side, so the page is rendered with the correct theme on first paint — no inline init script needed. `ThemeProvider` writes the cookie back when the user changes themes (1-year max-age).
 
 ### Adding a new theme
 

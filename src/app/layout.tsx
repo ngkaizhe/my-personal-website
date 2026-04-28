@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import Script from "next/script";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { cookies } from "next/headers";
+import { ThemeProvider, type Theme, THEMES } from "@/components/ThemeProvider";
 import { SessionProviderWrapper } from "@/components/SessionProviderWrapper";
 
 import "./globals.css";
@@ -29,34 +29,22 @@ export const metadata: Metadata = {
   },
 };
 
-const themeInitScript = `
-(function() {
-  try {
-    var t = localStorage.getItem('theme');
-    if (t === 'dark' || t === 'light' || t === 'sepia') {
-      document.documentElement.classList.add(t);
-    } else {
-      document.documentElement.classList.add('light');
-    }
-  } catch (e) {
-    document.documentElement.classList.add('light');
-  }
-})();
-`;
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const cookieTheme = cookieStore.get('theme')?.value;
+  const theme: Theme = (THEMES as string[]).includes(cookieTheme ?? '')
+    ? (cookieTheme as Theme)
+    : 'light';
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={theme}>
       <body className={montserrat.className}>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeInitScript}
-        </Script>
         <SessionProviderWrapper>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
         </SessionProviderWrapper>
       </body>
     </html>

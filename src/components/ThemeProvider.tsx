@@ -33,25 +33,22 @@ export const useTheme = () => {
     return context;
 };
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setThemeState] = useState<Theme>('light');
-    const [mounted, setMounted] = useState(false);
+interface Props {
+    initialTheme: Theme;
+    children: React.ReactNode;
+}
+
+export const ThemeProvider = ({ initialTheme, children }: Props) => {
+    const [theme, setThemeState] = useState<Theme>(initialTheme);
 
     useEffect(() => {
-        const stored = localStorage.getItem('theme') as Theme | null;
-        if (stored && THEMES.includes(stored)) {
-            setThemeState(stored);
-        }
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (!mounted) return;
         const root = document.documentElement;
         THEMES.forEach(t => root.classList.remove(t));
         root.classList.add(theme);
-        localStorage.setItem('theme', theme);
-    }, [theme, mounted]);
+        // 1-year cookie so the server-rendered <html> class matches user preference
+        // on the next request — no client-side init script needed.
+        document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+    }, [theme]);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
