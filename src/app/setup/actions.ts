@@ -50,8 +50,20 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
             },
         });
     } catch (err) {
-        if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
-            return { success: false, error: 'That username is already taken.' };
+        if (err && typeof err === 'object' && 'code' in err) {
+            // P2002 = unique constraint violation (username taken)
+            if (err.code === 'P2002') {
+                return { success: false, error: 'That username is already taken.' };
+            }
+            // P2025 = update target row not found. The JWT cookie outlived the User row
+            // (most often after a db:reset). The user needs to sign out and back in to
+            // get a fresh User row created by the OAuth flow.
+            if (err.code === 'P2025') {
+                return {
+                    success: false,
+                    error: 'Your session is stale (likely because the database was reset). Please sign out and sign in again.',
+                };
+            }
         }
         throw err;
     }
