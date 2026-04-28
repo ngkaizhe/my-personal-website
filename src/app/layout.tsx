@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { cookies } from "next/headers";
-import { ThemeProvider, type Theme, THEMES } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { isTheme, type Theme } from "@/lib/theme";
 import { SessionProviderWrapper } from "@/components/SessionProviderWrapper";
 
 import "./globals.css";
@@ -36,9 +37,7 @@ export default async function RootLayout({
 }) {
   const cookieStore = await cookies();
   const cookieTheme = cookieStore.get('theme')?.value;
-  const theme: Theme = (THEMES as string[]).includes(cookieTheme ?? '')
-    ? (cookieTheme as Theme)
-    : 'light';
+  const theme: Theme = isTheme(cookieTheme) ? cookieTheme : 'light';
 
   return (
     <html lang="en" className={theme}>
