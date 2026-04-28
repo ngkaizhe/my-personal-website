@@ -202,11 +202,23 @@
   animation: modal-pop-in 0.25s ease-out both;
 }
 
+/* Form section stagger reveal. Set --reveal-delay inline to stagger siblings. */
+@keyframes section-reveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.section-reveal {
+  animation: section-reveal 0.4s ease-out both;
+  animation-delay: var(--reveal-delay, 0s);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-fade-in,
   .timeline-row-reveal,
   .modal-fade-in,
-  .modal-pop-in {
+  .modal-pop-in,
+  .section-reveal {
     animation: none;
   }
 }

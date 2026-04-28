@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, useReducedMotion } from 'motion/react';
 import { EntryDetail } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -27,18 +26,14 @@ const inputClass = `
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 function Section({ title, delay, children }: { title: string; delay: number; children: React.ReactNode }) {
-    const reduceMotion = useReducedMotion();
     return (
-        <motion.section
-            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: reduceMotion ? 0 : delay }}
-            className="space-y-5"
+        <section
+            className="space-y-5 section-reveal"
+            style={{ ['--reveal-delay' as string]: `${delay}s` }}
         >
             <h3 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">{title}</h3>
             {children}
-        </motion.section>
+        </section>
     );
 }
 
@@ -180,12 +175,9 @@ export default function EntryForm({ item, experiences, action }: Props) {
                     </div>
                 )}
 
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="flex justify-end gap-3 pt-6 border-t border-form-action-border"
+                <div
+                    className="flex justify-end gap-3 pt-6 border-t border-form-action-border section-reveal"
+                    style={{ ['--reveal-delay' as string]: '0.3s' }}
                 >
                     <button
                         type="button"
@@ -201,7 +193,7 @@ export default function EntryForm({ item, experiences, action }: Props) {
                     >
                         {submitting ? 'Saving...' : 'Save Entry'}
                     </button>
-                </motion.div>
+                </div>
             </form>
 
             {/* Live Preview */}
