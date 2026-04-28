@@ -22,6 +22,8 @@ async function main() {
       name: 'Demo User',
       email: 'demo@example.com',
       username: 'demo',
+      displayName: 'Demo Person',
+      bio: 'Software engineer building things. This site is my work-log + résumé generator — flick through the timeline to see what I have shipped.',
     },
   });
 

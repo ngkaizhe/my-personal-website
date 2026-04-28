@@ -1,12 +1,30 @@
 import NextAuth from 'next-auth';
+import { NextResponse } from 'next/server';
 import authConfig from '@/auth.config';
 
-export const { auth: middleware } = NextAuth(authConfig);
+const { auth } = NextAuth(authConfig);
 
-export default middleware;
+export default auth((req) => {
+    const { nextUrl, auth: session } = req;
+
+    // Pretty profile URLs: /@kaizhe -> /u/kaizhe (Next can't have a @-prefixed
+    // dynamic folder, so the file system uses /u/[username] and middleware rewrites).
+    if (nextUrl.pathname.startsWith('/@')) {
+        const rewritten = nextUrl.clone();
+        rewritten.pathname = '/u/' + nextUrl.pathname.slice(2);
+        return NextResponse.rewrite(rewritten);
+    }
+
+    // Authenticated users without a username must finish /setup before /dashboard.
+    if (
+        session?.user &&
+        !session.user.username &&
+        nextUrl.pathname.startsWith('/dashboard')
+    ) {
+        return NextResponse.redirect(new URL('/setup', nextUrl));
+    }
+});
 
 export const config = {
-    // Don't run the middleware on Next internals or static files; the
-    // authorized() callback decides per request whether to allow it.
     matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

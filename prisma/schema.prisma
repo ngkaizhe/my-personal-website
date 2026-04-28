@@ -17,6 +17,8 @@ model User {
   emailVerified DateTime?
   image         String?
   username      String?      @unique
+  displayName   String?
+  bio           String?
   accounts      Account[]
   sessions      Session[]
   experiences   Experience[]

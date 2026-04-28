@@ -39,8 +39,10 @@ export default {
         },
         authorized({ auth, request: { nextUrl } }) {
             const isAuthenticated = !!auth;
-            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-            if (isOnDashboard) return isAuthenticated;
+            const isProtected =
+                nextUrl.pathname.startsWith('/dashboard') ||
+                nextUrl.pathname === '/setup';
+            if (isProtected) return isAuthenticated;
             return true;
         },
     },
