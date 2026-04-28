@@ -2,8 +2,11 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
+import { iconNames } from '@/lib/iconNames';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+
+const validIconNames = new Set<string>(iconNames);
 
 export interface EntrySummary {
     id: string;
@@ -89,7 +92,10 @@ export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
 }
 
 async function getOrCreateIcon(iconName: string) {
-    const name = iconName || 'help-circle';
+    // Reject anything not in the auto-generated Lucide list so a typo in the
+    // free-text IconPicker can't poison the Icon table with names that won't
+    // render anywhere.
+    const name = validIconNames.has(iconName) ? iconName : 'help-circle';
     const icon = await prisma.icon.upsert({
         where: { name },
         update: {},
