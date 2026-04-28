@@ -14,6 +14,11 @@ export default {
         }),
     ],
     session: { strategy: 'jwt' },
+    pages: {
+        // When middleware blocks an unauth request, send them to our landing page
+        // instead of NextAuth's built-in /api/auth/signin.
+        signIn: '/',
+    },
     callbacks: {
         async jwt({ token, user, trigger, session }) {
             if (user) {

@@ -1,7 +1,12 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { NavLink } from "@/components/ui/NavLink";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { auth } from "@/auth";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
+  const session = await auth();
+  const user = session?.user;
+
   return (
     <div>
       <a
@@ -19,8 +24,18 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <NavLink href="/dashboard/experiences">Experiences</NavLink>
             <NavLink href="/dashboard/resume">Resume</NavLink>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
+            {user && (
+              <UserMenu
+                user={{
+                  name: user.name,
+                  email: user.email,
+                  image: user.image,
+                  username: user.username,
+                }}
+              />
+            )}
           </div>
         </nav>
       </header>
