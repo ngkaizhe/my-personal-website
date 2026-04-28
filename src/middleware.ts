@@ -15,6 +15,15 @@ export default auth((req) => {
         return NextResponse.rewrite(rewritten);
     }
 
+    // Gate protected routes. authorized() callback only enforces this automatically
+    // when middleware exports `auth` directly; with a custom handler we own the gate.
+    const isProtected =
+        nextUrl.pathname.startsWith('/dashboard') ||
+        nextUrl.pathname === '/setup';
+    if (isProtected && !session?.user) {
+        return NextResponse.redirect(new URL('/', nextUrl));
+    }
+
     // Authenticated users without a username must finish /setup before /dashboard.
     if (
         session?.user &&
