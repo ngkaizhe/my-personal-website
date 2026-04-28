@@ -56,7 +56,12 @@ export default function EntryCard({
                         <span className="text-xs text-text-muted">{date}</span>
                     </div>
                     <h3 id={titleId} className="mt-1 font-bold text-text-primary text-xl md:text-2xl">
-                        {actionVerb && <span data-palette-accent className={`${textColorClass} mr-1.5`}>{actionVerb}</span>}
+                        {actionVerb && (
+                            <>
+                                <span data-palette-accent className={textColorClass}>{actionVerb}</span>
+                                {' '}
+                            </>
+                        )}
                         {title}
                     </h3>
                     {experienceName && (

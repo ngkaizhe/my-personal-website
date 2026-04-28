@@ -46,7 +46,10 @@ export const TimelineCard = ({
             </div>
             <h3 className="mb-1 font-bold text-text-primary text-lg md:text-xl">
                 {item.actionVerb && (
-                    <span data-palette-accent className={`${item.title.colorClass} mr-1`}>{item.actionVerb}</span>
+                    <>
+                        <span data-palette-accent className={item.title.colorClass}>{item.actionVerb}</span>
+                        {' '}
+                    </>
                 )}
                 {item.title.content}
             </h3>
