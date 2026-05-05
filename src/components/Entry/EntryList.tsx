@@ -79,7 +79,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setToDelete(item)}
-                                        className="inline-block px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors"
+                                        className="inline-block px-3 py-2 rounded-lg text-danger-text hover:text-danger-text-hover hover:bg-danger-bg-hover font-medium transition-colors cursor-pointer"
                                     >
                                         Delete
                                     </button>
@@ -116,7 +116,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                             <button
                                 type="button"
                                 onClick={() => setToDelete(item)}
-                                className="flex-1 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors"
+                                className="flex-1 px-4 py-2 rounded-lg text-danger-text hover:text-danger-text-hover hover:bg-danger-bg-hover font-medium transition-colors cursor-pointer"
                             >
                                 Delete
                             </button>

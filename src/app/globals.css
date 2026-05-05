@@ -49,6 +49,12 @@
   --color-form-cancel-text: #6b7280;
   --color-form-cancel-text-hover: #111827;
   --color-form-cancel-border-hover: #9ca3af;
+
+  /* Destructive action colors. red-600 / red-50 work in light, but red-50
+     looks alien on dark/sepia surfaces, so each theme overrides below. */
+  --color-danger-text: #dc2626;
+  --color-danger-text-hover: #b91c1c;
+  --color-danger-bg-hover: #fef2f2;
 }
 
 /* ===== Theme Overrides ===== */
@@ -102,6 +108,10 @@
   --color-form-cancel-text: #a1a1aa;
   --color-form-cancel-text-hover: #e4e4e7;
   --color-form-cancel-border-hover: #71717a;
+
+  --color-danger-text: #f87171;
+  --color-danger-text-hover: #fca5a5;
+  --color-danger-bg-hover: rgba(127, 29, 29, 0.4);
 }
 
 .sepia {
@@ -153,6 +163,10 @@
   --color-form-cancel-text: #8b7355;
   --color-form-cancel-text-hover: #3c2a14;
   --color-form-cancel-border-hover: #b8a890;
+
+  --color-danger-text: #b91c1c;
+  --color-danger-text-hover: #991b1b;
+  --color-danger-bg-hover: rgba(252, 165, 165, 0.35);
 }
 
 /* ===== Sepia dynamic color adjustments ===== */
