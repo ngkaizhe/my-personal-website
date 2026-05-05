@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import EntryFormPreview from '@/components/Entry/EntryFormPreview';
 import TagInput from '@/components/ui/TagInput';
+import IconPicker from '@/components/ui/IconPicker';
+import ColorPicker from '@/components/ui/ColorPicker';
 import { ExperienceOption } from '@/components/Entry/EntryForm';
 
 const inputClass = `
@@ -171,7 +173,13 @@ export default function QuickAdd({ experiences, action }: Props) {
                             </div>
                             <div>
                                 <label htmlFor="qa-icon" className={labelClass}>Icon</label>
-                                <input id="qa-icon" name="iconName" value={parsed.iconName} onChange={e => updateParsed('iconName', e.target.value)} className={inputClass} />
+                                <IconPicker
+                                    id="qa-icon"
+                                    name="iconName"
+                                    value={parsed.iconName}
+                                    onChange={v => updateParsed('iconName', v)}
+                                    className={inputClass}
+                                />
                             </div>
                         </div>
 
@@ -185,7 +193,13 @@ export default function QuickAdd({ experiences, action }: Props) {
                             />
                         </div>
 
-                        <input type="hidden" name="color" value={parsed.color} />
+                        <ColorPicker
+                            name="color"
+                            label="Color"
+                            value={parsed.color}
+                            onChange={c => updateParsed('color', c)}
+                        />
+
                         <input type="hidden" name="details" value="" />
                         <input type="hidden" name="linkUrl" value="" />
                         <input type="hidden" name="linkText" value="" />
