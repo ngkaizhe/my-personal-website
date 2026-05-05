@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Copy, Check, Download } from 'lucide-react';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 
@@ -42,7 +42,8 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
         new Set(['unlinked', ...data.experiences.map(e => e.id)])
     );
-    const [copied, setCopied] = useState(false);
+    const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
+    const markdownRef = useRef<HTMLTextAreaElement>(null);
 
     const toggleExperience = (id: string) => {
         setSelectedExperiences(prev => {
@@ -121,10 +122,19 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     const copy = async () => {
         try {
             await navigator.clipboard.writeText(markdown);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            setCopyState('copied');
+            setTimeout(() => setCopyState('idle'), 2000);
         } catch {
-            // fallback: select the textarea
+            // Clipboard API can reject under HTTP, sandboxed iframes, or strict
+            // permission policies. Fall back to selecting the textarea so the
+            // user can finish the copy with Ctrl/Cmd+C.
+            const ta = markdownRef.current;
+            if (ta) {
+                ta.focus();
+                ta.select();
+            }
+            setCopyState('manual');
+            setTimeout(() => setCopyState('idle'), 4000);
         }
     };
 
@@ -191,19 +201,30 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                     <button
                         type="button"
                         onClick={copy}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors cursor-pointer"
                     >
-                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copied ? 'Copied!' : 'Copy markdown'}
+                        {copyState === 'copied' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        {copyState === 'copied'
+                            ? 'Copied!'
+                            : copyState === 'manual'
+                                ? 'Selected — press Ctrl+C'
+                                : 'Copy markdown'}
                     </button>
                     <button
                         type="button"
                         onClick={download}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
                     >
                         <Download className="w-4 h-4" />
                         Download .md
                     </button>
+                    <span role="status" aria-live="polite" className="sr-only">
+                        {copyState === 'copied'
+                            ? 'Markdown copied to clipboard.'
+                            : copyState === 'manual'
+                                ? 'Markdown selected. Press Ctrl+C or Command+C to copy.'
+                                : ''}
+                    </span>
                 </div>
             </div>
 
@@ -275,10 +296,12 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                         Markdown
                     </label>
                     <textarea
+                        ref={markdownRef}
                         id="md"
                         readOnly
                         value={markdown}
                         rows={14}
+                        onClick={(e) => e.currentTarget.select()}
                         className="w-full px-4 py-3 rounded-xl bg-input-bg border border-input-border text-input-text font-mono text-xs focus:outline-none focus:border-blue-500"
                     />
                 </div>
