@@ -24,7 +24,7 @@ export default async function SetupPage() {
     }
 
     return (
-        <main className="min-h-screen bg-page p-4 md:p-8">
+        <div className="min-h-screen bg-page p-4 md:p-8">
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-text-primary">Set up your profile</h1>
@@ -34,6 +34,6 @@ export default async function SetupPage() {
                 </div>
                 <SetupForm defaultDisplayName={dbUser?.name ?? ''} />
             </div>
-        </main>
+        </div>
     );
 }
