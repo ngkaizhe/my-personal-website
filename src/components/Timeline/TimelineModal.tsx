@@ -15,10 +15,16 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
     const selectedItem = items.find((_, index) => `card-${index}` === selectedId);
     const modalRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const triggerRef = useRef<HTMLElement | null>(null);
     const titleId = selectedId ? `modal-title-${selectedId}` : undefined;
 
     useEffect(() => {
         if (!selectedId) return;
+
+        // Remember the card that opened the modal so focus can return to it
+        // when the modal closes — keyboard / SR users otherwise lose their
+        // place in the timeline.
+        triggerRef.current = document.activeElement as HTMLElement | null;
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -43,7 +49,10 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
 
         closeButtonRef.current?.focus();
         document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            triggerRef.current?.focus?.();
+        };
     }, [selectedId, onClose]);
 
     if (!selectedId || !selectedItem) return null;
