@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { EntryDetail } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
 import IconPicker from '@/components/ui/IconPicker';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPreview';
+
+const ENTRIES_LIST = '/dashboard/entries';
 
 export interface ExperienceOption {
     id: string;
@@ -47,7 +51,7 @@ export default function EntryForm({ item, experiences, action }: Props) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [preview, setPreview] = useState<PreviewData>({
+    const initial = useMemo<PreviewData>(() => ({
         date: item.date,
         title: item.title,
         actionVerb: item.actionVerb,
@@ -61,13 +65,42 @@ export default function EntryForm({ item, experiences, action }: Props) {
         linkUrl: item.linkUrl,
         linkText: item.linkText,
         experienceId: item.experienceId,
-    });
+    }), [item]);
+    const [preview, setPreview] = useState<PreviewData>(initial);
+    const [confirmingCancel, setConfirmingCancel] = useState(false);
 
     const updateField = <K extends keyof PreviewData>(field: K, value: PreviewData[K]) => {
         setPreview(prev => ({ ...prev, [field]: value }));
     };
 
     const selectedExperience = experiences.find(e => e.id === preview.experienceId);
+
+    // Compare current draft against the initial item to detect unsaved edits.
+    // JSON.stringify is fine here because the shape is small and serializable.
+    const isDirty = useMemo(
+        () => !submitting && JSON.stringify(preview) !== JSON.stringify(initial),
+        [preview, initial, submitting]
+    );
+
+    // Layer 1: tab close / external nav. The browser shows its native prompt;
+    // the message is ignored by modern browsers but the prompt itself fires.
+    useEffect(() => {
+        if (!isDirty) return;
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [isDirty]);
+
+    const handleCancelClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (isDirty) {
+            // Layer 2: in-app SPA nav (no beforeunload). Show our own dialog.
+            e.preventDefault();
+            setConfirmingCancel(true);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -179,13 +212,16 @@ export default function EntryForm({ item, experiences, action }: Props) {
                     className="flex justify-end gap-3 pt-6 border-t border-form-action-border section-reveal"
                     style={{ ['--reveal-delay' as string]: '0.3s' }}
                 >
-                    <button
-                        type="button"
-                        onClick={() => router.back()}
-                        className="px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer"
+                    <Link
+                        href={ENTRIES_LIST}
+                        onClick={handleCancelClick}
+                        aria-disabled={submitting}
+                        className={`px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer ${
+                            submitting ? 'pointer-events-none opacity-50' : ''
+                        }`}
                     >
                         Cancel
-                    </button>
+                    </Link>
                     <button
                         type="submit"
                         disabled={submitting}
@@ -201,6 +237,17 @@ export default function EntryForm({ item, experiences, action }: Props) {
                 <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">Preview</p>
                 <EntryFormPreview data={preview} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role} />
             </div>
+
+            <ConfirmDialog
+                open={confirmingCancel}
+                title="Discard unsaved changes?"
+                description="You have unsaved edits. Leave this page and lose them?"
+                confirmLabel="Discard"
+                pendingLabel="Leaving…"
+                danger
+                onConfirm={() => router.push(ENTRIES_LIST)}
+                onClose={() => setConfirmingCancel(false)}
+            />
         </div>
     );
 }

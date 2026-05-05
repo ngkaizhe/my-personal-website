@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ExperienceDetail } from '@/app/dashboard/experiences/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+
+const EXPERIENCES_LIST = '/dashboard/experiences';
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
@@ -26,9 +30,32 @@ export default function ExperienceForm({ item, action }: Props) {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [state, setState] = useState<ExperienceDetail>(item);
+    const [confirmingCancel, setConfirmingCancel] = useState(false);
 
     const update = <K extends keyof ExperienceDetail>(k: K, v: ExperienceDetail[K]) => {
         setState(prev => ({ ...prev, [k]: v }));
+    };
+
+    const isDirty = useMemo(
+        () => !submitting && JSON.stringify(state) !== JSON.stringify(item),
+        [state, item, submitting]
+    );
+
+    useEffect(() => {
+        if (!isDirty) return;
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [isDirty]);
+
+    const handleCancelClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (isDirty) {
+            e.preventDefault();
+            setConfirmingCancel(true);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -82,13 +109,16 @@ export default function ExperienceForm({ item, action }: Props) {
             )}
 
             <div className="flex justify-end gap-3 pt-6 border-t border-form-action-border">
-                <button
-                    type="button"
-                    onClick={() => router.back()}
-                    className="px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer"
+                <Link
+                    href={EXPERIENCES_LIST}
+                    onClick={handleCancelClick}
+                    aria-disabled={submitting}
+                    className={`px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer ${
+                        submitting ? 'pointer-events-none opacity-50' : ''
+                    }`}
                 >
                     Cancel
-                </button>
+                </Link>
                 <button
                     type="submit"
                     disabled={submitting}
@@ -97,6 +127,17 @@ export default function ExperienceForm({ item, action }: Props) {
                     {submitting ? 'Saving...' : 'Save Experience'}
                 </button>
             </div>
+
+            <ConfirmDialog
+                open={confirmingCancel}
+                title="Discard unsaved changes?"
+                description="You have unsaved edits. Leave this page and lose them?"
+                confirmLabel="Discard"
+                pendingLabel="Leaving…"
+                danger
+                onConfirm={() => router.push(EXPERIENCES_LIST)}
+                onClose={() => setConfirmingCancel(false)}
+            />
         </form>
     );
 }
