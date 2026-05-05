@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
-import { X } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { getBadgeClass } from '@/lib/colors';
 
 export interface EntrySummary {
@@ -125,54 +125,25 @@ export default function EntryList({ items, deleteAction }: Props) {
                 ))}
             </div>
 
-            {/* Confirm dialog */}
-            {toDelete && (
-                <div
-                    className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="delete-title"
-                >
-                    <div
-                        className="absolute inset-0 bg-overlay backdrop-blur-sm"
-                        onClick={() => !isPending && setToDelete(null)}
-                    />
-                    <div className="relative bg-surface rounded-xl shadow-2xl max-w-md w-full p-6 z-10">
-                        <button
-                            onClick={() => setToDelete(null)}
-                            disabled={isPending}
-                            className="absolute top-4 right-4 p-1 text-text-muted hover:text-text-primary"
-                            aria-label="Cancel"
-                        >
-                            <X size={20} />
-                        </button>
-                        <h2 id="delete-title" className="text-xl font-bold text-text-primary mb-2">
-                            Delete entry?
-                        </h2>
-                        <p className="text-text-secondary mb-6">
-                            Are you sure you want to delete <span className="font-semibold">{toDelete.title}</span>? This action cannot be undone.
-                        </p>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setToDelete(null)}
-                                disabled={isPending}
-                                className="px-4 py-2 rounded-lg border border-border text-text-secondary hover:bg-surface-elevated font-medium transition-colors disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                disabled={isPending}
-                                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors disabled:opacity-50"
-                            >
-                                {isPending ? 'Deleting...' : 'Delete'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmDialog
+                open={!!toDelete}
+                title="Delete entry?"
+                description={
+                    toDelete ? (
+                        <>
+                            Are you sure you want to delete{' '}
+                            <span className="font-semibold">{toDelete.title}</span>? This action
+                            cannot be undone.
+                        </>
+                    ) : null
+                }
+                confirmLabel="Delete"
+                pendingLabel="Deleting…"
+                danger
+                pending={isPending}
+                onConfirm={confirmDelete}
+                onClose={() => !isPending && setToDelete(null)}
+            />
         </>
     );
 }
