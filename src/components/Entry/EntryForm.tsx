@@ -12,10 +12,13 @@ import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPrevi
 
 const ENTRIES_LIST = '/dashboard/entries';
 
+import type { ExperienceType } from '@/lib/types';
+
 export interface ExperienceOption {
     id: string;
-    name: string;
-    role: string;
+    type: ExperienceType;
+    name: string;       // organization (kept as `name` for option-display callers)
+    role: string | null;
 }
 
 const inputClass = `
@@ -136,7 +139,9 @@ export default function EntryForm({ item, experiences, action }: Props) {
                             <select id="field-experience" name="experienceId" value={preview.experienceId} onChange={e => updateField('experienceId', e.target.value)} className={inputClass}>
                                 <option value="">— None (personal / outside work) —</option>
                                 {experiences.map(exp => (
-                                    <option key={exp.id} value={exp.id}>{exp.name} — {exp.role}</option>
+                                    <option key={exp.id} value={exp.id}>
+                                        {exp.role ? `${exp.name} — ${exp.role}` : exp.name}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -235,7 +240,7 @@ export default function EntryForm({ item, experiences, action }: Props) {
             {/* Live Preview */}
             <div className="sticky top-24">
                 <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">Preview</p>
-                <EntryFormPreview data={preview} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role} />
+                <EntryFormPreview data={preview} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role ?? undefined} />
             </div>
 
             <ConfirmDialog

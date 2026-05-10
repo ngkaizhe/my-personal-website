@@ -242,7 +242,7 @@ export default function QuickAdd({ experiences, action }: Props) {
                                 experienceId,
                             }}
                             experienceName={selectedExperience?.name}
-                            experienceRole={selectedExperience?.role}
+                            experienceRole={selectedExperience?.role ?? undefined}
                         />
                     </div>
                 </form>

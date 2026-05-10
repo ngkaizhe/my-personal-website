@@ -1,3 +1,5 @@
+export type ExperienceType = 'JOB' | 'EDUCATION' | 'PROJECT' | 'VOLUNTEER' | 'BREAK';
+
 export interface TimelineItem {
     id: string;
     date: string;           // ISO date string for display formatting
@@ -21,8 +23,9 @@ export interface TimelineItem {
     iconName: string;
     experience?: {
         id: string;
-        name: string;
-        role: string;
+        type: ExperienceType;
+        organization: string;
+        role: string | null;
     };
     link?: {
         url: string;

@@ -2,9 +2,19 @@
 
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
+import { Briefcase, GraduationCap, Rocket, HeartHandshake, Palmtree } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ExperienceSummary } from '@/app/dashboard/experiences/actions';
+import type { ExperienceType } from '@/lib/types';
 import { getBadgeClass } from '@/lib/colors';
+
+const TYPE_META: Record<ExperienceType, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
+    JOB: { label: 'Job', Icon: Briefcase },
+    EDUCATION: { label: 'Education', Icon: GraduationCap },
+    PROJECT: { label: 'Project', Icon: Rocket },
+    VOLUNTEER: { label: 'Volunteer', Icon: HeartHandshake },
+    BREAK: { label: 'Break', Icon: Palmtree },
+};
 
 interface Props {
     items: ExperienceSummary[];
@@ -41,13 +51,22 @@ export default function ExperienceList({ items, deleteAction }: Props) {
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {items.map(item => (
+                {items.map(item => {
+                    const meta = TYPE_META[item.type];
+                    const TypeIcon = meta.Icon;
+                    return (
                     <div key={item.id} className="bg-surface rounded-xl shadow-sm border border-border p-5">
                         <div className="flex items-start justify-between gap-3 mb-2">
-                            <div className="min-w-0">
-                                <h3 className="font-bold text-text-primary text-lg">{item.name}</h3>
-                                <p className="text-text-secondary text-sm">{item.role}</p>
-                                <p className="text-text-muted text-xs mt-1">{formatRange(item.startDate, item.endDate)}</p>
+                            <div className="min-w-0 flex items-start gap-3">
+                                <div className="shrink-0 w-10 h-10 rounded-lg bg-surface-elevated border border-border-light flex items-center justify-center">
+                                    <TypeIcon className="w-5 h-5 text-text-muted" />
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="text-xs font-medium text-text-faint uppercase tracking-wide mb-0.5">{meta.label}</div>
+                                    <h3 className="font-bold text-text-primary text-lg">{item.organization}</h3>
+                                    {item.role && <p className="text-text-secondary text-sm">{item.role}</p>}
+                                    <p className="text-text-muted text-xs mt-1">{formatRange(item.startDate, item.endDate)}</p>
+                                </div>
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 ${getBadgeClass(item.color)}`}>
                                 {item.entryCount} {item.entryCount === 1 ? 'entry' : 'entries'}
@@ -69,7 +88,8 @@ export default function ExperienceList({ items, deleteAction }: Props) {
                             </button>
                         </div>
                     </div>
-                ))}
+                    );
+                })}
             </div>
 
             <ConfirmDialog
@@ -79,7 +99,7 @@ export default function ExperienceList({ items, deleteAction }: Props) {
                     toDelete ? (
                         <>
                             Are you sure you want to delete{' '}
-                            <span className="font-semibold">{toDelete.name}</span>? Entries linked
+                            <span className="font-semibold">{toDelete.organization}</span>? Entries linked
                             to it will be kept but unlinked.
                         </>
                     ) : null

@@ -29,10 +29,24 @@ async function main() {
 
   console.log('Seeding experiences...');
 
+  const university = await prisma.experience.create({
+    data: {
+      userId: demoUser.id,
+      type: 'EDUCATION',
+      organization: 'State University',
+      role: 'BSc Computer Science',
+      startDate: new Date('2015-09-01'),
+      endDate: new Date('2019-06-30'),
+      description: 'Web development and algorithms focus. Led the coding club; organized two hackathons.',
+      color: 'blue',
+    },
+  });
+
   const startup = await prisma.experience.create({
     data: {
       userId: demoUser.id,
-      name: 'TechStartup Co.',
+      type: 'JOB',
+      organization: 'TechStartup Co.',
       role: 'Junior Frontend Developer',
       startDate: new Date('2020-06-01'),
       endDate: new Date('2022-03-01'),
@@ -44,7 +58,8 @@ async function main() {
   const ecommerce = await prisma.experience.create({
     data: {
       userId: demoUser.id,
-      name: 'Borcelle Commerce',
+      type: 'JOB',
+      organization: 'Borcelle Commerce',
       role: 'Senior / Full Stack Architect',
       startDate: new Date('2022-04-01'),
       endDate: null,
@@ -68,7 +83,7 @@ async function main() {
       linkUrl: 'https://example.com/degree',
       linkText: 'View Degree',
       iconName: 'school',
-      experienceId: null,
+      experienceId: university.id,
     },
 
     // ==== Startup entries ====

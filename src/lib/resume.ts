@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import type { ExperienceType } from '@/lib/types';
 
 export interface ResumeEntry {
     id: string;
@@ -12,8 +13,9 @@ export interface ResumeEntry {
 
 export interface ResumeExperience {
     id: string;
-    name: string;
-    role: string;
+    type: ExperienceType;
+    organization: string;
+    role: string | null;
     startDate: string;
     endDate: string | null;
     description: string | null;
@@ -67,7 +69,8 @@ export async function fetchResumeByUserId(userId: string): Promise<ResumeData> {
     return {
         experiences: experiences.map(exp => ({
             id: exp.id,
-            name: exp.name,
+            type: exp.type,
+            organization: exp.organization,
             role: exp.role,
             startDate: exp.startDate.toISOString(),
             endDate: exp.endDate?.toISOString() ?? null,

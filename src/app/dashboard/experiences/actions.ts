@@ -4,11 +4,19 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import type { ExperienceType } from '@/lib/types';
+
+const EXPERIENCE_TYPES: readonly ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER', 'BREAK'] as const;
+
+function isExperienceType(value: string): value is ExperienceType {
+    return (EXPERIENCE_TYPES as readonly string[]).includes(value);
+}
 
 export interface ExperienceSummary {
     id: string;
-    name: string;
-    role: string;
+    type: ExperienceType;
+    organization: string;
+    role: string | null;
     startDate: string;
     endDate: string | null;
     entryCount: number;
@@ -16,8 +24,9 @@ export interface ExperienceSummary {
 }
 
 export interface ExperienceDetail {
-    name: string;
-    role: string;
+    type: ExperienceType;
+    organization: string;
+    role: string;          // form-friendly: '' when null in DB
     startDate: string;     // YYYY-MM-DD
     endDate: string;       // YYYY-MM-DD or empty
     description: string;
@@ -34,7 +43,8 @@ export async function getExperiences(): Promise<ExperienceSummary[]> {
         });
         return experiences.map((e) => ({
             id: e.id,
-            name: e.name,
+            type: e.type,
+            organization: e.organization,
             role: e.role,
             startDate: e.startDate.toISOString(),
             endDate: e.endDate?.toISOString() ?? null,
@@ -53,8 +63,9 @@ export async function getExperienceDetail(id: string): Promise<ExperienceDetail 
         const experience = await prisma.experience.findFirst({ where: { id, userId } });
         if (!experience) return null;
         return {
-            name: experience.name,
-            role: experience.role,
+            type: experience.type,
+            organization: experience.organization,
+            role: experience.role ?? '',
             startDate: experience.startDate.toISOString().substring(0, 10),
             endDate: experience.endDate?.toISOString().substring(0, 10) ?? '',
             description: experience.description ?? '',
@@ -69,9 +80,13 @@ export async function getExperienceDetail(id: string): Promise<ExperienceDetail 
 function extractFormData(formData: FormData) {
     const raw = Object.fromEntries(formData.entries());
     const endDateRaw = raw.endDate as string;
+    const typeRaw = (raw.type as string) || 'JOB';
+    const type: ExperienceType = isExperienceType(typeRaw) ? typeRaw : 'JOB';
+    const roleRaw = (raw.role as string)?.trim() ?? '';
     return {
-        name: raw.name as string,
-        role: raw.role as string,
+        type,
+        organization: raw.organization as string,
+        role: roleRaw === '' ? null : roleRaw,
         startDate: new Date(raw.startDate as string),
         endDate: endDateRaw ? new Date(endDateRaw) : null,
         description: (raw.description as string) || null,

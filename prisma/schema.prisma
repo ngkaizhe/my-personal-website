@@ -64,15 +64,27 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum ExperienceType {
+  JOB
+  EDUCATION
+  PROJECT
+  VOLUNTEER
+  BREAK
+}
+
 model Experience {
-  id          String    @id @default(uuid())
-  name        String
-  role        String
-  startDate   DateTime
-  endDate     DateTime?
-  description String?
-  color       String    @default("blue")
-  entries     Entry[]
+  id           String         @id @default(uuid())
+  type         ExperienceType @default(JOB)
+  // organization is the company / school / project name. Renamed from `name`
+  // because Experience now spans jobs, schools, side projects, etc.
+  organization String
+  // role is optional: BREAK or PROJECT entries may not have a defined role.
+  role         String?
+  startDate    DateTime
+  endDate      DateTime?
+  description  String?
+  color        String         @default("blue")
+  entries      Entry[]
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

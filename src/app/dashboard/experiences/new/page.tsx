@@ -6,7 +6,8 @@ export const metadata = {
 };
 
 const emptyItem: ExperienceDetail = {
-    name: '',
+    type: 'JOB',
+    organization: '',
     role: '',
     startDate: new Date().toISOString().substring(0, 10),
     endDate: '',
@@ -20,7 +21,7 @@ export default function NewExperiencePage() {
             <div className="max-w-3xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-text-primary">Add Experience</h1>
-                    <p className="text-text-muted mt-2">Record a job, client, or project to group future entries under.</p>
+                    <p className="text-text-muted mt-2">Record a job, school, project, or other life chapter to group entries under.</p>
                 </div>
 
                 <ExperienceForm

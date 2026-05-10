@@ -3,6 +3,16 @@
 import { useState, useMemo, useRef } from 'react';
 import { Copy, Check, Download } from 'lucide-react';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
+import type { ExperienceType } from '@/lib/types';
+
+// Section ordering and labels for the résumé output. BREAK falls into the
+// generic "Other" bucket together with unlinked entries.
+const SECTION_TYPES: { type: ExperienceType; heading: string }[] = [
+    { type: 'JOB', heading: 'Experience' },
+    { type: 'EDUCATION', heading: 'Education' },
+    { type: 'PROJECT', heading: 'Projects' },
+    { type: 'VOLUNTEER', heading: 'Volunteer' },
+];
 
 const inputClass = `
     w-full px-4 py-2.5 rounded-xl
@@ -81,13 +91,26 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
         return { experiences, unlinked, skills };
     }, [data, from, to, selectedExperiences]);
 
+    const grouped = useMemo(() => {
+        const byType: Record<ExperienceType, ResumeExperience[]> = {
+            JOB: [],
+            EDUCATION: [],
+            PROJECT: [],
+            VOLUNTEER: [],
+            BREAK: [],
+        };
+        for (const exp of filtered.experiences) {
+            byType[exp.type].push(exp);
+        }
+        return byType;
+    }, [filtered.experiences]);
+
     const markdown = useMemo(() => {
         const lines: string[] = [];
-        lines.push('# Experience');
-        lines.push('');
 
-        for (const exp of filtered.experiences) {
-            lines.push(`## ${exp.name} — ${exp.role}`);
+        const writeExperience = (exp: ResumeExperience) => {
+            const header = exp.role ? `${exp.organization} — ${exp.role}` : exp.organization;
+            lines.push(`## ${header}`);
             lines.push(`*${formatExperienceRange(exp.startDate, exp.endDate)}*`);
             if (exp.description) {
                 lines.push('');
@@ -98,11 +121,21 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                 lines.push(bulletFromEntry(entry));
             }
             lines.push('');
+        };
+
+        for (const { type, heading } of SECTION_TYPES) {
+            if (grouped[type].length === 0) continue;
+            lines.push(`# ${heading}`);
+            lines.push('');
+            for (const exp of grouped[type]) writeExperience(exp);
         }
 
-        if (filtered.unlinked.length > 0) {
-            lines.push('## Other');
+        // BREAK + unlinked entries share an "Other" section.
+        const otherExperiences = grouped.BREAK;
+        if (otherExperiences.length > 0 || filtered.unlinked.length > 0) {
+            lines.push('# Other');
             lines.push('');
+            for (const exp of otherExperiences) writeExperience(exp);
             for (const entry of filtered.unlinked) {
                 lines.push(bulletFromEntry(entry));
             }
@@ -117,7 +150,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
         }
 
         return lines.join('\n').trim();
-    }, [filtered]);
+    }, [grouped, filtered.unlinked, filtered.skills]);
 
     const copy = async () => {
         try {
@@ -168,7 +201,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                     className="mt-0.5"
                                 />
                                 <span>
-                                    <span className="font-medium text-text-primary">{exp.name}</span>
+                                    <span className="font-medium text-text-primary">{exp.organization}</span>
                                     <span className="text-text-muted block text-xs">{exp.entries.length} entries</span>
                                 </span>
                             </label>
@@ -238,42 +271,76 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                     {filtered.experiences.length === 0 && filtered.unlinked.length === 0 ? (
                         <p className="text-text-muted text-center py-12">No entries match your filters.</p>
                     ) : (
-                        <div className="space-y-6">
-                            <h3 className="text-2xl font-bold text-text-primary">Experience</h3>
-                            {filtered.experiences.map(exp => (
-                                <div key={exp.id} className="space-y-2">
-                                    <div>
-                                        <div className="font-bold text-text-primary text-lg">{exp.name} — {exp.role}</div>
-                                        <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate)}</div>
-                                    </div>
-                                    {exp.description && <p className="text-text-secondary text-sm">{exp.description}</p>}
-                                    <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
-                                        {exp.entries.map(e => (
-                                            <li key={e.id} className="text-text-secondary text-sm">
-                                                {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
-                                                {e.title}
-                                                {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
-                                                {e.techStack.length > 0 && (
-                                                    <span className="text-text-muted italic"> ({e.techStack.join(', ')})</span>
-                                                )}
-                                            </li>
+                        <div className="space-y-8">
+                            {SECTION_TYPES.map(({ type, heading }) => {
+                                const list = grouped[type];
+                                if (list.length === 0) return null;
+                                return (
+                                    <section key={type} className="space-y-4">
+                                        <h3 className="text-2xl font-bold text-text-primary">{heading}</h3>
+                                        {list.map(exp => (
+                                            <div key={exp.id} className="space-y-2">
+                                                <div>
+                                                    <div className="font-bold text-text-primary text-lg">
+                                                        {exp.organization}
+                                                        {exp.role && <span className="text-text-secondary font-medium"> — {exp.role}</span>}
+                                                    </div>
+                                                    <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate)}</div>
+                                                </div>
+                                                {exp.description && <p className="text-text-secondary text-sm">{exp.description}</p>}
+                                                <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
+                                                    {exp.entries.map(e => (
+                                                        <li key={e.id} className="text-text-secondary text-sm">
+                                                            {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
+                                                            {e.title}
+                                                            {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
+                                                            {e.techStack.length > 0 && (
+                                                                <span className="text-text-muted italic"> ({e.techStack.join(', ')})</span>
+                                                            )}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         ))}
-                                    </ul>
-                                </div>
-                            ))}
-                            {filtered.unlinked.length > 0 && (
-                                <div className="space-y-2">
-                                    <div className="font-bold text-text-primary text-lg">Other</div>
-                                    <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
-                                        {filtered.unlinked.map(e => (
-                                            <li key={e.id} className="text-text-secondary text-sm">
-                                                {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
-                                                {e.title}
-                                                {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                    </section>
+                                );
+                            })}
+                            {(grouped.BREAK.length > 0 || filtered.unlinked.length > 0) && (
+                                <section className="space-y-4">
+                                    <h3 className="text-2xl font-bold text-text-primary">Other</h3>
+                                    {grouped.BREAK.map(exp => (
+                                        <div key={exp.id} className="space-y-2">
+                                            <div>
+                                                <div className="font-bold text-text-primary text-lg">
+                                                    {exp.organization}
+                                                    {exp.role && <span className="text-text-secondary font-medium"> — {exp.role}</span>}
+                                                </div>
+                                                <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate)}</div>
+                                            </div>
+                                            {exp.description && <p className="text-text-secondary text-sm">{exp.description}</p>}
+                                            <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
+                                                {exp.entries.map(e => (
+                                                    <li key={e.id} className="text-text-secondary text-sm">
+                                                        {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
+                                                        {e.title}
+                                                        {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ))}
+                                    {filtered.unlinked.length > 0 && (
+                                        <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
+                                            {filtered.unlinked.map(e => (
+                                                <li key={e.id} className="text-text-secondary text-sm">
+                                                    {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
+                                                    {e.title}
+                                                    {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </section>
                             )}
                             {filtered.skills.length > 0 && (
                                 <div>

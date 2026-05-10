@@ -44,7 +44,7 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
                 title: true,
                 tag: true,
                 color: true,
-                experience: { select: { name: true } },
+                experience: { select: { organization: true } },
             },
             orderBy: { date: 'asc' },
         });
@@ -54,7 +54,7 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
             title: i.title,
             tag: i.tag,
             color: i.color,
-            experienceName: i.experience?.name,
+            experienceName: i.experience?.organization,
         }));
     } catch (error) {
         console.error('Failed to fetch entry summaries:', error);
@@ -175,10 +175,17 @@ export async function getExperienceOptions() {
     try {
         const experiences = await prisma.experience.findMany({
             where: { userId },
-            select: { id: true, name: true, role: true },
+            select: { id: true, type: true, organization: true, role: true },
             orderBy: { startDate: 'desc' },
         });
-        return experiences;
+        return experiences.map(e => ({
+            id: e.id,
+            type: e.type,
+            // Keep `name` on the option DTO so existing callers (forms / dropdowns)
+            // don't have to learn a new prop name. It maps to organization.
+            name: e.organization,
+            role: e.role,
+        }));
     } catch (error) {
         console.error('Failed to fetch experience options:', error);
         return [];

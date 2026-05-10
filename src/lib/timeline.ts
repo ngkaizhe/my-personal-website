@@ -33,7 +33,8 @@ export async function fetchTimelineByUserId(userId: string): Promise<TimelineIte
             iconName: dbItem.icon?.name ?? 'help-circle',
             experience: dbItem.experience ? {
                 id: dbItem.experience.id,
-                name: dbItem.experience.name,
+                type: dbItem.experience.type,
+                organization: dbItem.experience.organization,
                 role: dbItem.experience.role,
             } : undefined,
             link: dbItem.linkUrl ? {

@@ -4,8 +4,61 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ExperienceDetail } from '@/app/dashboard/experiences/actions';
+import type { ExperienceType } from '@/lib/types';
 import ColorPicker from '@/components/ui/ColorPicker';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+
+const TYPE_CONFIG: Record<ExperienceType, {
+    label: string;
+    organizationLabel: string;
+    organizationPlaceholder: string;
+    rolePlaceholder: string;
+    roleHint: string;
+}> = {
+    JOB: {
+        label: 'Job',
+        organizationLabel: 'Company',
+        organizationPlaceholder: 'TechStartup Co.',
+        rolePlaceholder: 'Senior Frontend Engineer',
+        roleHint: '',
+    },
+    EDUCATION: {
+        label: 'Education',
+        organizationLabel: 'School',
+        organizationPlaceholder: 'State University',
+        rolePlaceholder: 'BSc Computer Science',
+        roleHint: '',
+    },
+    PROJECT: {
+        label: 'Side project',
+        organizationLabel: 'Project name',
+        organizationPlaceholder: 'PeerLink',
+        rolePlaceholder: 'Creator / Solo dev',
+        roleHint: '(Optional)',
+    },
+    VOLUNTEER: {
+        label: 'Volunteer / Community',
+        organizationLabel: 'Organization',
+        organizationPlaceholder: 'Open source — Node.js',
+        rolePlaceholder: 'Maintainer',
+        roleHint: '(Optional)',
+    },
+    BREAK: {
+        label: 'Break / Sabbatical',
+        organizationLabel: 'Label',
+        organizationPlaceholder: 'Travel year',
+        rolePlaceholder: '',
+        roleHint: '(Optional)',
+    },
+};
+
+const TYPE_OPTIONS: { value: ExperienceType; label: string }[] = [
+    { value: 'JOB', label: TYPE_CONFIG.JOB.label },
+    { value: 'EDUCATION', label: TYPE_CONFIG.EDUCATION.label },
+    { value: 'PROJECT', label: TYPE_CONFIG.PROJECT.label },
+    { value: 'VOLUNTEER', label: TYPE_CONFIG.VOLUNTEER.label },
+    { value: 'BREAK', label: TYPE_CONFIG.BREAK.label },
+];
 
 const EXPERIENCES_LIST = '/dashboard/experiences';
 
@@ -79,12 +132,47 @@ export default function ExperienceForm({ item, action }: Props) {
             className="space-y-6 bg-form-bg backdrop-blur-sm p-4 md:p-8 rounded-2xl border border-form-border shadow-2xl"
         >
             <div>
-                <label htmlFor="experience-name" className={labelClass}>Name</label>
-                <input id="experience-name" name="name" value={state.name} onChange={e => update('name', e.target.value)} required className={inputClass} placeholder="TechStartup Co." />
+                <label htmlFor="experience-type" className={labelClass}>Type</label>
+                <select
+                    id="experience-type"
+                    name="type"
+                    value={state.type}
+                    onChange={e => update('type', e.target.value as ExperienceType)}
+                    className={inputClass}
+                >
+                    {TYPE_OPTIONS.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                </select>
+                <p className="text-xs text-text-faint mt-1">
+                    Determines how this period is grouped on the public profile and résumé.
+                </p>
             </div>
             <div>
-                <label htmlFor="experience-role" className={labelClass}>Role</label>
-                <input id="experience-role" name="role" value={state.role} onChange={e => update('role', e.target.value)} required className={inputClass} placeholder="Senior Frontend Engineer" />
+                <label htmlFor="experience-organization" className={labelClass}>{TYPE_CONFIG[state.type].organizationLabel}</label>
+                <input
+                    id="experience-organization"
+                    name="organization"
+                    value={state.organization}
+                    onChange={e => update('organization', e.target.value)}
+                    required
+                    className={inputClass}
+                    placeholder={TYPE_CONFIG[state.type].organizationPlaceholder}
+                />
+            </div>
+            <div>
+                <label htmlFor="experience-role" className={labelClass}>
+                    Role {TYPE_CONFIG[state.type].roleHint && <span className="text-text-faint">{TYPE_CONFIG[state.type].roleHint}</span>}
+                </label>
+                <input
+                    id="experience-role"
+                    name="role"
+                    value={state.role}
+                    onChange={e => update('role', e.target.value)}
+                    required={state.type === 'JOB' || state.type === 'EDUCATION'}
+                    className={inputClass}
+                    placeholder={TYPE_CONFIG[state.type].rolePlaceholder}
+                />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
