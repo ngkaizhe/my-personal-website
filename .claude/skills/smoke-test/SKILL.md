@@ -185,6 +185,52 @@ npx dotenv -e .env.local -- npx prisma validate
 
 - Expect: `The schema at prisma/schema.prisma is valid`.
 
+### T1.14 — Bilingual content swaps with locale (read path)
+
+Verifies the EntryTranslation / ExperienceTranslation fan-out actually wires through to the public profile. Uses the seed demo user.
+
+1. Set cookie `locale=en` and navigate to `/@demo` → capture the first card's text.
+2. Set cookie `locale=zh-TW`, reload `/@demo` → capture the first card's text.
+3. Assert the two captures differ AND the EN one contains an English token from the seed (e.g. "Graduated") AND the ZH one contains a Chinese token (e.g. "取得" or "州立大學").
+
+Catches: missed `getLocale()` plumbing in a query helper, broken `pickTranslation` fallback, or a forgotten `translations: true` include.
+
+### T1.15 — tagSlug crosses locales
+
+In the demo data, the "Engineering" entry's tag becomes "工程" in 中文. They must share a slug so resume sectioning + badge colour stay consistent.
+
+```bash
+npx dotenv -e .env.local -- node -e "
+const{PrismaClient}=require('@prisma/client');
+const p=new PrismaClient();
+(async()=>{
+  const e = await p.entry.findFirst({
+    where: { tagSlug: 'engineering' },
+    include: { translations: true },
+  });
+  if (!e) { console.error('no entry with tagSlug=engineering'); process.exit(1); }
+  const en = e.translations.find(t => t.locale === 'en')?.tag;
+  const zh = e.translations.find(t => t.locale === 'zh-TW')?.tag;
+  console.log(JSON.stringify({ slug: e.tagSlug, en, zh }));
+  await p.\$disconnect();
+})();
+"
+```
+
+- Expect: `slug` is a lowercase-kebab string AND `en` !== `zh` (different display labels) AND both are non-empty.
+
+### T1.16 — /api/translate-content degrades cleanly without ANTHROPIC_API_KEY
+
+```bash
+curl -s -X POST http://localhost:3000/api/translate-content \
+  -H "Content-Type: application/json" \
+  -d '{"type":"entry","source":{"title":"Test","actionVerb":"Did","description":"Did a thing","impact":"","details":"","tag":"Test"},"sourceLocale":"en","targetLocale":"zh-TW"}' \
+  -w "\nstatus:%{http_code}\n"
+```
+
+- **Without key**: expect `status:503` and body `{"error":"ANTHROPIC_API_KEY not configured"}`.
+- **With key**: expect `status:200` and body with a `translation` object containing translated fields + `sourceHash` (16 hex chars).
+
 ### T1.12 — Quick Add nav reflects API key state
 
 Read `.env.local` for ANTHROPIC_API_KEY:
@@ -249,6 +295,24 @@ If the user pastes a token, treat it as **sensitive credential material**: never
 
 - Navigate to `/dashboard/resume`
 - Expect: filter sidebar (`Filters` / `篩選`) with at least one experience checkbox + the "Other (no experience)" / "其他（未綁定經歷）" toggle. The Markdown textarea is present.
+
+### T2.4b — EntryForm has EN / 中文 tabs with locale-suffixed inputs
+
+This is the canary for the bilingual form added by the EntryTranslation refactor.
+
+1. Navigate to `/dashboard/entries/new`
+2. Assert two `[role="tab"]` elements exist with text "English" and "中文"
+3. Assert inputs `input[name="title_en"]` and `input[name="title_zh-TW"]` both exist
+4. Assert hidden inputs `input[name="primaryLocale"]`, `input[name="sourceHash_en"]`, `input[name="sourceHash_zh-TW"]`, `input[name="lastTranslatedAt_en"]`, `input[name="lastTranslatedAt_zh-TW"]` all exist
+5. Click the "中文" tab → assert the EN tab's title input is hidden (display none via `[hidden]` on the panel), 中文 panel is visible
+6. With ANTHROPIC_API_KEY **absent**: assert the page body contains "ANTHROPIC_API_KEY" hint text, and no `<button>` with text matching `/Translate from/i` is enabled
+7. With ANTHROPIC_API_KEY **present**: assert a Translate button is present and clickable on the inactive tab
+
+Catches regressions in the tab UX, sourceHash plumbing, and the AI-availability gate.
+
+### T2.4c — Existing entry edit form prefills both translations
+
+Pick any seed entry id (use Prisma query if needed: `prisma.entry.findFirst({ select: { id: true } })`) and navigate to `/dashboard/entries/<id>`. Both tabs must have their inputs pre-filled (i.e. `input[name="title_en"].value` and `input[name="title_zh-TW"].value` are both non-empty for a seed entry). This catches a forgotten `include: { translations: true }` in getEntryDetail.
 
 ### T2.5 — Inline-create experience from entry form
 
@@ -320,6 +384,8 @@ This skill is intentionally a checklist, not a fixed test suite — it's expecte
 | Rename a translation key | T1.9 will catch the parity break; also update any T1.X checks that asserted on the old string |
 | Add a new theme / locale | Extend T1.6 / T1.7 to include the new value; update T1.8's "combined" assertion |
 | Add a new sensitive env var | Extend T1.12-style env-conditional checks |
+| Add a new translatable field on Entry / Experience | Extend T1.14 with a token from the seed for that field; update extractFormData parsers via grep |
+| Add a non-text language-neutral field on Entry / Experience | No skill update needed — it lives on the parent, not the translation table |
 | Remove a feature | Mark the corresponding check `### Removed in <commit-sha>` rather than deleting (so reviewers can see the history) |
 | Add an interactive flow that mutates DB | Add a Tier 2 check with its own cleanup step (or declare the residue clearly) |
 
