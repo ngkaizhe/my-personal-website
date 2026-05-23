@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createEntry, getExperienceOptions, EntryDetail } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
 
@@ -6,25 +6,42 @@ export const metadata = {
     title: "Add Entry",
 };
 
-const emptyItem: EntryDetail = {
-    date: new Date().toISOString().substring(0, 10),
-    title: '',
-    actionVerb: '',
-    description: '',
-    impact: '',
-    details: '',
-    tag: '',
-    color: 'blue',
-    techStack: [],
-    linkUrl: '',
-    linkText: '',
-    iconName: 'help-circle',
-    experienceId: '',
-};
+const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
+
+function blankTranslation(locale: string) {
+    return {
+        locale,
+        title: '',
+        actionVerb: '',
+        description: '',
+        impact: '',
+        details: '',
+        tag: '',
+        sourceHash: null,
+        lastTranslatedAt: null,
+    };
+}
 
 export default async function NewEntryPage() {
-    const experiences = await getExperienceOptions();
-    const t = await getTranslations('Entries');
+    const [experiences, locale, t] = await Promise.all([
+        getExperienceOptions(),
+        getLocale(),
+        getTranslations('Entries'),
+    ]);
+
+    // primaryLocale defaults to whichever locale the user is currently viewing
+    // the dashboard in — that's the language they're about to type in.
+    const emptyItem: EntryDetail = {
+        date: new Date().toISOString().substring(0, 10),
+        primaryLocale: locale,
+        color: 'blue',
+        techStack: [],
+        linkUrl: '',
+        linkText: '',
+        iconName: 'help-circle',
+        experienceId: '',
+        translations: SUPPORTED_LOCALES.map(blankTranslation),
+    };
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">

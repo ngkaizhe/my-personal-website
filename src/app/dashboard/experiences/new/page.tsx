@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createExperience, ExperienceDetail } from "../actions";
 import ExperienceForm from "@/components/Experience/ExperienceForm";
 
@@ -6,18 +6,30 @@ export const metadata = {
     title: "Add Experience",
 };
 
-const emptyItem: ExperienceDetail = {
-    type: 'JOB',
-    organization: '',
-    role: '',
-    startDate: new Date().toISOString().substring(0, 10),
-    endDate: '',
-    description: '',
-    color: 'blue',
-};
+const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
+
+function blankExpTranslation(locale: string) {
+    return {
+        locale,
+        organization: '',
+        role: '',
+        description: '',
+        sourceHash: null,
+        lastTranslatedAt: null,
+    };
+}
 
 export default async function NewExperiencePage() {
-    const t = await getTranslations('Experiences');
+    const [locale, t] = await Promise.all([getLocale(), getTranslations('Experiences')]);
+
+    const emptyItem: ExperienceDetail = {
+        type: 'JOB',
+        primaryLocale: locale,
+        startDate: new Date().toISOString().substring(0, 10),
+        endDate: '',
+        color: 'blue',
+        translations: SUPPORTED_LOCALES.map(blankExpTranslation),
+    };
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
