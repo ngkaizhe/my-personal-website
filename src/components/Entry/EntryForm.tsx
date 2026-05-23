@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { EntryDetail } from '@/app/dashboard/entries/actions';
+import { useLocale, useTranslations } from 'next-intl';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { EntryDetail, EntryTranslationDraft } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
 import IconPicker from '@/components/ui/IconPicker';
@@ -13,17 +14,17 @@ import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPrevi
 import NewExperienceModal from '@/components/Experience/NewExperienceModal';
 
 const ENTRIES_LIST = '/dashboard/entries';
-
-// Sentinel <option> value used to open the inline-create modal. Picked so it
-// can't collide with a real UUID.
 const NEW_EXPERIENCE_SENTINEL = '__new__';
+const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+const LOCALE_LABEL: Record<SupportedLocale, string> = { en: 'English', 'zh-TW': '中文' };
 
 import type { ExperienceType } from '@/lib/types';
 
 export interface ExperienceOption {
     id: string;
     type: ExperienceType;
-    name: string;       // organization (kept as `name` for option-display callers)
+    name: string;
     role: string | null;
 }
 
@@ -50,6 +51,10 @@ function Section({ title, delay, children }: { title: string; delay: number; chi
     );
 }
 
+function isBlankTranslation(t: EntryTranslationDraft): boolean {
+    return !t.title.trim() && !t.description.trim() && !t.tag.trim();
+}
+
 interface Props {
     item: EntryDetail;
     experiences: ExperienceOption[];
@@ -58,18 +63,16 @@ interface Props {
 
 export default function EntryForm({ item, experiences, action }: Props) {
     const router = useRouter();
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const uiLocale = useLocale();
     const t = useTranslations('EntryForm');
     const tCommon = useTranslations('Common');
-    const initial = useMemo<PreviewData>(() => ({
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Initial: shared fields + per-locale translation drafts.
+    const initialShared = useMemo(() => ({
         date: item.date,
-        title: item.title,
-        actionVerb: item.actionVerb,
-        description: item.description,
-        impact: item.impact,
-        details: item.details,
-        tag: item.tag,
+        primaryLocale: item.primaryLocale,
         color: item.color,
         iconName: item.iconName,
         techStack: item.techStack,
@@ -77,39 +80,52 @@ export default function EntryForm({ item, experiences, action }: Props) {
         linkText: item.linkText,
         experienceId: item.experienceId,
     }), [item]);
-    const [preview, setPreview] = useState<PreviewData>(initial);
+
+    const initialTranslations = useMemo(() => {
+        const byLocale: Record<string, EntryTranslationDraft> = {};
+        for (const tr of item.translations) byLocale[tr.locale] = tr;
+        return byLocale as Record<SupportedLocale, EntryTranslationDraft>;
+    }, [item]);
+
+    const [shared, setShared] = useState(initialShared);
+    const [translations, setTranslations] = useState(initialTranslations);
+    const [activeLocale, setActiveLocale] = useState<SupportedLocale>(
+        (SUPPORTED_LOCALES as readonly string[]).includes(uiLocale) ? (uiLocale as SupportedLocale) : 'en',
+    );
+
     const [confirmingCancel, setConfirmingCancel] = useState(false);
-    // Local copy of the experience list so newly-created entries from the
-    // inline modal can appear in the dropdown without a page reload.
     const [experiencesState, setExperiencesState] = useState(experiences);
     const [creatingExperience, setCreatingExperience] = useState(false);
 
-    const updateField = <K extends keyof PreviewData>(field: K, value: PreviewData[K]) => {
-        setPreview(prev => ({ ...prev, [field]: value }));
+    const updateShared = <K extends keyof typeof initialShared>(field: K, value: (typeof initialShared)[K]) => {
+        setShared(prev => ({ ...prev, [field]: value }));
     };
 
-    const selectedExperience = experiencesState.find(e => e.id === preview.experienceId);
+    const updateTranslation = (locale: SupportedLocale, field: keyof EntryTranslationDraft, value: string) => {
+        setTranslations(prev => ({
+            ...prev,
+            [locale]: { ...prev[locale], [field]: value },
+        }));
+    };
+
+    const selectedExperience = experiencesState.find(e => e.id === shared.experienceId);
 
     const handleExperienceChange = (value: string) => {
         if (value === NEW_EXPERIENCE_SENTINEL) {
-            // Don't store the sentinel as the actual field value — open the
-            // modal instead, and leave the previous selection intact so a
-            // cancel doesn't blank out the field.
             setCreatingExperience(true);
             return;
         }
-        updateField('experienceId', value);
+        updateShared('experienceId', value);
     };
 
-    // Compare current draft against the initial item to detect unsaved edits.
-    // JSON.stringify is fine here because the shape is small and serializable.
     const isDirty = useMemo(
-        () => !submitting && JSON.stringify(preview) !== JSON.stringify(initial),
-        [preview, initial, submitting]
+        () => !submitting && (
+            JSON.stringify(shared) !== JSON.stringify(initialShared) ||
+            JSON.stringify(translations) !== JSON.stringify(initialTranslations)
+        ),
+        [shared, translations, initialShared, initialTranslations, submitting],
     );
 
-    // Layer 1: tab close / external nav. The browser shows its native prompt;
-    // the message is ignored by modern browsers but the prompt itself fires.
     useEffect(() => {
         if (!isDirty) return;
         const handler = (e: BeforeUnloadEvent) => {
@@ -122,7 +138,6 @@ export default function EntryForm({ item, experiences, action }: Props) {
 
     const handleCancelClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         if (isDirty) {
-            // Layer 2: in-app SPA nav (no beforeunload). Show our own dialog.
             e.preventDefault();
             setConfirmingCancel(true);
         }
@@ -133,7 +148,7 @@ export default function EntryForm({ item, experiences, action }: Props) {
         setSubmitting(true);
         setError(null);
         const formData = new FormData(e.currentTarget);
-        preview.techStack.forEach(tech => formData.append('techStack', tech));
+        shared.techStack.forEach(tech => formData.append('techStack', tech));
 
         try {
             await action(formData);
@@ -144,22 +159,39 @@ export default function EntryForm({ item, experiences, action }: Props) {
         }
     };
 
+    const active = translations[activeLocale];
+    const previewData: PreviewData = {
+        date: shared.date,
+        title: active.title,
+        actionVerb: active.actionVerb,
+        description: active.description,
+        impact: active.impact,
+        details: active.details,
+        tag: active.tag,
+        color: shared.color,
+        iconName: shared.iconName,
+        techStack: shared.techStack,
+        linkUrl: shared.linkUrl,
+        linkText: shared.linkText,
+        experienceId: shared.experienceId,
+    };
+
     return (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
             <form
                 onSubmit={handleSubmit}
                 className="space-y-8 bg-form-bg backdrop-blur-sm p-4 md:p-8 rounded-2xl border border-form-border shadow-2xl"
             >
-                {/* Basic Info */}
+                {/* Shared / language-neutral fields */}
                 <Section title={t('sectionBasic')} delay={0}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label htmlFor="field-date" className={labelClass}>{t('date')}</label>
-                            <input id="field-date" type="date" name="date" value={preview.date} onChange={e => updateField('date', e.target.value)} required className={inputClass} />
+                            <input id="field-date" type="date" name="date" value={shared.date} onChange={e => updateShared('date', e.target.value)} required className={inputClass} />
                         </div>
                         <div>
                             <label htmlFor="field-experience" className={labelClass}>{t('experience')} <span className="text-text-faint">{tCommon('optional')}</span></label>
-                            <select id="field-experience" name="experienceId" value={preview.experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
+                            <select id="field-experience" name="experienceId" value={shared.experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
                                 <option value="">{t('experienceNone')}</option>
                                 {experiencesState.map(exp => (
                                     <option key={exp.id} value={exp.id}>
@@ -170,66 +202,120 @@ export default function EntryForm({ item, experiences, action }: Props) {
                             </select>
                         </div>
                         <div>
-                            <label htmlFor="field-action-verb" className={labelClass}>{t('actionVerb')} <span className="text-text-faint">{t('actionVerbHint')}</span></label>
-                            <input id="field-action-verb" name="actionVerb" value={preview.actionVerb} onChange={e => updateField('actionVerb', e.target.value)} className={inputClass} placeholder={t('actionVerbPlaceholder')} />
-                        </div>
-                        <div>
-                            <label htmlFor="field-title" className={labelClass}>{t('title')}</label>
-                            <input id="field-title" name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder={t('titlePlaceholder')} />
-                        </div>
-                        <div>
-                            <label htmlFor="field-tag" className={labelClass}>{t('tag')}</label>
-                            <input id="field-tag" name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder={t('tagPlaceholder')} />
-                        </div>
-                        <div>
                             <label htmlFor="field-icon" className={labelClass}>{t('icon')}</label>
-                            <IconPicker id="field-icon" name="iconName" value={preview.iconName} onChange={v => updateField('iconName', v)} className={inputClass} />
+                            <IconPicker id="field-icon" name="iconName" value={shared.iconName} onChange={v => updateShared('iconName', v)} className={inputClass} />
                         </div>
                     </div>
-                    <ColorPicker name="color" label={t('color')} value={preview.color} onChange={c => updateField('color', c)} />
+                    <ColorPicker name="color" label={t('color')} value={shared.color} onChange={c => updateShared('color', c)} />
                 </Section>
 
-                {/* Content */}
+                {/* Per-locale tabs */}
                 <Section title={t('sectionContent')} delay={0.1}>
-                    <div>
-                        <label htmlFor="field-description" className={labelClass}>{t('description')}</label>
-                        <textarea id="field-description" name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder={t('descriptionPlaceholder')} />
+                    <div role="tablist" aria-label={t('localeTabsLabel')} className="flex gap-1 border-b border-form-section-border">
+                        {SUPPORTED_LOCALES.map(loc => {
+                            const blank = isBlankTranslation(translations[loc]);
+                            const active = activeLocale === loc;
+                            return (
+                                <button
+                                    key={loc}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={active}
+                                    aria-controls={`tabpanel-${loc}`}
+                                    id={`tab-${loc}`}
+                                    onClick={() => setActiveLocale(loc)}
+                                    className={`px-4 py-2.5 text-sm font-medium rounded-t-lg cursor-pointer transition-colors
+                                        flex items-center gap-2
+                                        ${active
+                                            ? 'bg-surface-elevated text-text-primary border border-form-section-border border-b-transparent -mb-px'
+                                            : 'text-text-muted hover:text-text-primary hover:bg-surface-elevated/50'
+                                        }
+                                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
+                                >
+                                    {LOCALE_LABEL[loc]}
+                                    {blank
+                                        ? <AlertCircle className="w-4 h-4 text-amber-500" aria-label={t('localeMissing')} />
+                                        : <CheckCircle2 className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
+                                    }
+                                </button>
+                            );
+                        })}
                     </div>
-                    <div>
-                        <label htmlFor="field-impact" className={labelClass}>
-                            {t('impact')} <span className="text-text-faint">{t('impactHint')}</span>
-                        </label>
-                        <input id="field-impact" name="impact" value={preview.impact} onChange={e => updateField('impact', e.target.value)} className={inputClass} placeholder={t('impactPlaceholder')} />
-                    </div>
-                    <div>
-                        <label htmlFor="field-details" className={labelClass}>{t('details')} <span className="text-text-faint">{tCommon('optional')}</span></label>
-                        <textarea id="field-details" name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder={t('detailsPlaceholder')} />
-                    </div>
+
+                    {SUPPORTED_LOCALES.map(loc => (
+                        <div
+                            key={loc}
+                            role="tabpanel"
+                            id={`tabpanel-${loc}`}
+                            aria-labelledby={`tab-${loc}`}
+                            hidden={activeLocale !== loc}
+                            className="space-y-5 pt-2"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5">
+                                <div>
+                                    <label htmlFor={`field-actionVerb-${loc}`} className={labelClass}>{t('actionVerb')} <span className="text-text-faint">{t('actionVerbHint')}</span></label>
+                                    <input id={`field-actionVerb-${loc}`} name={`actionVerb_${loc}`} value={translations[loc].actionVerb} onChange={e => updateTranslation(loc, 'actionVerb', e.target.value)} className={inputClass} placeholder={t('actionVerbPlaceholder')} />
+                                </div>
+                                <div>
+                                    <label htmlFor={`field-title-${loc}`} className={labelClass}>{t('title')}</label>
+                                    <input id={`field-title-${loc}`} name={`title_${loc}`} value={translations[loc].title} onChange={e => updateTranslation(loc, 'title', e.target.value)} className={inputClass} placeholder={t('titlePlaceholder')} />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor={`field-tag-${loc}`} className={labelClass}>{t('tag')}</label>
+                                <input id={`field-tag-${loc}`} name={`tag_${loc}`} value={translations[loc].tag} onChange={e => updateTranslation(loc, 'tag', e.target.value)} className={inputClass} placeholder={t('tagPlaceholder')} />
+                            </div>
+                            <div>
+                                <label htmlFor={`field-description-${loc}`} className={labelClass}>{t('description')}</label>
+                                <textarea id={`field-description-${loc}`} name={`description_${loc}`} value={translations[loc].description} onChange={e => updateTranslation(loc, 'description', e.target.value)} rows={2} className={inputClass} placeholder={t('descriptionPlaceholder')} />
+                            </div>
+                            <div>
+                                <label htmlFor={`field-impact-${loc}`} className={labelClass}>
+                                    {t('impact')} <span className="text-text-faint">{t('impactHint')}</span>
+                                </label>
+                                <input id={`field-impact-${loc}`} name={`impact_${loc}`} value={translations[loc].impact} onChange={e => updateTranslation(loc, 'impact', e.target.value)} className={inputClass} placeholder={t('impactPlaceholder')} />
+                            </div>
+                            <div>
+                                <label htmlFor={`field-details-${loc}`} className={labelClass}>{t('details')} <span className="text-text-faint">{tCommon('optional')}</span></label>
+                                <textarea id={`field-details-${loc}`} name={`details_${loc}`} value={translations[loc].details} onChange={e => updateTranslation(loc, 'details', e.target.value)} rows={4} className={inputClass} placeholder={t('detailsPlaceholder')} />
+                            </div>
+                            {isBlankTranslation(translations[loc]) && loc !== shared.primaryLocale && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {t('localeBlankHint', { locale: LOCALE_LABEL[loc] })}
+                                </p>
+                            )}
+                        </div>
+                    ))}
+
                     <div>
                         <label htmlFor="field-techstack" className={labelClass}>{t('techStack')} <span className="text-text-faint">{t('techStackHint')}</span></label>
                         <TagInput
                             id="field-techstack"
-                            values={preview.techStack}
-                            onChange={techStack => setPreview(prev => ({ ...prev, techStack }))}
+                            values={shared.techStack}
+                            onChange={techStack => updateShared('techStack', techStack)}
                             placeholder={t('techStackPlaceholder')}
                             className={inputClass}
                         />
                     </div>
                 </Section>
 
-                {/* Links */}
+                {/* Links — shared */}
                 <Section title={t('sectionLinks')} delay={0.2}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label htmlFor="field-linkurl" className={labelClass}>{t('url')} <span className="text-text-faint">{tCommon('optional')}</span></label>
-                            <input id="field-linkurl" type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder={t('urlPlaceholder')} />
+                            <input id="field-linkurl" type="url" name="linkUrl" value={shared.linkUrl} onChange={e => updateShared('linkUrl', e.target.value)} className={inputClass} placeholder={t('urlPlaceholder')} />
                         </div>
                         <div>
                             <label htmlFor="field-linktext" className={labelClass}>{t('linkText')} <span className="text-text-faint">{tCommon('optional')}</span></label>
-                            <input id="field-linktext" name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder={t('linkTextPlaceholder')} />
+                            <input id="field-linktext" name="linkText" value={shared.linkText} onChange={e => updateShared('linkText', e.target.value)} className={inputClass} placeholder={t('linkTextPlaceholder')} />
                         </div>
                     </div>
                 </Section>
+
+                {/* Hidden — primaryLocale tracks which side was authored first */}
+                <input type="hidden" name="primaryLocale" value={shared.primaryLocale} />
 
                 {error && (
                     <div role="alert" className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
@@ -261,10 +347,12 @@ export default function EntryForm({ item, experiences, action }: Props) {
                 </div>
             </form>
 
-            {/* Live Preview */}
+            {/* Preview — reflects the active tab */}
             <div className="sticky top-24">
-                <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">{t('previewLabel')}</p>
-                <EntryFormPreview data={preview} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role ?? undefined} />
+                <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">
+                    {t('previewLabel')} · {LOCALE_LABEL[activeLocale]}
+                </p>
+                <EntryFormPreview data={previewData} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role ?? undefined} />
             </div>
 
             <ConfirmDialog
@@ -283,7 +371,7 @@ export default function EntryForm({ item, experiences, action }: Props) {
                 onClose={() => setCreatingExperience(false)}
                 onCreated={(option) => {
                     setExperiencesState(prev => [option, ...prev]);
-                    updateField('experienceId', option.id);
+                    updateShared('experienceId', option.id);
                     setCreatingExperience(false);
                 }}
             />
