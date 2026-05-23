@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { EntryDetail } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -59,6 +60,8 @@ export default function EntryForm({ item, experiences, action }: Props) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const t = useTranslations('EntryForm');
+    const tCommon = useTranslations('Common');
     const initial = useMemo<PreviewData>(() => ({
         date: item.date,
         title: item.title,
@@ -130,13 +133,13 @@ export default function EntryForm({ item, experiences, action }: Props) {
         setSubmitting(true);
         setError(null);
         const formData = new FormData(e.currentTarget);
-        preview.techStack.forEach(t => formData.append('techStack', t));
+        preview.techStack.forEach(tech => formData.append('techStack', tech));
 
         try {
             await action(formData);
         } catch (err) {
             console.error('Failed to save entry:', err);
-            setError(err instanceof Error ? err.message : 'Failed to save entry. Please try again.');
+            setError(err instanceof Error ? err.message : t('errorGeneric'));
             setSubmitting(false);
         }
     };
@@ -148,82 +151,82 @@ export default function EntryForm({ item, experiences, action }: Props) {
                 className="space-y-8 bg-form-bg backdrop-blur-sm p-4 md:p-8 rounded-2xl border border-form-border shadow-2xl"
             >
                 {/* Basic Info */}
-                <Section title="Basic Info" delay={0}>
+                <Section title={t('sectionBasic')} delay={0}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label htmlFor="field-date" className={labelClass}>Date</label>
+                            <label htmlFor="field-date" className={labelClass}>{t('date')}</label>
                             <input id="field-date" type="date" name="date" value={preview.date} onChange={e => updateField('date', e.target.value)} required className={inputClass} />
                         </div>
                         <div>
-                            <label htmlFor="field-experience" className={labelClass}>Experience <span className="text-text-faint">(Optional)</span></label>
+                            <label htmlFor="field-experience" className={labelClass}>{t('experience')} <span className="text-text-faint">{tCommon('optional')}</span></label>
                             <select id="field-experience" name="experienceId" value={preview.experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
-                                <option value="">— None (personal / outside work) —</option>
+                                <option value="">{t('experienceNone')}</option>
                                 {experiencesState.map(exp => (
                                     <option key={exp.id} value={exp.id}>
                                         {exp.role ? `${exp.name} — ${exp.role}` : exp.name}
                                     </option>
                                 ))}
-                                <option value={NEW_EXPERIENCE_SENTINEL}>+ Create new experience…</option>
+                                <option value={NEW_EXPERIENCE_SENTINEL}>{t('createNewExperience')}</option>
                             </select>
                         </div>
                         <div>
-                            <label htmlFor="field-action-verb" className={labelClass}>Action Verb <span className="text-text-faint">(e.g. Led, Shipped, Reduced)</span></label>
-                            <input id="field-action-verb" name="actionVerb" value={preview.actionVerb} onChange={e => updateField('actionVerb', e.target.value)} className={inputClass} placeholder="Shipped" />
+                            <label htmlFor="field-action-verb" className={labelClass}>{t('actionVerb')} <span className="text-text-faint">{t('actionVerbHint')}</span></label>
+                            <input id="field-action-verb" name="actionVerb" value={preview.actionVerb} onChange={e => updateField('actionVerb', e.target.value)} className={inputClass} placeholder={t('actionVerbPlaceholder')} />
                         </div>
                         <div>
-                            <label htmlFor="field-title" className={labelClass}>Title</label>
-                            <input id="field-title" name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder="Migrated checkout to Zustand" />
+                            <label htmlFor="field-title" className={labelClass}>{t('title')}</label>
+                            <input id="field-title" name="title" value={preview.title} onChange={e => updateField('title', e.target.value)} required className={inputClass} placeholder={t('titlePlaceholder')} />
                         </div>
                         <div>
-                            <label htmlFor="field-tag" className={labelClass}>Tag</label>
-                            <input id="field-tag" name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder="Engineering" />
+                            <label htmlFor="field-tag" className={labelClass}>{t('tag')}</label>
+                            <input id="field-tag" name="tag" value={preview.tag} onChange={e => updateField('tag', e.target.value)} required className={inputClass} placeholder={t('tagPlaceholder')} />
                         </div>
                         <div>
-                            <label htmlFor="field-icon" className={labelClass}>Icon</label>
+                            <label htmlFor="field-icon" className={labelClass}>{t('icon')}</label>
                             <IconPicker id="field-icon" name="iconName" value={preview.iconName} onChange={v => updateField('iconName', v)} className={inputClass} />
                         </div>
                     </div>
-                    <ColorPicker name="color" label="Color" value={preview.color} onChange={c => updateField('color', c)} />
+                    <ColorPicker name="color" label={t('color')} value={preview.color} onChange={c => updateField('color', c)} />
                 </Section>
 
                 {/* Content */}
-                <Section title="Content" delay={0.1}>
+                <Section title={t('sectionContent')} delay={0.1}>
                     <div>
-                        <label htmlFor="field-description" className={labelClass}>Short Description</label>
-                        <textarea id="field-description" name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder="What did you do?" />
+                        <label htmlFor="field-description" className={labelClass}>{t('description')}</label>
+                        <textarea id="field-description" name="description" value={preview.description} onChange={e => updateField('description', e.target.value)} required rows={2} className={inputClass} placeholder={t('descriptionPlaceholder')} />
                     </div>
                     <div>
                         <label htmlFor="field-impact" className={labelClass}>
-                            Impact <span className="text-text-faint">(Quantified outcome)</span>
+                            {t('impact')} <span className="text-text-faint">{t('impactHint')}</span>
                         </label>
-                        <input id="field-impact" name="impact" value={preview.impact} onChange={e => updateField('impact', e.target.value)} className={inputClass} placeholder="Reduced bundle size by 40KB" />
+                        <input id="field-impact" name="impact" value={preview.impact} onChange={e => updateField('impact', e.target.value)} className={inputClass} placeholder={t('impactPlaceholder')} />
                     </div>
                     <div>
-                        <label htmlFor="field-details" className={labelClass}>Details <span className="text-text-faint">(Optional)</span></label>
-                        <textarea id="field-details" name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder="Context, approach, learnings..." />
+                        <label htmlFor="field-details" className={labelClass}>{t('details')} <span className="text-text-faint">{tCommon('optional')}</span></label>
+                        <textarea id="field-details" name="details" value={preview.details} onChange={e => updateField('details', e.target.value)} rows={4} className={inputClass} placeholder={t('detailsPlaceholder')} />
                     </div>
                     <div>
-                        <label htmlFor="field-techstack" className={labelClass}>Tech Stack / Skills <span className="text-text-faint">(Press Enter to add)</span></label>
+                        <label htmlFor="field-techstack" className={labelClass}>{t('techStack')} <span className="text-text-faint">{t('techStackHint')}</span></label>
                         <TagInput
                             id="field-techstack"
                             values={preview.techStack}
                             onChange={techStack => setPreview(prev => ({ ...prev, techStack }))}
-                            placeholder="Type a technology and press Enter..."
+                            placeholder={t('techStackPlaceholder')}
                             className={inputClass}
                         />
                     </div>
                 </Section>
 
                 {/* Links */}
-                <Section title="Links" delay={0.2}>
+                <Section title={t('sectionLinks')} delay={0.2}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label htmlFor="field-linkurl" className={labelClass}>URL <span className="text-text-faint">(Optional)</span></label>
-                            <input id="field-linkurl" type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder="https://example.com" />
+                            <label htmlFor="field-linkurl" className={labelClass}>{t('url')} <span className="text-text-faint">{tCommon('optional')}</span></label>
+                            <input id="field-linkurl" type="url" name="linkUrl" value={preview.linkUrl} onChange={e => updateField('linkUrl', e.target.value)} className={inputClass} placeholder={t('urlPlaceholder')} />
                         </div>
                         <div>
-                            <label htmlFor="field-linktext" className={labelClass}>Link Text <span className="text-text-faint">(Optional)</span></label>
-                            <input id="field-linktext" name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder="View PR" />
+                            <label htmlFor="field-linktext" className={labelClass}>{t('linkText')} <span className="text-text-faint">{tCommon('optional')}</span></label>
+                            <input id="field-linktext" name="linkText" value={preview.linkText} onChange={e => updateField('linkText', e.target.value)} className={inputClass} placeholder={t('linkTextPlaceholder')} />
                         </div>
                     </div>
                 </Section>
@@ -246,30 +249,30 @@ export default function EntryForm({ item, experiences, action }: Props) {
                             submitting ? 'pointer-events-none opacity-50' : ''
                         }`}
                     >
-                        Cancel
+                        {tCommon('cancel')}
                     </Link>
                     <button
                         type="submit"
                         disabled={submitting}
                         className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30"
                     >
-                        {submitting ? 'Saving...' : 'Save Entry'}
+                        {submitting ? t('savingEntry') : t('saveEntry')}
                     </button>
                 </div>
             </form>
 
             {/* Live Preview */}
             <div className="sticky top-24">
-                <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">Preview</p>
+                <p className="text-sm font-medium text-text-muted mb-3 uppercase tracking-wide">{t('previewLabel')}</p>
                 <EntryFormPreview data={preview} experienceName={selectedExperience?.name} experienceRole={selectedExperience?.role ?? undefined} />
             </div>
 
             <ConfirmDialog
                 open={confirmingCancel}
-                title="Discard unsaved changes?"
-                description="You have unsaved edits. Leave this page and lose them?"
-                confirmLabel="Discard"
-                pendingLabel="Leaving…"
+                title={t('discardTitle')}
+                description={t('discardDescription')}
+                confirmLabel={tCommon('discard')}
+                pendingLabel={tCommon('leaving')}
                 danger
                 onConfirm={() => router.push(ENTRIES_LIST)}
                 onClose={() => setConfirmingCancel(false)}

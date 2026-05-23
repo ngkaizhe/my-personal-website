@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { getTextClass, getBadgeClass } from '@/lib/colors';
 import EntryCard from '@/components/Entry/EntryCard';
 
@@ -26,24 +27,26 @@ interface Props {
 }
 
 export default function EntryFormPreview({ data, experienceName, experienceRole }: Props) {
+    const t = useTranslations('EntryCard');
+    const locale = useLocale();
     const displayDate = data.date
-        ? new Date(data.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
-        : 'Today';
+        ? new Date(data.date).toLocaleDateString(locale, { year: 'numeric', month: 'long' })
+        : t('previewToday');
     return (
         <div className="bg-surface rounded-xl shadow-2xl overflow-hidden">
             <EntryCard
                 date={displayDate}
-                title={data.title || 'Untitled'}
+                title={data.title || t('previewUntitled')}
                 actionVerb={data.actionVerb || undefined}
                 tag={data.tag}
                 textColorClass={getTextClass(data.color)}
                 badgeColorClass={getBadgeClass(data.color)}
                 iconName={data.iconName || 'help-circle'}
-                description={data.description || 'No description yet...'}
+                description={data.description || t('previewNoDescription')}
                 impact={data.impact || undefined}
                 details={data.details || undefined}
                 techStack={data.techStack}
-                link={data.linkUrl ? { url: data.linkUrl, text: data.linkText || 'Link' } : null}
+                link={data.linkUrl ? { url: data.linkUrl, text: data.linkText || t('previewLinkFallback') } : null}
                 experienceName={experienceName}
                 experienceRole={experienceRole}
             />

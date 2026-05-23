@@ -3,62 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ExperienceDetail } from '@/app/dashboard/experiences/actions';
 import type { ExperienceType } from '@/lib/types';
 import ColorPicker from '@/components/ui/ColorPicker';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
-const TYPE_CONFIG: Record<ExperienceType, {
-    label: string;
-    organizationLabel: string;
-    organizationPlaceholder: string;
-    rolePlaceholder: string;
-    roleHint: string;
-}> = {
-    JOB: {
-        label: 'Job',
-        organizationLabel: 'Company',
-        organizationPlaceholder: 'TechStartup Co.',
-        rolePlaceholder: 'Senior Frontend Engineer',
-        roleHint: '',
-    },
-    EDUCATION: {
-        label: 'Education',
-        organizationLabel: 'School',
-        organizationPlaceholder: 'State University',
-        rolePlaceholder: 'BSc Computer Science',
-        roleHint: '',
-    },
-    PROJECT: {
-        label: 'Side project',
-        organizationLabel: 'Project name',
-        organizationPlaceholder: 'PeerLink',
-        rolePlaceholder: 'Creator / Solo dev',
-        roleHint: '(Optional)',
-    },
-    VOLUNTEER: {
-        label: 'Volunteer / Community',
-        organizationLabel: 'Organization',
-        organizationPlaceholder: 'Open source — Node.js',
-        rolePlaceholder: 'Maintainer',
-        roleHint: '(Optional)',
-    },
-    BREAK: {
-        label: 'Break / Sabbatical',
-        organizationLabel: 'Label',
-        organizationPlaceholder: 'Travel year',
-        rolePlaceholder: '',
-        roleHint: '(Optional)',
-    },
-};
-
-const TYPE_OPTIONS: { value: ExperienceType; label: string }[] = [
-    { value: 'JOB', label: TYPE_CONFIG.JOB.label },
-    { value: 'EDUCATION', label: TYPE_CONFIG.EDUCATION.label },
-    { value: 'PROJECT', label: TYPE_CONFIG.PROJECT.label },
-    { value: 'VOLUNTEER', label: TYPE_CONFIG.VOLUNTEER.label },
-    { value: 'BREAK', label: TYPE_CONFIG.BREAK.label },
-];
+const TYPE_OPTIONS: ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER', 'BREAK'];
 
 const EXPERIENCES_LIST = '/dashboard/experiences';
 
@@ -84,6 +35,9 @@ export default function ExperienceForm({ item, action }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [state, setState] = useState<ExperienceDetail>(item);
     const [confirmingCancel, setConfirmingCancel] = useState(false);
+    const t = useTranslations('ExperienceForm');
+    const tType = useTranslations('ExperienceType');
+    const tCommon = useTranslations('Common');
 
     const update = <K extends keyof ExperienceDetail>(k: K, v: ExperienceDetail[K]) => {
         setState(prev => ({ ...prev, [k]: v }));
@@ -121,10 +75,13 @@ export default function ExperienceForm({ item, action }: Props) {
             await action(formData);
         } catch (err) {
             console.error('Failed to save experience:', err);
-            setError(err instanceof Error ? err.message : 'Failed to save experience.');
+            setError(err instanceof Error ? err.message : t('errorGeneric'));
             setSubmitting(false);
         }
     };
+
+    const roleRequired = state.type === 'JOB' || state.type === 'EDUCATION';
+    const roleHint = roleRequired ? '' : tCommon('optional');
 
     return (
         <form
@@ -132,7 +89,7 @@ export default function ExperienceForm({ item, action }: Props) {
             className="space-y-6 bg-form-bg backdrop-blur-sm p-4 md:p-8 rounded-2xl border border-form-border shadow-2xl"
         >
             <div>
-                <label htmlFor="experience-type" className={labelClass}>Type</label>
+                <label htmlFor="experience-type" className={labelClass}>{t('type')}</label>
                 <select
                     id="experience-type"
                     name="type"
@@ -140,16 +97,16 @@ export default function ExperienceForm({ item, action }: Props) {
                     onChange={e => update('type', e.target.value as ExperienceType)}
                     className={inputClass}
                 >
-                    {TYPE_OPTIONS.map(o => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                    {TYPE_OPTIONS.map(opt => (
+                        <option key={opt} value={opt}>{tType(opt)}</option>
                     ))}
                 </select>
                 <p className="text-xs text-text-faint mt-1">
-                    Determines how this period is grouped on the public profile and résumé.
+                    {t('typeHint')}
                 </p>
             </div>
             <div>
-                <label htmlFor="experience-organization" className={labelClass}>{TYPE_CONFIG[state.type].organizationLabel}</label>
+                <label htmlFor="experience-organization" className={labelClass}>{tType(`orgLabel_${state.type}`)}</label>
                 <input
                     id="experience-organization"
                     name="organization"
@@ -157,38 +114,38 @@ export default function ExperienceForm({ item, action }: Props) {
                     onChange={e => update('organization', e.target.value)}
                     required
                     className={inputClass}
-                    placeholder={TYPE_CONFIG[state.type].organizationPlaceholder}
+                    placeholder={tType(`orgPlaceholder_${state.type}`)}
                 />
             </div>
             <div>
                 <label htmlFor="experience-role" className={labelClass}>
-                    Role {TYPE_CONFIG[state.type].roleHint && <span className="text-text-faint">{TYPE_CONFIG[state.type].roleHint}</span>}
+                    {tType('role')} {roleHint && <span className="text-text-faint">{roleHint}</span>}
                 </label>
                 <input
                     id="experience-role"
                     name="role"
                     value={state.role}
                     onChange={e => update('role', e.target.value)}
-                    required={state.type === 'JOB' || state.type === 'EDUCATION'}
+                    required={roleRequired}
                     className={inputClass}
-                    placeholder={TYPE_CONFIG[state.type].rolePlaceholder}
+                    placeholder={tType(`rolePlaceholder_${state.type}`)}
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label htmlFor="experience-start" className={labelClass}>Start Date</label>
+                    <label htmlFor="experience-start" className={labelClass}>{t('startDate')}</label>
                     <input id="experience-start" type="date" name="startDate" value={state.startDate} onChange={e => update('startDate', e.target.value)} required className={inputClass} />
                 </div>
                 <div>
-                    <label htmlFor="experience-end" className={labelClass}>End Date <span className="text-text-faint">(Leave blank if current)</span></label>
+                    <label htmlFor="experience-end" className={labelClass}>{t('endDate')} <span className="text-text-faint">{t('endDateHint')}</span></label>
                     <input id="experience-end" type="date" name="endDate" value={state.endDate} onChange={e => update('endDate', e.target.value)} className={inputClass} />
                 </div>
             </div>
             <div>
-                <label htmlFor="experience-desc" className={labelClass}>Description <span className="text-text-faint">(Optional)</span></label>
-                <textarea id="experience-desc" name="description" value={state.description} onChange={e => update('description', e.target.value)} rows={3} className={inputClass} placeholder="Short description of the company or project..." />
+                <label htmlFor="experience-desc" className={labelClass}>{t('description')} <span className="text-text-faint">{tCommon('optional')}</span></label>
+                <textarea id="experience-desc" name="description" value={state.description} onChange={e => update('description', e.target.value)} rows={3} className={inputClass} placeholder={t('descriptionPlaceholder')} />
             </div>
-            <ColorPicker name="color" label="Color" value={state.color} onChange={c => update('color', c)} />
+            <ColorPicker name="color" label={t('color')} value={state.color} onChange={c => update('color', c)} />
 
             {error && (
                 <div role="alert" className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
@@ -205,23 +162,23 @@ export default function ExperienceForm({ item, action }: Props) {
                         submitting ? 'pointer-events-none opacity-50' : ''
                     }`}
                 >
-                    Cancel
+                    {tCommon('cancel')}
                 </Link>
                 <button
                     type="submit"
                     disabled={submitting}
                     className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30"
                 >
-                    {submitting ? 'Saving...' : 'Save Experience'}
+                    {submitting ? tCommon('saving') : t('saveExperience')}
                 </button>
             </div>
 
             <ConfirmDialog
                 open={confirmingCancel}
-                title="Discard unsaved changes?"
-                description="You have unsaved edits. Leave this page and lose them?"
-                confirmLabel="Discard"
-                pendingLabel="Leaving…"
+                title={t('discardTitle')}
+                description={t('discardDescription')}
+                confirmLabel={tCommon('discard')}
+                pendingLabel={tCommon('leaving')}
                 danger
                 onConfirm={() => router.push(EXPERIENCES_LIST)}
                 onClose={() => setConfirmingCancel(false)}

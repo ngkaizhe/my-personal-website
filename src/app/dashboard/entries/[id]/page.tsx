@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getEntryDetail, updateEntry, getExperienceOptions } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
 import { notFound } from "next/navigation";
@@ -17,6 +18,8 @@ export default async function EditEntryPage({ params }: { params: Promise<{ id: 
         notFound();
     }
 
+    const t = await getTranslations('Entries');
+
     const updateAction = async (formData: FormData) => {
         'use server';
         await updateEntry(resolvedParams.id, formData);
@@ -26,8 +29,8 @@ export default async function EditEntryPage({ params }: { params: Promise<{ id: 
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary">Edit Entry</h1>
-                    <p className="text-text-muted mt-2">Update an existing entry.</p>
+                    <h1 className="text-3xl font-bold text-text-primary">{t('editEntryHeading')}</h1>
+                    <p className="text-text-muted mt-2">{t('editEntrySubtitle')}</p>
                 </div>
 
                 <EntryForm item={item} experiences={experiences} action={updateAction} />

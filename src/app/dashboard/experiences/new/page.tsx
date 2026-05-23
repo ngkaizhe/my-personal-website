@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createExperience, ExperienceDetail } from "../actions";
 import ExperienceForm from "@/components/Experience/ExperienceForm";
 
@@ -15,13 +16,15 @@ const emptyItem: ExperienceDetail = {
     color: 'blue',
 };
 
-export default function NewExperiencePage() {
+export default async function NewExperiencePage() {
+    const t = await getTranslations('Experiences');
+
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-3xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary">Add Experience</h1>
-                    <p className="text-text-muted mt-2">Record a job, school, project, or other life chapter to group entries under.</p>
+                    <h1 className="text-3xl font-bold text-text-primary">{t('addExperienceHeading')}</h1>
+                    <p className="text-text-muted mt-2">{t('addExperienceSubtitle')}</p>
                 </div>
 
                 <ExperienceForm

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { LucideIcon } from '@/components/ui/LucideIcon';
 
 export interface EntryCardProps {
@@ -39,6 +40,7 @@ export default function EntryCard({
     experienceRole,
     titleId,
 }: EntryCardProps) {
+    const t = useTranslations('EntryCard');
     return (
         <div className="p-6 md:p-8">
             {/* Header */}
@@ -91,7 +93,7 @@ export default function EntryCard({
             {/* Tech Stack */}
             {techStack.length > 0 && (
                 <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-text-primary mb-2 uppercase tracking-wide">Tech / Skills</h4>
+                    <h4 className="text-sm font-semibold text-text-primary mb-2 uppercase tracking-wide">{t('techSkillsLabel')}</h4>
                     <div className="flex flex-wrap gap-2">
                         {techStack.map((t, i) => (
                             <span key={i} className="bg-badge-bg text-badge-text text-sm px-3 py-1 rounded-full font-medium">

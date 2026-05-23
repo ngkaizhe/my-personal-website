@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createEntry, getExperienceOptions, EntryDetail } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
 
@@ -23,13 +24,14 @@ const emptyItem: EntryDetail = {
 
 export default async function NewEntryPage() {
     const experiences = await getExperienceOptions();
+    const t = await getTranslations('Entries');
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary">Add Entry</h1>
-                    <p className="text-text-muted mt-2">Log a new achievement or milestone.</p>
+                    <h1 className="text-3xl font-bold text-text-primary">{t('addEntryHeading')}</h1>
+                    <p className="text-text-muted mt-2">{t('addEntrySubtitle')}</p>
                 </div>
 
                 <EntryForm

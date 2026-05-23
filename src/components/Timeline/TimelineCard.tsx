@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types'
 
 interface TimelineCardProps {
@@ -10,8 +11,8 @@ interface TimelineCardProps {
     onClick: () => void;
 }
 
-function formatShortDate(iso: string) {
-    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+function formatShortDate(iso: string, locale: string) {
+    return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'short' });
 }
 
 export const TimelineCard = ({
@@ -21,6 +22,8 @@ export const TimelineCard = ({
 }: TimelineCardProps) => {
     const desktopAlign = isRight ? 'md:text-right' : 'md:text-left';
     const desktopJustify = isRight ? 'md:justify-end' : 'md:justify-start';
+    const t = useTranslations('Timeline');
+    const locale = useLocale();
     return (
         <div
             onClick={onClick}
@@ -32,7 +35,7 @@ export const TimelineCard = ({
             }}
             role="button"
             tabIndex={0}
-            aria-label={`View details for ${item.title.content}`}
+            aria-label={t('viewDetailsFor', { title: item.title.content })}
             className={`px-6 py-4 bg-surface rounded-lg shadow-xl
                 text-left ${desktopAlign}
                 cursor-pointer group hover:shadow-2xl transition-shadow
@@ -42,7 +45,7 @@ export const TimelineCard = ({
                 <span data-palette-accent className={`${item.category.colorClass} text-xs font-semibold px-2.5 py-0.5 rounded-full`}>
                     {item.category.text}
                 </span>
-                <span className="text-xs text-text-muted">{formatShortDate(item.date)}</span>
+                <span className="text-xs text-text-muted">{formatShortDate(item.date, locale)}</span>
             </div>
             <h3 className="mb-1 font-bold text-text-primary text-lg md:text-xl">
                 {item.actionVerb && (
@@ -73,7 +76,7 @@ export const TimelineCard = ({
             <div className={`mt-2 flex items-center gap-1 text-xs text-text-faint transition-opacity
                 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus:opacity-100
                 justify-start ${desktopJustify}`}>
-                <span>View details</span>
+                <span>{t('viewDetails')}</span>
                 <ArrowRight className="w-3 h-3" />
             </div>
         </div>

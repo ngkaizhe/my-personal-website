@@ -2,17 +2,21 @@
 
 import { useState, useMemo, useRef } from 'react';
 import { Copy, Check, Download } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 import type { ExperienceType } from '@/lib/types';
 
-// Section ordering and labels for the résumé output. BREAK falls into the
-// generic "Other" bucket together with unlinked entries.
-const SECTION_TYPES: { type: ExperienceType; heading: string }[] = [
-    { type: 'JOB', heading: 'Experience' },
-    { type: 'EDUCATION', heading: 'Education' },
-    { type: 'PROJECT', heading: 'Projects' },
-    { type: 'VOLUNTEER', heading: 'Volunteer' },
-];
+// Ordering for sections in the résumé output. BREAK is rendered together with
+// the "Other" bucket alongside unlinked entries.
+const SECTION_TYPES: ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER'];
+
+const SECTION_KEY: Record<ExperienceType, string> = {
+    JOB: 'sectionExperience',
+    EDUCATION: 'sectionEducation',
+    PROJECT: 'sectionProjects',
+    VOLUNTEER: 'sectionVolunteer',
+    BREAK: 'sectionOther',
+};
 
 const inputClass = `
     w-full px-4 py-2.5 rounded-xl
@@ -22,9 +26,9 @@ const inputClass = `
     outline-none transition-all duration-200
 `;
 
-function formatExperienceRange(start: string, end: string | null) {
-    const s = new Date(start).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
-    const e = end ? new Date(end).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : 'Present';
+function formatExperienceRange(start: string, end: string | null, locale: string, presentLabel: string) {
+    const s = new Date(start).toLocaleDateString(locale, { year: 'numeric', month: 'short' });
+    const e = end ? new Date(end).toLocaleDateString(locale, { year: 'numeric', month: 'short' }) : presentLabel;
     return `${s} – ${e}`;
 }
 
@@ -54,6 +58,10 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     );
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
     const markdownRef = useRef<HTMLTextAreaElement>(null);
+    const t = useTranslations('Resume');
+    const tCommon = useTranslations('Common');
+    const locale = useLocale();
+    const presentLabel = tCommon('present');
 
     const toggleExperience = (id: string) => {
         setSelectedExperiences(prev => {
@@ -111,7 +119,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
         const writeExperience = (exp: ResumeExperience) => {
             const header = exp.role ? `${exp.organization} — ${exp.role}` : exp.organization;
             lines.push(`## ${header}`);
-            lines.push(`*${formatExperienceRange(exp.startDate, exp.endDate)}*`);
+            lines.push(`*${formatExperienceRange(exp.startDate, exp.endDate, locale, presentLabel)}*`);
             if (exp.description) {
                 lines.push('');
                 lines.push(exp.description);
@@ -123,9 +131,9 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
             lines.push('');
         };
 
-        for (const { type, heading } of SECTION_TYPES) {
+        for (const type of SECTION_TYPES) {
             if (grouped[type].length === 0) continue;
-            lines.push(`# ${heading}`);
+            lines.push(`# ${t(SECTION_KEY[type])}`);
             lines.push('');
             for (const exp of grouped[type]) writeExperience(exp);
         }
@@ -133,7 +141,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
         // BREAK + unlinked entries share an "Other" section.
         const otherExperiences = grouped.BREAK;
         if (otherExperiences.length > 0 || filtered.unlinked.length > 0) {
-            lines.push('# Other');
+            lines.push(`# ${t('sectionOther')}`);
             lines.push('');
             for (const exp of otherExperiences) writeExperience(exp);
             for (const entry of filtered.unlinked) {
@@ -143,14 +151,14 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
         }
 
         if (filtered.skills.length > 0) {
-            lines.push('# Skills');
+            lines.push(`# ${t('skills')}`);
             lines.push('');
             lines.push(filtered.skills.map(s => s.name).join(' · '));
             lines.push('');
         }
 
         return lines.join('\n').trim();
-    }, [grouped, filtered.unlinked, filtered.skills]);
+    }, [grouped, filtered.unlinked, filtered.skills, t, locale, presentLabel]);
 
     const copy = async () => {
         try {
@@ -186,11 +194,11 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
             {/* Filters */}
             <div className="bg-form-bg backdrop-blur-sm p-5 rounded-2xl border border-form-border space-y-5">
                 <h2 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">
-                    Filters
+                    {t('filtersTitle')}
                 </h2>
 
                 <div>
-                    <label className="block text-sm font-medium text-form-label mb-2">Include</label>
+                    <label className="block text-sm font-medium text-form-label mb-2">{t('include')}</label>
                     <div className="space-y-2">
                         {data.experiences.map(exp => (
                             <label key={exp.id} className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
@@ -202,7 +210,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                 />
                                 <span>
                                     <span className="font-medium text-text-primary">{exp.organization}</span>
-                                    <span className="text-text-muted block text-xs">{exp.entries.length} entries</span>
+                                    <span className="text-text-muted block text-xs">{t('entriesCount', { count: exp.entries.length })}</span>
                                 </span>
                             </label>
                         ))}
@@ -214,19 +222,19 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                 className="mt-0.5"
                             />
                             <span>
-                                <span className="font-medium text-text-primary">Other (no experience)</span>
-                                <span className="text-text-muted block text-xs">{data.unlinkedEntries.length} entries</span>
+                                <span className="font-medium text-text-primary">{t('unlinkedOption')}</span>
+                                <span className="text-text-muted block text-xs">{t('entriesCount', { count: data.unlinkedEntries.length })}</span>
                             </span>
                         </label>
                     </div>
                 </div>
 
                 <div>
-                    <label htmlFor="from" className="block text-sm font-medium text-form-label mb-2">From</label>
+                    <label htmlFor="from" className="block text-sm font-medium text-form-label mb-2">{t('from')}</label>
                     <input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                    <label htmlFor="to" className="block text-sm font-medium text-form-label mb-2">To</label>
+                    <label htmlFor="to" className="block text-sm font-medium text-form-label mb-2">{t('to')}</label>
                     <input id="to" type="date" value={to} onChange={e => setTo(e.target.value)} className={inputClass} />
                 </div>
 
@@ -238,10 +246,10 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                     >
                         {copyState === 'copied' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         {copyState === 'copied'
-                            ? 'Copied!'
+                            ? t('copied')
                             : copyState === 'manual'
-                                ? 'Selected — press Ctrl+C'
-                                : 'Copy markdown'}
+                                ? t('copyManual')
+                                : t('copyMarkdown')}
                     </button>
                     <button
                         type="button"
@@ -249,13 +257,13 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
                     >
                         <Download className="w-4 h-4" />
-                        Download .md
+                        {t('downloadMd')}
                     </button>
                     <span role="status" aria-live="polite" className="sr-only">
                         {copyState === 'copied'
-                            ? 'Markdown copied to clipboard.'
+                            ? t('copySrCopied')
                             : copyState === 'manual'
-                                ? 'Markdown selected. Press Ctrl+C or Command+C to copy.'
+                                ? t('copySrManual')
                                 : ''}
                     </span>
                 </div>
@@ -265,19 +273,19 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
             <div className="space-y-6">
                 <div className="bg-surface rounded-2xl shadow-sm border border-border p-5 md:p-8">
                     <h2 className="text-lg font-semibold text-text-primary border-b border-border-light pb-2 mb-4">
-                        Preview
+                        {t('preview')}
                     </h2>
 
                     {filtered.experiences.length === 0 && filtered.unlinked.length === 0 ? (
-                        <p className="text-text-muted text-center py-12">No entries match your filters.</p>
+                        <p className="text-text-muted text-center py-12">{t('noMatching')}</p>
                     ) : (
                         <div className="space-y-8">
-                            {SECTION_TYPES.map(({ type, heading }) => {
+                            {SECTION_TYPES.map((type) => {
                                 const list = grouped[type];
                                 if (list.length === 0) return null;
                                 return (
                                     <section key={type} className="space-y-4">
-                                        <h3 className="text-2xl font-bold text-text-primary">{heading}</h3>
+                                        <h3 className="text-2xl font-bold text-text-primary">{t(SECTION_KEY[type])}</h3>
                                         {list.map(exp => (
                                             <div key={exp.id} className="space-y-2">
                                                 <div>
@@ -285,7 +293,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                                         {exp.organization}
                                                         {exp.role && <span className="text-text-secondary font-medium"> — {exp.role}</span>}
                                                     </div>
-                                                    <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate)}</div>
+                                                    <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate, locale, presentLabel)}</div>
                                                 </div>
                                                 {exp.description && <p className="text-text-secondary text-sm">{exp.description}</p>}
                                                 <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
@@ -307,7 +315,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                             })}
                             {(grouped.BREAK.length > 0 || filtered.unlinked.length > 0) && (
                                 <section className="space-y-4">
-                                    <h3 className="text-2xl font-bold text-text-primary">Other</h3>
+                                    <h3 className="text-2xl font-bold text-text-primary">{t('sectionOther')}</h3>
                                     {grouped.BREAK.map(exp => (
                                         <div key={exp.id} className="space-y-2">
                                             <div>
@@ -315,7 +323,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                                     {exp.organization}
                                                     {exp.role && <span className="text-text-secondary font-medium"> — {exp.role}</span>}
                                                 </div>
-                                                <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate)}</div>
+                                                <div className="text-text-muted text-sm italic">{formatExperienceRange(exp.startDate, exp.endDate, locale, presentLabel)}</div>
                                             </div>
                                             {exp.description && <p className="text-text-secondary text-sm">{exp.description}</p>}
                                             <ul className="space-y-1.5 pl-5 list-disc marker:text-text-muted">
@@ -344,7 +352,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                             )}
                             {filtered.skills.length > 0 && (
                                 <div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-2">Skills</h3>
+                                    <h3 className="text-2xl font-bold text-text-primary mb-2">{t('skills')}</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {filtered.skills.map(s => (
                                             <span key={s.name} className="bg-badge-bg text-badge-text text-sm px-3 py-1 rounded-full font-medium">
@@ -360,7 +368,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
 
                 <div>
                     <label htmlFor="md" className="text-sm font-medium text-text-muted mb-2 uppercase tracking-wide block">
-                        Markdown
+                        {t('markdown')}
                     </label>
                     <textarea
                         ref={markdownRef}

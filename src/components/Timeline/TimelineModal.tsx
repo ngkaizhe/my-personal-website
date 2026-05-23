@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types';
 import EntryCard from '@/components/Entry/EntryCard';
 
@@ -17,6 +18,8 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const triggerRef = useRef<HTMLElement | null>(null);
     const titleId = selectedId ? `modal-title-${selectedId}` : undefined;
+    const t = useTranslations('Timeline');
+    const locale = useLocale();
 
     useEffect(() => {
         if (!selectedId) return;
@@ -79,14 +82,14 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
                     onClick={(e) => { e.stopPropagation(); onClose(); }}
                     className="absolute top-4 right-4 p-2 bg-btn-secondary-bg rounded-full hover:bg-btn-secondary-bg-hover transition-colors z-20
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    aria-label="Close details dialog"
+                    aria-label={t('closeDialog')}
                 >
                     <X size={20} className="text-text-muted" />
                 </button>
 
                 <EntryCard
                     titleId={titleId}
-                    date={new Date(selectedItem.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                    date={new Date(selectedItem.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
                     title={selectedItem.title.content}
                     actionVerb={selectedItem.actionVerb}
                     tag={selectedItem.category.text}

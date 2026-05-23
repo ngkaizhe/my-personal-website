@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import ResumeBuilder from '@/components/Resume/ResumeBuilder';
 import { prisma } from '@/lib/prisma';
 import { fetchResumeByUserId } from '@/lib/resume';
@@ -32,6 +33,7 @@ export default async function PublicResumePage({ params }: Props) {
 
     const data = await fetchResumeByUserId(user.id);
     const displayName = user.displayName || user.name || `@${user.username}`;
+    const t = await getTranslations('PublicProfile');
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
@@ -42,11 +44,11 @@ export default async function PublicResumePage({ params }: Props) {
                         className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back to {displayName}'s timeline
+                        {t('backToTimeline', { name: displayName })}
                     </Link>
-                    <h1 className="text-3xl font-bold text-text-primary">{displayName} — Résumé</h1>
+                    <h1 className="text-3xl font-bold text-text-primary">{t('resumeTitle', { name: displayName })}</h1>
                     <p className="text-text-muted">
-                        Filter by experience and date, then copy the markdown or download a .md file.
+                        {t('resumeSubtitle')}
                     </p>
                 </div>
 

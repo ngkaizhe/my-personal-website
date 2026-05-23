@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { LogOut, ExternalLink, UserCircle2, Settings } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
     user: {
@@ -25,6 +26,7 @@ export function UserMenu({ user }: Props) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
+    const t = useTranslations('Auth');
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -57,7 +59,7 @@ export function UserMenu({ user }: Props) {
                 onClick={() => setOpen(!open)}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                aria-label={`Account menu for ${displayName}`}
+                aria-label={t('accountMenu', { name: displayName })}
                 className="w-9 h-9 rounded-full overflow-hidden bg-surface-elevated border border-border-light flex items-center justify-center text-sm font-medium text-text-primary cursor-pointer hover:ring-2 hover:ring-blue-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
             >
                 {user.image ? (
@@ -76,7 +78,7 @@ export function UserMenu({ user }: Props) {
             {open && (
                 <div
                     role="menu"
-                    aria-label="Account menu"
+                    aria-label={t('menuLabel')}
                     className="absolute right-0 top-full mt-2 bg-surface border border-border rounded-lg shadow-xl overflow-hidden z-50 min-w-[220px]"
                 >
                     {/* User info header */}
@@ -98,7 +100,7 @@ export function UserMenu({ user }: Props) {
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
                         >
                             <ExternalLink className="w-4 h-4" />
-                            <span className="flex-1 text-left">View public profile</span>
+                            <span className="flex-1 text-left">{t('viewPublicProfile')}</span>
                         </Link>
                     ) : (
                         <Link
@@ -108,7 +110,7 @@ export function UserMenu({ user }: Props) {
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
                         >
                             <Settings className="w-4 h-4" />
-                            <span className="flex-1 text-left">Set up your profile</span>
+                            <span className="flex-1 text-left">{t('setUpProfile')}</span>
                         </Link>
                     )}
 
@@ -119,7 +121,7 @@ export function UserMenu({ user }: Props) {
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
                     >
                         <UserCircle2 className="w-4 h-4" />
-                        <span className="flex-1 text-left">Dashboard</span>
+                        <span className="flex-1 text-left">{t('dashboard')}</span>
                     </Link>
 
                     <button
@@ -129,7 +131,7 @@ export function UserMenu({ user }: Props) {
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors border-t border-border-light cursor-pointer"
                     >
                         <LogOut className="w-4 h-4" />
-                        <span className="flex-1 text-left">Sign out</span>
+                        <span className="flex-1 text-left">{t('signOut')}</span>
                     </button>
                 </div>
             )}

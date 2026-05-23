@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types';
 import { TimelineRow } from './TimelineRow';
 import { TimelineModal } from './TimelineModal';
@@ -12,24 +13,25 @@ interface TimelineProps {
 
 const Timeline = ({ items }: TimelineProps) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const t = useTranslations('Timeline');
 
     return (
         <div className="container mx-auto px-4 py-8 relative">
             <div className="text-center mb-16 pt-8">
                 <h1 className="text-5xl md:text-6xl font-bold uppercase tracking-wider text-text-primary mb-4">
-                    My Journey
+                    {t('heading')}
                 </h1>
                 <div className="w-16 h-1 bg-text-primary mx-auto mb-4 rounded-full opacity-60"></div>
                 <p className="text-text-muted text-lg font-normal max-w-md mx-auto">
-                    A timeline of milestones, growth, and the path that shaped who I am today.
+                    {t('subtitle')}
                 </p>
             </div>
 
             {items.length === 0 ? (
                 <div className="text-center py-20">
                     <MapPin className="w-12 h-12 text-text-faint mx-auto mb-4" />
-                    <p className="text-text-muted text-lg mb-2">No milestones yet</p>
-                    <p className="text-text-faint text-sm">Start adding journey items to build your timeline.</p>
+                    <p className="text-text-muted text-lg mb-2">{t('emptyTitle')}</p>
+                    <p className="text-text-faint text-sm">{t('emptyHint')}</p>
                 </div>
             ) : (
                 <>

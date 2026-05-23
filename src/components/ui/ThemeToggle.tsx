@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Sun, Moon, BookOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useTheme, THEME_OPTIONS, ThemeMeta } from '@/components/ThemeProvider';
 
 const iconMap = { Sun, Moon, BookOpen } as const;
@@ -17,6 +18,7 @@ export const ThemeToggle = () => {
     const ref = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const t = useTranslations('Theme');
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -65,6 +67,7 @@ export const ThemeToggle = () => {
     };
 
     const current = THEME_OPTIONS.find(o => o.value === theme)!;
+    const currentLabel = t(current.value);
 
     return (
         <div ref={ref} className="relative">
@@ -74,7 +77,7 @@ export const ThemeToggle = () => {
                 onKeyDown={handleButtonKey}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                aria-label={`Change theme, current: ${current.label}`}
+                aria-label={t('label', { current: currentLabel })}
                 className="w-11 h-11 flex items-center justify-center text-header-text hover:text-header-text-hover hover:bg-nav-hover rounded-lg transition-all duration-200 cursor-pointer
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
@@ -84,7 +87,6 @@ export const ThemeToggle = () => {
             {open && (
                 <div
                     role="menu"
-                    aria-label="Theme selection"
                     className="absolute right-0 top-full mt-2 bg-surface border border-border rounded-lg shadow-xl overflow-hidden z-50 min-w-[160px]"
                 >
                     {THEME_OPTIONS.map((option, i) => (
@@ -103,7 +105,7 @@ export const ThemeToggle = () => {
                                 }`}
                         >
                             <ThemeIcon name={option.iconName} className="w-4 h-4" />
-                            <span className="flex-1 text-left">{option.label}</span>
+                            <span className="flex-1 text-left">{t(option.value)}</span>
                             {theme === option.value && (
                                 <span className="text-blue-500" aria-hidden="true">✓</span>
                             )}

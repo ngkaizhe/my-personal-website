@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
 import { fetchTimelineByUserId } from '@/lib/timeline';
@@ -46,6 +47,7 @@ export default async function PublicProfilePage({ params }: Props) {
 
     const timeline = await fetchTimelineByUserId(user.id);
     const displayName = user.displayName || user.name || `@${user.username}`;
+    const t = await getTranslations('PublicProfile');
 
     return (
         <div className="bg-page min-h-screen">
@@ -78,7 +80,7 @@ export default async function PublicProfilePage({ params }: Props) {
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
-                                View résumé
+                                {t('viewResume')}
                             </Link>
                         </div>
                     </div>

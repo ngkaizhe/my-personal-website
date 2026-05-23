@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { getBadgeClass } from '@/lib/colors';
 
@@ -19,13 +20,16 @@ interface Props {
     deleteAction: (id: string) => Promise<void>;
 }
 
-function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+function formatDate(iso: string, locale: string) {
+    return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 export default function EntryList({ items, deleteAction }: Props) {
     const [toDelete, setToDelete] = useState<EntrySummary | null>(null);
     const [isPending, startTransition] = useTransition();
+    const t = useTranslations('Entries');
+    const tCommon = useTranslations('Common');
+    const locale = useLocale();
 
     const confirmDelete = () => {
         if (!toDelete) return;
@@ -39,7 +43,7 @@ export default function EntryList({ items, deleteAction }: Props) {
     if (items.length === 0) {
         return (
             <div className="bg-surface rounded-xl shadow-sm border border-border p-12 text-center text-text-muted">
-                No entries found. Add one to get started!
+                {t('empty')}
             </div>
         );
     }
@@ -51,17 +55,17 @@ export default function EntryList({ items, deleteAction }: Props) {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-surface-elevated border-b border-border-light">
-                            <th className="p-4 font-semibold text-text-muted">Date</th>
-                            <th className="p-4 font-semibold text-text-muted">Title</th>
-                            <th className="p-4 font-semibold text-text-muted">Experience</th>
-                            <th className="p-4 font-semibold text-text-muted">Tag</th>
-                            <th className="p-4 font-semibold text-text-muted text-right">Actions</th>
+                            <th className="p-4 font-semibold text-text-muted">{t('colDate')}</th>
+                            <th className="p-4 font-semibold text-text-muted">{t('colTitle')}</th>
+                            <th className="p-4 font-semibold text-text-muted">{t('colExperience')}</th>
+                            <th className="p-4 font-semibold text-text-muted">{t('colTag')}</th>
+                            <th className="p-4 font-semibold text-text-muted text-right">{tCommon('actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {items.map((item) => (
                             <tr key={item.id} className="border-b border-border-light hover:bg-surface-elevated/50">
-                                <td className="p-4 font-medium text-text-primary whitespace-nowrap">{formatDate(item.date)}</td>
+                                <td className="p-4 font-medium text-text-primary whitespace-nowrap">{formatDate(item.date, locale)}</td>
                                 <td className="p-4 text-text-secondary">{item.title}</td>
                                 <td className="p-4 text-text-muted text-sm">{item.experienceName || '—'}</td>
                                 <td className="p-4">
@@ -74,14 +78,14 @@ export default function EntryList({ items, deleteAction }: Props) {
                                         href={`/dashboard/entries/${item.id}`}
                                         className="inline-block px-3 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
                                     >
-                                        Edit
+                                        {tCommon('edit')}
                                     </Link>
                                     <button
                                         type="button"
                                         onClick={() => setToDelete(item)}
                                         className="inline-block px-3 py-2 rounded-lg text-danger-text hover:text-danger-text-hover hover:bg-danger-bg-hover font-medium transition-colors cursor-pointer"
                                     >
-                                        Delete
+                                        {tCommon('delete')}
                                     </button>
                                 </td>
                             </tr>
@@ -96,7 +100,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                     <div key={item.id} className="bg-surface rounded-xl shadow-sm border border-border p-4">
                         <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="min-w-0">
-                                <div className="text-xs text-text-muted mb-0.5">{formatDate(item.date)}</div>
+                                <div className="text-xs text-text-muted mb-0.5">{formatDate(item.date, locale)}</div>
                                 <div className="font-semibold text-text-primary">{item.title}</div>
                                 {item.experienceName && (
                                     <div className="text-text-muted text-sm">{item.experienceName}</div>
@@ -111,14 +115,14 @@ export default function EntryList({ items, deleteAction }: Props) {
                                 href={`/dashboard/entries/${item.id}`}
                                 className="flex-1 text-center px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
                             >
-                                Edit
+                                {tCommon('edit')}
                             </Link>
                             <button
                                 type="button"
                                 onClick={() => setToDelete(item)}
                                 className="flex-1 px-4 py-2 rounded-lg text-danger-text hover:text-danger-text-hover hover:bg-danger-bg-hover font-medium transition-colors cursor-pointer"
                             >
-                                Delete
+                                {tCommon('delete')}
                             </button>
                         </div>
                     </div>
@@ -127,18 +131,17 @@ export default function EntryList({ items, deleteAction }: Props) {
 
             <ConfirmDialog
                 open={!!toDelete}
-                title="Delete entry?"
+                title={t('deleteTitle')}
                 description={
-                    toDelete ? (
-                        <>
-                            Are you sure you want to delete{' '}
-                            <span className="font-semibold">{toDelete.title}</span>? This action
-                            cannot be undone.
-                        </>
-                    ) : null
+                    toDelete
+                        ? t.rich('deleteDescription', {
+                              title: toDelete.title,
+                              strong: (chunks) => <span className="font-semibold">{chunks}</span>,
+                          })
+                        : null
                 }
-                confirmLabel="Delete"
-                pendingLabel="Deleting…"
+                confirmLabel={tCommon('delete')}
+                pendingLabel={tCommon('deleting')}
                 danger
                 pending={isPending}
                 onConfirm={confirmDelete}

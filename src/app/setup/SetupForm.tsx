@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { saveSetup } from './actions';
 
 interface Props {
@@ -28,6 +29,8 @@ export function SetupForm({ defaultDisplayName }: Props) {
     const [username, setUsername] = useState('');
     const [displayName, setDisplayName] = useState(defaultDisplayName);
     const [bio, setBio] = useState('');
+    const t = useTranslations('Setup');
+    const tCommon = useTranslations('Common');
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -52,7 +55,7 @@ export function SetupForm({ defaultDisplayName }: Props) {
         >
             <div>
                 <label htmlFor="setup-username" className={labelClass}>
-                    Username <span className="text-red-400">*</span>
+                    {t('username')} <span className="text-red-400">*</span>
                 </label>
                 <div className="flex items-center">
                     <span className="px-3 py-3 text-text-muted bg-input-bg border border-input-border border-r-0 rounded-l-xl font-mono">@</span>
@@ -63,32 +66,32 @@ export function SetupForm({ defaultDisplayName }: Props) {
                         required
                         autoFocus
                         pattern="[a-z0-9_-]{3,30}"
-                        title="3–30 chars, lowercase letters, numbers, hyphen or underscore"
                         placeholder="kaizhe"
                         className={`${inputClass} rounded-l-none border-l-0 font-mono`}
                     />
                 </div>
                 <p className="text-xs text-text-faint mt-2">
-                    Your public URL will be <span className="font-mono">/@{username || 'kaizhe'}</span>. 3–30 chars, lowercase letters, numbers, hyphen or underscore. You can&apos;t change this later from this form.
+                    {t('usernameHint')}
                 </p>
             </div>
 
             <div>
                 <label htmlFor="setup-display-name" className={labelClass}>
-                    Display name <span className="text-text-faint">(optional)</span>
+                    {t('displayName')} <span className="text-text-faint">{tCommon('optional')}</span>
                 </label>
                 <input
                     id="setup-display-name"
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
-                    placeholder="How your name appears on your public profile"
+                    placeholder=""
                     className={inputClass}
                 />
+                <p className="text-xs text-text-faint mt-2">{t('displayNameHint')}</p>
             </div>
 
             <div>
                 <label htmlFor="setup-bio" className={labelClass}>
-                    Bio <span className="text-text-faint">(optional)</span>
+                    {t('bio')} <span className="text-text-faint">{tCommon('optional')}</span>
                 </label>
                 <textarea
                     id="setup-bio"
@@ -96,7 +99,7 @@ export function SetupForm({ defaultDisplayName }: Props) {
                     onChange={e => setBio(e.target.value)}
                     rows={3}
                     maxLength={280}
-                    placeholder="A short line about you. Shows up on your public profile."
+                    placeholder={t('bioPlaceholder')}
                     className={inputClass}
                 />
                 <p className="text-xs text-text-faint mt-1">{bio.length} / 280</p>
@@ -114,7 +117,7 @@ export function SetupForm({ defaultDisplayName }: Props) {
                     disabled={pending || !username}
                     className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30"
                 >
-                    {pending ? 'Saving...' : 'Save and continue'}
+                    {pending ? t('saving') : t('save')}
                 </button>
             </div>
         </form>

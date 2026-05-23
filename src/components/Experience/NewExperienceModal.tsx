@@ -2,30 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ExperienceType } from '@/lib/types';
 import { createExperienceInline, InlineExperienceOption } from '@/app/dashboard/experiences/actions';
 
-const TYPE_CONFIG: Record<ExperienceType, {
-    label: string;
-    organizationLabel: string;
-    organizationPlaceholder: string;
-    rolePlaceholder: string;
-    roleHint: string;
-}> = {
-    JOB: { label: 'Job', organizationLabel: 'Company', organizationPlaceholder: 'TechStartup Co.', rolePlaceholder: 'Senior Frontend Engineer', roleHint: '' },
-    EDUCATION: { label: 'Education', organizationLabel: 'School', organizationPlaceholder: 'State University', rolePlaceholder: 'BSc Computer Science', roleHint: '' },
-    PROJECT: { label: 'Side project', organizationLabel: 'Project name', organizationPlaceholder: 'PeerLink', rolePlaceholder: 'Creator / Solo dev', roleHint: '(Optional)' },
-    VOLUNTEER: { label: 'Volunteer / Community', organizationLabel: 'Organization', organizationPlaceholder: 'Open source — Node.js', rolePlaceholder: 'Maintainer', roleHint: '(Optional)' },
-    BREAK: { label: 'Break / Sabbatical', organizationLabel: 'Label', organizationPlaceholder: 'Travel year', rolePlaceholder: '', roleHint: '(Optional)' },
-};
-
-const TYPE_OPTIONS: { value: ExperienceType; label: string }[] = [
-    { value: 'JOB', label: TYPE_CONFIG.JOB.label },
-    { value: 'EDUCATION', label: TYPE_CONFIG.EDUCATION.label },
-    { value: 'PROJECT', label: TYPE_CONFIG.PROJECT.label },
-    { value: 'VOLUNTEER', label: TYPE_CONFIG.VOLUNTEER.label },
-    { value: 'BREAK', label: TYPE_CONFIG.BREAK.label },
-];
+const TYPE_OPTIONS: ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER', 'BREAK'];
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
@@ -52,6 +33,10 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
     const [endDate, setEndDate] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const t = useTranslations('NewExperienceModal');
+    const tForm = useTranslations('ExperienceForm');
+    const tType = useTranslations('ExperienceType');
+    const tCommon = useTranslations('Common');
 
     const dialogRef = useRef<HTMLDivElement>(null);
     const firstFieldRef = useRef<HTMLSelectElement>(null);
@@ -108,8 +93,11 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
 
     if (!open) return null;
 
-    const cfg = TYPE_CONFIG[type];
     const roleRequired = type === 'JOB' || type === 'EDUCATION';
+    const orgLabel = tType(`orgLabel_${type}`);
+    const orgPlaceholder = tType(`orgPlaceholder_${type}`);
+    const rolePlaceholder = tType(`rolePlaceholder_${type}`);
+    const roleHint = roleRequired ? '' : tCommon('optional');
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -121,7 +109,7 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
             onCreated(option);
         } catch (err) {
             console.error('Failed to create experience inline:', err);
-            setError(err instanceof Error ? err.message : 'Failed to create experience.');
+            setError(err instanceof Error ? err.message : t('errorGeneric'));
             setSubmitting(false);
         }
     };
@@ -147,16 +135,16 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
                     onClick={() => !submitting && onClose()}
                     disabled={submitting}
                     className="absolute top-4 right-4 p-1 text-text-muted hover:text-text-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                    aria-label="Close"
+                    aria-label={tCommon('close')}
                 >
                     <X size={20} />
                 </button>
                 <h2 id="new-experience-title" className="text-xl font-bold text-text-primary mb-4">
-                    New Experience
+                    {t('title')}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="new-exp-type" className={labelClass}>Type</label>
+                        <label htmlFor="new-exp-type" className={labelClass}>{tForm('type')}</label>
                         <select
                             id="new-exp-type"
                             ref={firstFieldRef}
@@ -165,13 +153,13 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
                             onChange={e => setType(e.target.value as ExperienceType)}
                             className={inputClass}
                         >
-                            {TYPE_OPTIONS.map(o => (
-                                <option key={o.value} value={o.value}>{o.label}</option>
+                            {TYPE_OPTIONS.map(opt => (
+                                <option key={opt} value={opt}>{tType(opt)}</option>
                             ))}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="new-exp-org" className={labelClass}>{cfg.organizationLabel}</label>
+                        <label htmlFor="new-exp-org" className={labelClass}>{orgLabel}</label>
                         <input
                             id="new-exp-org"
                             name="organization"
@@ -179,12 +167,12 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
                             onChange={e => setOrganization(e.target.value)}
                             required
                             className={inputClass}
-                            placeholder={cfg.organizationPlaceholder}
+                            placeholder={orgPlaceholder}
                         />
                     </div>
                     <div>
                         <label htmlFor="new-exp-role" className={labelClass}>
-                            Role {cfg.roleHint && <span className="text-text-faint">{cfg.roleHint}</span>}
+                            {tType('role')} {roleHint && <span className="text-text-faint">{roleHint}</span>}
                         </label>
                         <input
                             id="new-exp-role"
@@ -193,16 +181,16 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
                             onChange={e => setRole(e.target.value)}
                             required={roleRequired}
                             className={inputClass}
-                            placeholder={cfg.rolePlaceholder}
+                            placeholder={rolePlaceholder}
                         />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="new-exp-start" className={labelClass}>Start Date</label>
+                            <label htmlFor="new-exp-start" className={labelClass}>{tForm('startDate')}</label>
                             <input id="new-exp-start" type="date" name="startDate" value={startDate} onChange={e => setStartDate(e.target.value)} required className={inputClass} />
                         </div>
                         <div>
-                            <label htmlFor="new-exp-end" className={labelClass}>End Date <span className="text-text-faint">(Leave blank if current)</span></label>
+                            <label htmlFor="new-exp-end" className={labelClass}>{tForm('endDate')} <span className="text-text-faint">{tForm('endDateHint')}</span></label>
                             <input id="new-exp-end" type="date" name="endDate" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputClass} />
                         </div>
                     </div>
@@ -222,14 +210,14 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
                             disabled={submitting}
                             className="px-4 py-2 rounded-lg border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
-                            Cancel
+                            {tCommon('cancel')}
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
                             className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
-                            {submitting ? 'Creating…' : 'Create Experience'}
+                            {submitting ? t('creating') : t('createButton')}
                         </button>
                     </div>
                 </form>

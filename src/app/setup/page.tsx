@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { SetupForm } from './SetupForm';
@@ -23,13 +24,17 @@ export default async function SetupPage() {
         redirect('/dashboard');
     }
 
+    const t = await getTranslations('Setup');
+
     return (
         <div className="min-h-screen bg-page p-4 md:p-8">
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary">Set up your profile</h1>
+                    <h1 className="text-3xl font-bold text-text-primary">{t('title')}</h1>
                     <p className="text-text-muted mt-2">
-                        Pick a username so people can find your public timeline at <span className="font-mono">/@yourname</span>.
+                        {t.rich('subtitle', {
+                            urlExample: (chunks) => <span className="font-mono">{chunks}</span>,
+                        })}
                     </p>
                 </div>
                 <SetupForm defaultDisplayName={dbUser?.name ?? ''} />
