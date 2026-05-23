@@ -103,6 +103,30 @@ export async function createExperience(formData: FormData) {
     redirect('/dashboard/experiences');
 }
 
+export interface InlineExperienceOption {
+    id: string;
+    type: ExperienceType;
+    name: string;
+    role: string | null;
+}
+
+// Returns the new option instead of redirecting — used by the inline
+// "+ Create new experience…" modal inside EntryForm / QuickAdd so the
+// caller can append it to its dropdown without a navigation.
+export async function createExperienceInline(formData: FormData): Promise<InlineExperienceOption> {
+    const userId = await getCurrentUserId();
+    const data = extractFormData(formData);
+    const created = await prisma.experience.create({ data: { ...data, userId } });
+    revalidatePath('/dashboard/experiences');
+    revalidatePath('/dashboard/entries');
+    return {
+        id: created.id,
+        type: created.type,
+        name: created.organization,
+        role: created.role,
+    };
+}
+
 export async function updateExperience(id: string, formData: FormData) {
     const userId = await getCurrentUserId();
     const data = extractFormData(formData);
