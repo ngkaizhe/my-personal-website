@@ -2,10 +2,12 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { NavLink } from "@/components/ui/NavLink";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { auth } from "@/auth";
+import { isAiParseAvailable } from "@/lib/aiAvailable";
 
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
   const user = session?.user;
+  const aiAvailable = isAiParseAvailable();
 
   return (
     <div>
@@ -19,7 +21,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
         <nav className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3" aria-label="Primary navigation">
           <div className="flex items-center gap-1 overflow-x-auto">
             <NavLink href="/dashboard" exact>Timeline</NavLink>
-            <NavLink href="/dashboard/quick-add">Quick Add</NavLink>
+            {aiAvailable && <NavLink href="/dashboard/quick-add">Quick Add</NavLink>}
             <NavLink href="/dashboard/entries">Entries</NavLink>
             <NavLink href="/dashboard/experiences">Experiences</NavLink>
             <NavLink href="/dashboard/resume">Resume</NavLink>
