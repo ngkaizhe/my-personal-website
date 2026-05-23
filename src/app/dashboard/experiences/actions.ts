@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
-import { pickTranslation } from '@/lib/translations';
+import { pickTranslation, hashSource } from '@/lib/translations';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
@@ -35,6 +35,7 @@ export interface ExperienceTranslationDraft {
     description: string;
     sourceHash: string | null;
     lastTranslatedAt: string | null;
+    isStale: boolean;
 }
 
 export interface ExperienceDetail {
@@ -52,7 +53,16 @@ const BLANK_EXP_TRANSLATION: Omit<ExperienceTranslationDraft, 'locale'> = {
     description: '',
     sourceHash: null,
     lastTranslatedAt: null,
+    isStale: false,
 };
+
+function experienceSourceFields(tr: { organization: string; role: string | null; description: string | null }): Record<string, string> {
+    return {
+        organization: tr.organization,
+        role: tr.role ?? '',
+        description: tr.description ?? '',
+    };
+}
 
 export async function getExperiences(): Promise<ExperienceSummary[]> {
     const userId = await getCurrentUserId();
@@ -94,9 +104,15 @@ export async function getExperienceDetail(id: string): Promise<ExperienceDetail 
             include: { translations: true },
         });
         if (!experience) return null;
+        const primaryTr = experience.translations.find(t => t.locale === experience.primaryLocale);
+        const currentSourceHash = primaryTr ? hashSource(experienceSourceFields(primaryTr)) : null;
         const translations: ExperienceTranslationDraft[] = SUPPORTED_LOCALES.map(locale => {
             const tr = experience.translations.find(t => t.locale === locale);
             if (!tr) return { locale, ...BLANK_EXP_TRANSLATION };
+            const isStale = locale !== experience.primaryLocale
+                && tr.sourceHash != null
+                && currentSourceHash != null
+                && tr.sourceHash !== currentSourceHash;
             return {
                 locale,
                 organization: tr.organization,
@@ -104,6 +120,7 @@ export async function getExperienceDetail(id: string): Promise<ExperienceDetail 
                 description: tr.description ?? '',
                 sourceHash: tr.sourceHash,
                 lastTranslatedAt: tr.lastTranslatedAt?.toISOString() ?? null,
+                isStale,
             };
         });
         return {
@@ -131,6 +148,8 @@ interface ParsedExperienceForm {
         organization: string;
         role: string | null;
         description: string | null;
+        sourceHash: string | null;
+        lastTranslatedAt: Date | null;
     }[];
 }
 
@@ -146,11 +165,15 @@ function extractFormData(formData: FormData): ParsedExperienceForm {
         const organization = get('organization');
         const role = get('role');
         const description = get('description');
+        const sourceHashRaw = ((raw[`sourceHash_${locale}`] as string) ?? '').trim();
+        const lastTranslatedAtRaw = ((raw[`lastTranslatedAt_${locale}`] as string) ?? '').trim();
         return {
             locale,
             organization,
             role: role === '' ? null : role,
             description: description === '' ? null : description,
+            sourceHash: sourceHashRaw === '' ? null : sourceHashRaw,
+            lastTranslatedAt: lastTranslatedAtRaw === '' ? null : new Date(lastTranslatedAtRaw),
         };
     }).filter(t => t.organization !== '');
 

@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 // Helpers for the bilingual content model. Each Entry / Experience has a
 // translations[] array, one row per locale. The display path collapses that
 // array down to a single locale's view with a deterministic fallback policy:
@@ -58,3 +60,14 @@ export function isBlankExperienceTranslation(t: { organization: string }): boole
 // Suppress unused-export warnings for the Translatable<T> placeholder above;
 // kept for type docs.
 export type { Translatable };
+
+// Stable hash of a source-locale translation's fields. Used both by the
+// translate API (when AI translates X → Y, we record what X looked like at
+// that moment) and by the read path (when X has been edited since, the
+// recorded hash no longer matches and Y is flagged stale).
+export function hashSource(source: Record<string, string>): string {
+    const sortedKeys = Object.keys(source).sort();
+    const stable = JSON.stringify(source, sortedKeys);
+    return createHash('sha256').update(stable).digest('hex').substring(0, 16);
+}
+

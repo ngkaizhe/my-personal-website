@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
 import { iconNames } from '@/lib/iconNames';
-import { pickTranslation, tagToSlug } from '@/lib/translations';
+import { pickTranslation, tagToSlug, hashSource } from '@/lib/translations';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
@@ -35,6 +35,10 @@ export interface EntryTranslationDraft {
     tag: string;
     sourceHash: string | null;
     lastTranslatedAt: string | null;
+    // True when this translation was AI-generated (sourceHash set) but the
+    // primary translation has been edited since — the stored hash no longer
+    // matches the current source. UI shows a "needs re-translation" badge.
+    isStale: boolean;
 }
 
 export interface EntryDetail {
@@ -58,7 +62,26 @@ const BLANK_TRANSLATION: Omit<EntryTranslationDraft, 'locale'> = {
     tag: '',
     sourceHash: null,
     lastTranslatedAt: null,
+    isStale: false,
 };
+
+function entrySourceFields(tr: {
+    title: string;
+    actionVerb: string | null;
+    description: string;
+    impact: string | null;
+    details: string | null;
+    tag: string;
+}): Record<string, string> {
+    return {
+        title: tr.title,
+        actionVerb: tr.actionVerb ?? '',
+        description: tr.description,
+        impact: tr.impact ?? '',
+        details: tr.details ?? '',
+        tag: tr.tag,
+    };
+}
 
 export async function getEntrySummaries(): Promise<EntrySummary[]> {
     const userId = await getCurrentUserId();
@@ -101,9 +124,15 @@ export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
             include: { icon: true, translations: true },
         });
         if (!item) return null;
+        const primaryTr = item.translations.find(t => t.locale === item.primaryLocale);
+        const currentSourceHash = primaryTr ? hashSource(entrySourceFields(primaryTr)) : null;
         const translations: EntryTranslationDraft[] = SUPPORTED_LOCALES.map(locale => {
             const tr = item.translations.find(t => t.locale === locale);
             if (!tr) return { locale, ...BLANK_TRANSLATION };
+            const isStale = locale !== item.primaryLocale
+                && tr.sourceHash != null
+                && currentSourceHash != null
+                && tr.sourceHash !== currentSourceHash;
             return {
                 locale,
                 title: tr.title,
@@ -114,6 +143,7 @@ export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
                 tag: tr.tag,
                 sourceHash: tr.sourceHash,
                 lastTranslatedAt: tr.lastTranslatedAt?.toISOString() ?? null,
+                isStale,
             };
         });
         return {
@@ -161,6 +191,8 @@ interface ParsedFormData {
         impact: string | null;
         details: string | null;
         tag: string;
+        sourceHash: string | null;
+        lastTranslatedAt: Date | null;
     }[];
 }
 
@@ -175,6 +207,8 @@ function extractFormData(formData: FormData): ParsedFormData {
 
     const translations = SUPPORTED_LOCALES.map(locale => {
         const get = (field: string) => ((raw[`${field}_${locale}`] as string) ?? '').trim();
+        const sourceHashRaw = ((raw[`sourceHash_${locale}`] as string) ?? '').trim();
+        const lastTranslatedAtRaw = ((raw[`lastTranslatedAt_${locale}`] as string) ?? '').trim();
         return {
             locale,
             title: get('title'),
@@ -183,6 +217,8 @@ function extractFormData(formData: FormData): ParsedFormData {
             impact: get('impact') || null,
             details: get('details') || null,
             tag: get('tag'),
+            sourceHash: sourceHashRaw === '' ? null : sourceHashRaw,
+            lastTranslatedAt: lastTranslatedAtRaw === '' ? null : new Date(lastTranslatedAtRaw),
         };
     }).filter(t => t.title !== '' && t.description !== '' && t.tag !== '');
 
