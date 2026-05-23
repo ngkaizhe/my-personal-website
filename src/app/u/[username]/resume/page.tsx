@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import ResumeBuilder from '@/components/Resume/ResumeBuilder';
 import { prisma } from '@/lib/prisma';
 import { fetchResumeByUserId } from '@/lib/resume';
@@ -31,7 +31,8 @@ export default async function PublicResumePage({ params }: Props) {
     });
     if (!user) notFound();
 
-    const data = await fetchResumeByUserId(user.id);
+    const locale = await getLocale();
+    const data = await fetchResumeByUserId(user.id, locale);
     const displayName = user.displayName || user.name || `@${user.username}`;
     const t = await getTranslations('PublicProfile');
 

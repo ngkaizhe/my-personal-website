@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
 import { fetchTimelineByUserId } from '@/lib/timeline';
@@ -45,7 +45,8 @@ export default async function PublicProfilePage({ params }: Props) {
     });
     if (!user) notFound();
 
-    const timeline = await fetchTimelineByUserId(user.id);
+    const locale = await getLocale();
+    const timeline = await fetchTimelineByUserId(user.id, locale);
     const displayName = user.displayName || user.name || `@${user.username}`;
     const t = await getTranslations('PublicProfile');
 

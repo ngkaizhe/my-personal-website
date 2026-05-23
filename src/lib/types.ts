@@ -1,5 +1,8 @@
 export type ExperienceType = 'JOB' | 'EDUCATION' | 'PROJECT' | 'VOLUNTEER' | 'BREAK';
 
+// Display-layer Timeline DTO. Already collapsed to a single locale by the
+// query helper (via pickTranslation) — the consumer doesn't need to think
+// about translations or fallback.
 export interface TimelineItem {
     id: string;
     date: string;           // ISO date string for display formatting
@@ -12,7 +15,7 @@ export interface TimelineItem {
         colorClass: string;
     };
     category: {
-        text: string;
+        text: string;       // tag display label in the active locale
         colorClass: string;
     };
     actionVerb?: string;
@@ -31,4 +34,8 @@ export interface TimelineItem {
         url: string;
         text: string;
     };
+    // True when the current locale has no translation row for this entry —
+    // we fell back to the primary locale. UI can flag this so viewers know
+    // they're seeing a non-translated source.
+    fellBackFromPrimary?: boolean;
 }
