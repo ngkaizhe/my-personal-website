@@ -75,16 +75,15 @@ enum ExperienceType {
 model Experience {
   id           String         @id @default(uuid())
   type         ExperienceType @default(JOB)
-  // organization is the company / school / project name. Renamed from `name`
-  // because Experience now spans jobs, schools, side projects, etc.
-  organization String
-  // role is optional: BREAK or PROJECT entries may not have a defined role.
-  role         String?
+  // The language the user originally wrote in. Used as the canonical source
+  // for AI translation and to decide which translation to fall back to when
+  // the requested locale is missing.
+  primaryLocale String         @default("en")
   startDate    DateTime
   endDate      DateTime?
-  description  String?
   color        String         @default("blue")
   entries      Entry[]
+  translations ExperienceTranslation[]
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -95,15 +94,41 @@ model Experience {
   @@index([userId])
 }
 
+// One row per (experience, locale). Contains every text field that varies by
+// language. organization + role moved here from Experience; non-translatable
+// fields (dates, type, color) stay on the parent.
+model ExperienceTranslation {
+  id           String     @id @default(uuid())
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  locale       String     // 'en' | 'zh-TW' — kept as String so new locales don't require a migration
+
+  organization String
+  role         String?
+  description  String?
+
+  // Hash of the *primary-locale* translation fields at the time this row was
+  // last generated / verified. When the primary row is edited, this hash goes
+  // stale and the UI shows a "needs re-translation" indicator.
+  sourceHash      String?
+  lastTranslatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([experienceId, locale])
+  @@index([locale])
+}
+
 model Entry {
   id            String      @id @default(uuid())
   date          DateTime
-  title         String
-  actionVerb    String?
-  description   String
-  impact        String?
-  details       String?
-  tag           String
+  // See Experience.primaryLocale.
+  primaryLocale String      @default("en")
+  // Cross-locale stable identifier for the tag — UI labels can differ per
+  // language but resume sectioning, filtering, and badge colour all key off
+  // this slug. Generated from the primary-locale tag at write time.
+  tagSlug       String
   color         String
   techStack     String[]
   linkUrl       String?
@@ -112,6 +137,7 @@ model Entry {
   icon          Icon?       @relation(fields: [iconId], references: [id])
   experienceId  String?
   experience    Experience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
+  translations  EntryTranslation[]
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -120,6 +146,33 @@ model Entry {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([tagSlug])
+}
+
+// One row per (entry, locale). All language-varying text lives here.
+model EntryTranslation {
+  id          String @id @default(uuid())
+  entryId     String
+  entry       Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  locale      String // 'en' | 'zh-TW'
+
+  title       String
+  actionVerb  String?
+  description String
+  impact      String?
+  details     String?
+  // Display label for the tag in this locale (e.g. "Engineering" / "工程").
+  // Cross-locale key is on Entry.tagSlug.
+  tag         String
+
+  sourceHash       String?
+  lastTranslatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([entryId, locale])
+  @@index([locale])
 }
 
 model Icon {
