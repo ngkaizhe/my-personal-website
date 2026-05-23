@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw } from 'lucide-react';
 import { EntryDetail, EntryTranslationDraft } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -59,9 +59,10 @@ interface Props {
     item: EntryDetail;
     experiences: ExperienceOption[];
     action: (formData: FormData) => Promise<void>;
+    aiAvailable: boolean;
 }
 
-export default function EntryForm({ item, experiences, action }: Props) {
+export default function EntryForm({ item, experiences, action, aiAvailable }: Props) {
     const router = useRouter();
     const uiLocale = useLocale();
     const t = useTranslations('EntryForm');
@@ -96,6 +97,65 @@ export default function EntryForm({ item, experiences, action }: Props) {
     const [confirmingCancel, setConfirmingCancel] = useState(false);
     const [experiencesState, setExperiencesState] = useState(experiences);
     const [creatingExperience, setCreatingExperience] = useState(false);
+    const [translatingTo, setTranslatingTo] = useState<SupportedLocale | null>(null);
+    const [translateError, setTranslateError] = useState<string | null>(null);
+
+    // Translate the *source* tab's content into the target locale. Source is
+    // either the entry's primaryLocale (if it has content) or the only
+    // populated tab — usually the same thing.
+    const translateInto = async (target: SupportedLocale) => {
+        const sourceLocale: SupportedLocale = target === 'en' ? 'zh-TW' : 'en';
+        const src = translations[sourceLocale];
+        if (isBlankTranslation(src)) {
+            setTranslateError(t('translateSourceEmpty', { locale: LOCALE_LABEL[sourceLocale] }));
+            return;
+        }
+        setTranslatingTo(target);
+        setTranslateError(null);
+        try {
+            const res = await fetch('/api/translate-content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'entry',
+                    source: {
+                        title: src.title,
+                        actionVerb: src.actionVerb,
+                        description: src.description,
+                        impact: src.impact,
+                        details: src.details,
+                        tag: src.tag,
+                    },
+                    sourceLocale,
+                    targetLocale: target,
+                }),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || t('translateFailed'));
+            }
+            const data = await res.json();
+            setTranslations(prev => ({
+                ...prev,
+                [target]: {
+                    ...prev[target],
+                    title: data.translation.title || '',
+                    actionVerb: data.translation.actionVerb || '',
+                    description: data.translation.description || '',
+                    impact: data.translation.impact || '',
+                    details: data.translation.details || '',
+                    tag: data.translation.tag || '',
+                    sourceHash: data.sourceHash,
+                    lastTranslatedAt: new Date().toISOString(),
+                },
+            }));
+            setActiveLocale(target);
+        } catch (err) {
+            setTranslateError(err instanceof Error ? err.message : t('translateFailed'));
+        } finally {
+            setTranslatingTo(null);
+        }
+    };
 
     const updateShared = <K extends keyof typeof initialShared>(field: K, value: (typeof initialShared)[K]) => {
         setShared(prev => ({ ...prev, [field]: value }));
@@ -214,6 +274,7 @@ export default function EntryForm({ item, experiences, action }: Props) {
                     <div role="tablist" aria-label={t('localeTabsLabel')} className="flex gap-1 border-b border-form-section-border">
                         {SUPPORTED_LOCALES.map(loc => {
                             const blank = isBlankTranslation(translations[loc]);
+                            const stale = translations[loc].isStale && !blank;
                             const active = activeLocale === loc;
                             return (
                                 <button
@@ -233,10 +294,9 @@ export default function EntryForm({ item, experiences, action }: Props) {
                                         focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
                                 >
                                     {LOCALE_LABEL[loc]}
-                                    {blank
-                                        ? <AlertCircle className="w-4 h-4 text-amber-500" aria-label={t('localeMissing')} />
-                                        : <CheckCircle2 className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
-                                    }
+                                    {blank && <AlertCircle className="w-4 h-4 text-amber-500" aria-label={t('localeMissing')} />}
+                                    {stale && <RefreshCw className="w-3.5 h-3.5 text-amber-500" aria-label={t('localeStale')} />}
+                                    {!blank && !stale && <CheckCircle2 className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />}
                                 </button>
                             );
                         })}
@@ -285,6 +345,44 @@ export default function EntryForm({ item, experiences, action }: Props) {
                                     {t('localeBlankHint', { locale: LOCALE_LABEL[loc] })}
                                 </p>
                             )}
+                            {translations[loc].isStale && !isBlankTranslation(translations[loc]) && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    {t('staleHint')}
+                                </p>
+                            )}
+
+                            {/* Translate button — fills this tab from the other locale's content. */}
+                            {aiAvailable && (
+                                <button
+                                    type="button"
+                                    onClick={() => translateInto(loc)}
+                                    disabled={translatingTo !== null}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-form-section-border text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
+                                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                >
+                                    {translatingTo === loc
+                                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                                        : <Languages className="w-4 h-4" />
+                                    }
+                                    {translatingTo === loc
+                                        ? t('translating')
+                                        : t('translateFrom', { locale: LOCALE_LABEL[loc === 'en' ? 'zh-TW' : 'en'] })
+                                    }
+                                </button>
+                            )}
+                            {!aiAvailable && loc !== shared.primaryLocale && (
+                                <p className="text-xs text-text-faint flex items-center gap-1.5">
+                                    <Languages className="w-3.5 h-3.5" />
+                                    {t('translateUnavailable')}
+                                </p>
+                            )}
+                            {translateError && translatingTo === null && activeLocale === loc && (
+                                <p role="alert" className="text-xs text-red-500 flex items-center gap-1.5">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {translateError}
+                                </p>
+                            )}
                         </div>
                     ))}
 
@@ -316,6 +414,15 @@ export default function EntryForm({ item, experiences, action }: Props) {
 
                 {/* Hidden — primaryLocale tracks which side was authored first */}
                 <input type="hidden" name="primaryLocale" value={shared.primaryLocale} />
+
+                {/* Hidden — translation metadata returned by the Translate API.
+                    Persisted on save so stale-translation detection survives across edits. */}
+                {SUPPORTED_LOCALES.map(loc => (
+                    <div key={`meta-${loc}`}>
+                        <input type="hidden" name={`sourceHash_${loc}`} value={translations[loc].sourceHash ?? ''} />
+                        <input type="hidden" name={`lastTranslatedAt_${loc}`} value={translations[loc].lastTranslatedAt ?? ''} />
+                    </div>
+                ))}
 
                 {error && (
                     <div role="alert" className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">

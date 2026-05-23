@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getEntryDetail, updateEntry, getExperienceOptions } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
+import { isAiParseAvailable } from "@/lib/aiAvailable";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -33,7 +34,7 @@ export default async function EditEntryPage({ params }: { params: Promise<{ id: 
                     <p className="text-text-muted mt-2">{t('editEntrySubtitle')}</p>
                 </div>
 
-                <EntryForm item={item} experiences={experiences} action={updateAction} />
+                <EntryForm item={item} experiences={experiences} action={updateAction} aiAvailable={isAiParseAvailable()} />
             </div>
         </div>
     );

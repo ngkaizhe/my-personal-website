@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { createExperience, ExperienceDetail } from "../actions";
 import ExperienceForm from "@/components/Experience/ExperienceForm";
+import { isAiParseAvailable } from "@/lib/aiAvailable";
 
 export const metadata = {
     title: "Add Experience",
@@ -41,6 +42,7 @@ export default async function NewExperiencePage() {
 
                 <ExperienceForm
                     item={emptyItem}
+                    aiAvailable={isAiParseAvailable()}
                     action={async (formData) => {
                         'use server';
                         await createExperience(formData);

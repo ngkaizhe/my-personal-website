@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { createEntry, getExperienceOptions, EntryDetail } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
+import { isAiParseAvailable } from "@/lib/aiAvailable";
 
 export const metadata = {
     title: "Add Entry",
@@ -54,6 +55,7 @@ export default async function NewEntryPage() {
                 <EntryForm
                     item={emptyItem}
                     experiences={experiences}
+                    aiAvailable={isAiParseAvailable()}
                     action={async (formData) => {
                         'use server';
                         await createEntry(formData);
