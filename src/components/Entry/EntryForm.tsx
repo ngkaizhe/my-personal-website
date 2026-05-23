@@ -9,8 +9,13 @@ import TagInput from '@/components/ui/TagInput';
 import IconPicker from '@/components/ui/IconPicker';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPreview';
+import NewExperienceModal from '@/components/Experience/NewExperienceModal';
 
 const ENTRIES_LIST = '/dashboard/entries';
+
+// Sentinel <option> value used to open the inline-create modal. Picked so it
+// can't collide with a real UUID.
+const NEW_EXPERIENCE_SENTINEL = '__new__';
 
 import type { ExperienceType } from '@/lib/types';
 
@@ -71,12 +76,27 @@ export default function EntryForm({ item, experiences, action }: Props) {
     }), [item]);
     const [preview, setPreview] = useState<PreviewData>(initial);
     const [confirmingCancel, setConfirmingCancel] = useState(false);
+    // Local copy of the experience list so newly-created entries from the
+    // inline modal can appear in the dropdown without a page reload.
+    const [experiencesState, setExperiencesState] = useState(experiences);
+    const [creatingExperience, setCreatingExperience] = useState(false);
 
     const updateField = <K extends keyof PreviewData>(field: K, value: PreviewData[K]) => {
         setPreview(prev => ({ ...prev, [field]: value }));
     };
 
-    const selectedExperience = experiences.find(e => e.id === preview.experienceId);
+    const selectedExperience = experiencesState.find(e => e.id === preview.experienceId);
+
+    const handleExperienceChange = (value: string) => {
+        if (value === NEW_EXPERIENCE_SENTINEL) {
+            // Don't store the sentinel as the actual field value — open the
+            // modal instead, and leave the previous selection intact so a
+            // cancel doesn't blank out the field.
+            setCreatingExperience(true);
+            return;
+        }
+        updateField('experienceId', value);
+    };
 
     // Compare current draft against the initial item to detect unsaved edits.
     // JSON.stringify is fine here because the shape is small and serializable.
@@ -136,13 +156,14 @@ export default function EntryForm({ item, experiences, action }: Props) {
                         </div>
                         <div>
                             <label htmlFor="field-experience" className={labelClass}>Experience <span className="text-text-faint">(Optional)</span></label>
-                            <select id="field-experience" name="experienceId" value={preview.experienceId} onChange={e => updateField('experienceId', e.target.value)} className={inputClass}>
+                            <select id="field-experience" name="experienceId" value={preview.experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
                                 <option value="">— None (personal / outside work) —</option>
-                                {experiences.map(exp => (
+                                {experiencesState.map(exp => (
                                     <option key={exp.id} value={exp.id}>
                                         {exp.role ? `${exp.name} — ${exp.role}` : exp.name}
                                     </option>
                                 ))}
+                                <option value={NEW_EXPERIENCE_SENTINEL}>+ Create new experience…</option>
                             </select>
                         </div>
                         <div>
@@ -252,6 +273,16 @@ export default function EntryForm({ item, experiences, action }: Props) {
                 danger
                 onConfirm={() => router.push(ENTRIES_LIST)}
                 onClose={() => setConfirmingCancel(false)}
+            />
+
+            <NewExperienceModal
+                open={creatingExperience}
+                onClose={() => setCreatingExperience(false)}
+                onCreated={(option) => {
+                    setExperiencesState(prev => [option, ...prev]);
+                    updateField('experienceId', option.id);
+                    setCreatingExperience(false);
+                }}
             />
         </div>
     );

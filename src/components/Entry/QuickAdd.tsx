@@ -6,7 +6,10 @@ import EntryFormPreview from '@/components/Entry/EntryFormPreview';
 import TagInput from '@/components/ui/TagInput';
 import IconPicker from '@/components/ui/IconPicker';
 import ColorPicker from '@/components/ui/ColorPicker';
+import NewExperienceModal from '@/components/Experience/NewExperienceModal';
 import { ExperienceOption } from '@/components/Entry/EntryForm';
+
+const NEW_EXPERIENCE_SENTINEL = '__new__';
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
@@ -43,8 +46,18 @@ export default function QuickAdd({ experiences, action }: Props) {
     const [parsed, setParsed] = useState<ParsedFields | null>(null);
     const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
     const [experienceId, setExperienceId] = useState('');
+    const [experiencesState, setExperiencesState] = useState(experiences);
+    const [creatingExperience, setCreatingExperience] = useState(false);
 
-    const selectedExperience = experiences.find(e => e.id === experienceId);
+    const selectedExperience = experiencesState.find(e => e.id === experienceId);
+
+    const handleExperienceChange = (value: string) => {
+        if (value === NEW_EXPERIENCE_SENTINEL) {
+            setCreatingExperience(true);
+            return;
+        }
+        setExperienceId(value);
+    };
 
     const parse = async () => {
         if (!input.trim()) return;
@@ -136,11 +149,12 @@ export default function QuickAdd({ experiences, action }: Props) {
                             </div>
                             <div>
                                 <label htmlFor="qa-experience" className={labelClass}>Experience</label>
-                                <select id="qa-experience" name="experienceId" value={experienceId} onChange={e => setExperienceId(e.target.value)} className={inputClass}>
+                                <select id="qa-experience" name="experienceId" value={experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
                                     <option value="">— None —</option>
-                                    {experiences.map(exp => (
+                                    {experiencesState.map(exp => (
                                         <option key={exp.id} value={exp.id}>{exp.name}</option>
                                     ))}
+                                    <option value={NEW_EXPERIENCE_SENTINEL}>+ Create new experience…</option>
                                 </select>
                             </div>
                         </div>
@@ -247,6 +261,16 @@ export default function QuickAdd({ experiences, action }: Props) {
                     </div>
                 </form>
             )}
+
+            <NewExperienceModal
+                open={creatingExperience}
+                onClose={() => setCreatingExperience(false)}
+                onCreated={(option) => {
+                    setExperiencesState(prev => [option, ...prev]);
+                    setExperienceId(option.id);
+                    setCreatingExperience(false);
+                }}
+            />
         </div>
     );
 }
