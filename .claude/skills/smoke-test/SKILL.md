@@ -219,6 +219,54 @@ const p=new PrismaClient();
 
 - Expect: `slug` is a lowercase-kebab string AND `en` !== `zh` (different display labels) AND both are non-empty.
 
+### T1.17 — Email signup + sign-in (Credentials provider)
+
+Verifies the email + password auth path works end-to-end without OAuth.
+
+1. From a clean cookie jar, navigate to `/signup`.
+2. Fill `input[name="email"]` with `smoke-${Date.now()}@local.test` (unique each run so retries don't collide) and `input[name="password"]` with `demo-password-123`.
+3. Click the submit button via Playwright's `.click()` (NOT raw `document.querySelector(...).click()` — the latter can bypass React's onSubmit on the SetupForm later).
+4. Assert URL settles on `/setup`.
+5. Fill `input[id="setup-username"]` with a unique slug (e.g. `smoke${Date.now()}`).
+6. Click "Save and continue" via `.click()`.
+7. Assert URL settles on `/dashboard` AND the nav contains "Timeline" / "Entries" / "Experiences" / "Resume" links.
+
+Catches regressions in: Credentials authorize() callback, bcrypt hashing, the `signUpWithEmail` server action's auto-signin, and the middleware "no-username" gate (which was deliberately removed because `useSession().update()` doesn't survive Credentials sessions — see commit history).
+
+Cleanup: leave the created User row. They're cheap and don't interfere with other checks.
+
+### T1.18 — Sign-in form rejects bad credentials
+
+```bash
+# Use curl with -c/-b to manage cookies; verify a wrong password doesn't grant a session
+# This is hard to test purely via shell because of CSRF tokens. Easier in Playwright:
+```
+
+In Playwright:
+1. Navigate to `/signin`
+2. Fill email = `smoke-test@local.test`, password = `wrong-password`
+3. Submit → assert URL stays on `/signin` AND `[role="alert"]` contains an error message
+4. Verify document.cookie does NOT contain `authjs.session-token`
+
+### T1.19 — Featured-only filter reduces résumé bullets
+
+The seed marks 6 of 8 demo entries as `featured=true`. Without filter: 8 bullets; with featured-only on: 6.
+
+1. Navigate to `/@demo/resume`
+2. Count `section li` elements → record N1
+3. Check the "Featured only" checkbox (`label:has-text("Featured only") input[type="checkbox"]`)
+4. Count `section li` again → record N2
+5. Assert N2 < N1 AND N2 > 0
+
+### T1.20 — Print stylesheet hides chrome
+
+1. Navigate to `/@demo/resume`
+2. `await page.emulateMedia({ media: 'print' })`
+3. Assert: `nav` has `display: none`, every `.resume-print-hide` has `display: none`, every `.no-print` has `display: none`
+4. Restore: `await page.emulateMedia({ media: 'screen' })`
+
+Catches regressions in `globals.css` print rules or anyone accidentally removing the `.resume-print-hide` / `.no-print` classes from ResumeBuilder / resume pages.
+
 ### T1.16 — /api/translate-content degrades cleanly without ANTHROPIC_API_KEY
 
 ```bash
@@ -386,6 +434,9 @@ This skill is intentionally a checklist, not a fixed test suite — it's expecte
 | Add a new sensitive env var | Extend T1.12-style env-conditional checks |
 | Add a new translatable field on Entry / Experience | Extend T1.14 with a token from the seed for that field; update extractFormData parsers via grep |
 | Add a non-text language-neutral field on Entry / Experience | No skill update needed — it lives on the parent, not the translation table |
+| Add a new auth provider | Add a Tier-1 check parallel to T1.17 that drives the new provider's signup/signin |
+| Add a new résumé filter | Extend T1.19 with a check that flipping the filter changes the bullet count |
+| Add new print-hidden chrome | Add the class (`resume-print-hide` or `no-print`) and confirm T1.20 still picks it up |
 | Remove a feature | Mark the corresponding check `### Removed in <commit-sha>` rather than deleting (so reviewers can see the history) |
 | Add an interactive flow that mutates DB | Add a Tier 2 check with its own cleanup step (or declare the residue clearly) |
 

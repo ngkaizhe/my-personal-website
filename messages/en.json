@@ -23,7 +23,8 @@
         "create": "Create",
         "creating": "Creating…",
         "actions": "Actions",
-        "present": "Present"
+        "present": "Present",
+        "featuredAriaLabel": "Featured entry"
     },
     "Auth": {
         "signInWithGoogle": "Sign in with Google",
@@ -40,7 +41,24 @@
         "title": "Track. Reflect. Resume.",
         "subtitle": "A daily work log that becomes your résumé. Capture what you shipped, watch it compose itself into bullets — and share it at your own URL.",
         "seeExample": "See an example portfolio:",
-        "signIn": "Sign in"
+        "signIn": "Sign in",
+        "signInWithEmail": "Sign in with email",
+        "signUpWithEmail": "Sign up with email",
+        "noAccount": "No account yet?",
+        "haveAccount": "Already have an account?"
+    },
+    "EmailAuth": {
+        "signInHeading": "Sign in",
+        "signUpHeading": "Create your account",
+        "signUpSubtitle": "Pick any email — we don't verify it. Useful for trying the app or running a demo.",
+        "email": "Email",
+        "password": "Password",
+        "passwordHint": "At least 8 characters.",
+        "submitSignIn": "Sign in",
+        "submitSignUp": "Create account",
+        "submitting": "Submitting…",
+        "invalidCredentials": "That email and password combination didn't match.",
+        "back": "Back"
     },
     "PublicProfile": {
         "viewResume": "View résumé",
@@ -118,6 +136,8 @@
         "tagPlaceholder": "Engineering",
         "icon": "Icon",
         "color": "Color",
+        "featured": "Featured on résumé",
+        "featuredHint": "Mark this entry as something worth including on your résumé. Use the \"Featured only\" filter in the Resume builder to hide rough notes.",
         "description": "Short Description",
         "descriptionPlaceholder": "What did you do?",
         "impact": "Impact",
@@ -235,12 +255,15 @@
         "entriesCount": "{count} entries",
         "from": "From",
         "to": "To",
+        "featuredOnly": "Featured only",
+        "featuredOnlyHint": "Hide entries you haven't marked as résumé-worthy.",
         "copyMarkdown": "Copy markdown",
         "copied": "Copied!",
         "copyManual": "Selected — press Ctrl+C",
         "copySrCopied": "Markdown copied to clipboard.",
         "copySrManual": "Markdown selected. Press Ctrl+C or Command+C to copy.",
         "downloadMd": "Download .md",
+        "printPdf": "Print / Save PDF",
         "preview": "Preview",
         "markdown": "Markdown",
         "noMatching": "No entries match your filters.",

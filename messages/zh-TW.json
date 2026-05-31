@@ -23,7 +23,8 @@
         "create": "建立",
         "creating": "建立中…",
         "actions": "操作",
-        "present": "至今"
+        "present": "至今",
+        "featuredAriaLabel": "履歷重點紀錄"
     },
     "Auth": {
         "signInWithGoogle": "使用 Google 登入",
@@ -40,7 +41,24 @@
         "title": "記錄。回顧。產出履歷。",
         "subtitle": "把每天的工作寫成日誌，自動長成你的履歷條目，並透過你的專屬網址分享出去。",
         "seeExample": "看一個範例履歷：",
-        "signIn": "登入"
+        "signIn": "登入",
+        "signInWithEmail": "用 Email 登入",
+        "signUpWithEmail": "用 Email 註冊",
+        "noAccount": "還沒有帳號?",
+        "haveAccount": "已經有帳號?"
+    },
+    "EmailAuth": {
+        "signInHeading": "登入",
+        "signUpHeading": "建立帳號",
+        "signUpSubtitle": "隨便輸入一個 email 都行,我們不會驗證。試玩或 demo 都方便。",
+        "email": "Email",
+        "password": "密碼",
+        "passwordHint": "至少 8 個字元。",
+        "submitSignIn": "登入",
+        "submitSignUp": "建立帳號",
+        "submitting": "送出中…",
+        "invalidCredentials": "Email 與密碼不符。",
+        "back": "返回"
     },
     "PublicProfile": {
         "viewResume": "查看履歷",
@@ -118,6 +136,8 @@
         "tagPlaceholder": "工程",
         "icon": "圖示",
         "color": "顏色",
+        "featured": "履歷重點",
+        "featuredHint": "把這筆紀錄標為值得放進履歷的內容。在履歷產生器用「只看重點」篩選就能過濾掉草稿。",
         "description": "簡短描述",
         "descriptionPlaceholder": "你做了什麼?",
         "impact": "成效",
@@ -235,12 +255,15 @@
         "entriesCount": "{count} 筆紀錄",
         "from": "從",
         "to": "到",
+        "featuredOnly": "只看重點",
+        "featuredOnlyHint": "隱藏未標記為履歷重點的紀錄。",
         "copyMarkdown": "複製 markdown",
         "copied": "已複製！",
         "copyManual": "已選取 — 請按 Ctrl+C",
         "copySrCopied": "Markdown 已複製到剪貼簿。",
         "copySrManual": "Markdown 已選取,請按 Ctrl+C 或 Command+C 複製。",
         "downloadMd": "下載 .md",
+        "printPdf": "列印／存 PDF",
         "preview": "預覽",
         "markdown": "Markdown",
         "noMatching": "目前的篩選條件下沒有任何紀錄。",
