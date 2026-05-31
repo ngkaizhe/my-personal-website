@@ -6,6 +6,7 @@ import { saveSetup } from './actions';
 
 interface Props {
     defaultDisplayName: string;
+    defaultImage: string;
 }
 
 const inputClass = `
@@ -19,12 +20,13 @@ const inputClass = `
 
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
-export function SetupForm({ defaultDisplayName }: Props) {
+export function SetupForm({ defaultDisplayName, defaultImage }: Props) {
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [username, setUsername] = useState('');
     const [displayName, setDisplayName] = useState(defaultDisplayName);
     const [bio, setBio] = useState('');
+    const [image, setImage] = useState(defaultImage);
     const t = useTranslations('Setup');
     const tCommon = useTranslations('Common');
 
@@ -32,7 +34,7 @@ export function SetupForm({ defaultDisplayName }: Props) {
         e.preventDefault();
         setError(null);
         startTransition(async () => {
-            const result = await saveSetup({ username, displayName, bio });
+            const result = await saveSetup({ username, displayName, bio, image });
             if (!result.success) {
                 setError(result.error ?? 'Something went wrong.');
                 return;
@@ -84,6 +86,31 @@ export function SetupForm({ defaultDisplayName }: Props) {
                     className={inputClass}
                 />
                 <p className="text-xs text-text-faint mt-2">{t('displayNameHint')}</p>
+            </div>
+
+            <div>
+                <label htmlFor="setup-image" className={labelClass}>
+                    {t('avatar')} <span className="text-text-faint">{tCommon('optional')}</span>
+                </label>
+                <div className="flex items-center gap-3">
+                    {image && (
+                        <img
+                            src={image}
+                            alt=""
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                            className="w-12 h-12 rounded-full object-cover border border-border-light shrink-0"
+                        />
+                    )}
+                    <input
+                        id="setup-image"
+                        type="url"
+                        value={image}
+                        onChange={e => setImage(e.target.value)}
+                        placeholder="https://github.com/yourname.png"
+                        className={inputClass}
+                    />
+                </div>
+                <p className="text-xs text-text-faint mt-2">{t('avatarHint')}</p>
             </div>
 
             <div>

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { LogOut, ExternalLink, UserCircle2, Settings } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -63,11 +62,13 @@ export function UserMenu({ user }: Props) {
                 className="w-9 h-9 rounded-full overflow-hidden bg-surface-elevated border border-border-light flex items-center justify-center text-sm font-medium text-text-primary cursor-pointer hover:ring-2 hover:ring-blue-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
             >
                 {user.image ? (
-                    <Image
+                    // Using a plain <img> instead of next/image because the user
+                    // can set this URL to any external host (Gravatar, GitHub, etc).
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                         src={user.image}
                         alt=""
-                        width={36}
-                        height={36}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                     />
                 ) : (

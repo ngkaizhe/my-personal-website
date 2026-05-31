@@ -8,6 +8,7 @@ export interface SetupInput {
     username: string;
     displayName: string;
     bio: string;
+    image: string;
 }
 
 export interface SetupResult {
@@ -29,6 +30,12 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
     const username = input.username.trim().toLowerCase();
     const displayName = input.displayName.trim();
     const bio = input.bio.trim();
+    const image = input.image.trim();
+    // Only accept https URLs for the avatar — http and data: URIs open us up
+    // to mixed-content warnings and stored payloads on the public profile.
+    const safeImage = image && (image.startsWith('https://') || image.startsWith('http://'))
+        ? image
+        : null;
 
     if (!USERNAME_PATTERN.test(username)) {
         return {
@@ -47,6 +54,7 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
                 username,
                 displayName: displayName || null,
                 bio: bio || null,
+                ...(safeImage !== null || image === '' ? { image: safeImage } : {}),
             },
         });
     } catch (err) {
