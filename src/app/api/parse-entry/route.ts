@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { iconNames } from '@/lib/iconNames';
 import { COLOR_KEYS } from '@/lib/colors';
+import { auth } from '@/auth';
+import { checkRateLimit, rateLimitKey } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -66,6 +68,27 @@ const VALID_QUESTION_IDS = new Set(['impact', 'details', 'techStack', 'descripti
 
 export async function POST(request: Request) {
     try {
+        // Per-user (or per-IP fallback) rate limit. 30/min is well above
+        // anything a real user would hit through the UI but stops a runaway
+        // loop from racking up Anthropic charges.
+        const session = await auth();
+        const identifier = session?.user?.id
+            || request.headers.get('x-forwarded-for')?.split(',')[0]
+            || 'unknown';
+        const rl = checkRateLimit(rateLimitKey('parse-entry', identifier), { max: 30, windowSec: 60 });
+        if (!rl.ok) {
+            return NextResponse.json(
+                { error: 'Rate limit exceeded. Try again shortly.' },
+                {
+                    status: 429,
+                    headers: {
+                        'Retry-After': String(rl.retryAfter),
+                        'X-RateLimit-Remaining': '0',
+                    },
+                },
+            );
+        }
+
         const body = await request.json();
         const {
             text,

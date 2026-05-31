@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { hashSource } from '@/lib/translations';
+import { auth } from '@/auth';
+import { checkRateLimit, rateLimitKey } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -47,6 +49,24 @@ interface ExperienceSource {
 
 export async function POST(request: Request) {
     try {
+        const session = await auth();
+        const identifier = session?.user?.id
+            || request.headers.get('x-forwarded-for')?.split(',')[0]
+            || 'unknown';
+        const rl = checkRateLimit(rateLimitKey('translate-content', identifier), { max: 30, windowSec: 60 });
+        if (!rl.ok) {
+            return NextResponse.json(
+                { error: 'Rate limit exceeded. Try again shortly.' },
+                {
+                    status: 429,
+                    headers: {
+                        'Retry-After': String(rl.retryAfter),
+                        'X-RateLimit-Remaining': '0',
+                    },
+                },
+            );
+        }
+
         const body = await request.json();
         const { type, source, sourceLocale, targetLocale } = body as {
             type: 'entry' | 'experience';
