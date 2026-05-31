@@ -27,6 +27,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
             {aiAvailable && <NavLink href="/dashboard/quick-add">{tNav('quickAdd')}</NavLink>}
             <NavLink href="/dashboard/entries">{tNav('entries')}</NavLink>
             <NavLink href="/dashboard/experiences">{tNav('experiences')}</NavLink>
+            <NavLink href="/dashboard/skills">{tNav('skills')}</NavLink>
             <NavLink href="/dashboard/resume">{tNav('resume')}</NavLink>
           </div>
           <div className="flex items-center gap-2">
