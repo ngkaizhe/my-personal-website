@@ -19,6 +19,9 @@ model User {
   username      String?      @unique
   displayName   String?
   bio           String?
+  // bcrypt hash for the email + password sign-up path. Null for users who
+  // came in via Google OAuth (or any other future provider).
+  passwordHash  String?
   accounts      Account[]
   sessions      Session[]
   experiences   Experience[]
@@ -125,6 +128,10 @@ model Entry {
   date          DateTime
   // See Experience.primaryLocale.
   primaryLocale String      @default("en")
+  // Curation flag used by the résumé builder's "featured only" filter.
+  // Lets the user keep rough notes in the timeline without polluting their
+  // résumé output.
+  featured      Boolean     @default(false)
   // Cross-locale stable identifier for the tag — UI labels can differ per
   // language but resume sectioning, filtering, and badge colour all key off
   // this slug. Generated from the primary-locale tag at write time.

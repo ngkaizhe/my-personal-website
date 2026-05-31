@@ -124,6 +124,7 @@ async function main() {
   const entries: Array<{
     date: Date;
     color: string;
+    featured: boolean;
     techStack: string[];
     linkUrl: string | null;
     linkText: string | null;
@@ -151,6 +152,7 @@ async function main() {
     {
       date: new Date('2019-06-15'),
       color: 'blue',
+      featured: true,
       techStack: ['Computer Science', 'Algorithms', 'Java'],
       linkUrl: 'https://example.com/degree',
       linkText: 'View Degree',
@@ -179,6 +181,7 @@ async function main() {
     {
       date: new Date('2020-06-15'),
       color: 'green',
+      featured: false,
       techStack: ['React', 'JavaScript', 'CSS'],
       linkUrl: null,
       linkText: null,
@@ -205,6 +208,7 @@ async function main() {
     {
       date: new Date('2021-02-10'),
       color: 'green',
+      featured: true,
       techStack: ['React', 'JavaScript', 'Jest', 'Redux'],
       linkUrl: 'https://github.com/example/project',
       linkText: 'View Project',
@@ -233,6 +237,7 @@ async function main() {
     {
       date: new Date('2022-04-01'),
       color: 'purple',
+      featured: false,
       techStack: ['Leadership', 'Mentoring'],
       linkUrl: null,
       linkText: null,
@@ -259,6 +264,7 @@ async function main() {
     {
       date: new Date('2022-09-20'),
       color: 'purple',
+      featured: true,
       techStack: ['Next.js', 'TypeScript', 'AWS'],
       linkUrl: null,
       linkText: null,
@@ -285,6 +291,7 @@ async function main() {
     {
       date: new Date('2023-01-15'),
       color: 'cyan',
+      featured: true,
       techStack: ['Docker', 'GitHub Actions', 'Kubernetes'],
       linkUrl: null,
       linkText: null,
@@ -311,6 +318,7 @@ async function main() {
     {
       date: new Date('2024-03-10'),
       color: 'orange',
+      featured: true,
       techStack: ['System Design', 'Node.js', 'GraphQL', 'Kubernetes'],
       linkUrl: 'https://borcelle.com',
       linkText: 'Company Website',
@@ -337,6 +345,7 @@ async function main() {
     {
       date: new Date('2024-11-01'),
       color: 'orange',
+      featured: true,
       techStack: ['Leadership', 'Process', 'Mentorship'],
       linkUrl: null,
       linkText: null,
@@ -373,6 +382,7 @@ async function main() {
       data: {
         date: item.date,
         primaryLocale: 'en',
+        featured: item.featured,
         tagSlug: item.tagSlug,
         color: item.color,
         techStack: item.techStack,
