@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { LucideIcon } from '@/components/ui/LucideIcon';
+import MarkdownText from '@/components/ui/MarkdownText';
 
 export interface EntryCardProps {
     date: string;           // already-formatted for display
@@ -76,17 +77,17 @@ export default function EntryCard({
 
             {/* Description */}
             <div className="prose prose-sm max-w-none text-text-secondary mb-6">
-                <p className="text-base md:text-lg leading-relaxed mb-4">{description}</p>
+                <MarkdownText className="text-base md:text-lg leading-relaxed mb-4">{description}</MarkdownText>
                 {impact && (
                     <div className="flex items-start gap-2 bg-green-500/5 border border-green-500/20 text-green-700 dark:text-green-400 p-4 rounded-lg mb-4">
                         <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
-                        <span className="text-sm font-medium leading-relaxed">{impact}</span>
+                        <MarkdownText className="text-sm font-medium leading-relaxed" inline>{impact}</MarkdownText>
                     </div>
                 )}
                 {details && (
-                    <div className="bg-surface-elevated p-4 rounded-lg border border-border-light text-sm leading-relaxed">
+                    <MarkdownText className="bg-surface-elevated p-4 rounded-lg border border-border-light text-sm leading-relaxed">
                         {details}
-                    </div>
+                    </MarkdownText>
                 )}
             </div>
 
