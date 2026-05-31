@@ -58,6 +58,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
         new Set(['unlinked', ...data.experiences.map(e => e.id)])
     );
     const [featuredOnly, setFeaturedOnly] = useState(false);
+    const [printTemplate, setPrintTemplate] = useState<'minimal' | 'classic' | 'compact'>('minimal');
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
     const markdownRef = useRef<HTMLTextAreaElement>(null);
     const t = useTranslations('Resume');
@@ -272,9 +273,31 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                         <Download className="w-4 h-4" />
                         {t('downloadMd')}
                     </button>
+                    <div>
+                        <label htmlFor="print-template" className="block text-xs font-medium text-form-label mb-1.5">
+                            {t('printTemplate')}
+                        </label>
+                        <select
+                            id="print-template"
+                            value={printTemplate}
+                            onChange={(e) => {
+                                const v = e.target.value as 'minimal' | 'classic' | 'compact';
+                                setPrintTemplate(v);
+                                document.body.dataset.printTemplate = v;
+                            }}
+                            className="w-full px-3 py-2 rounded-lg bg-input-bg border border-input-border text-input-text text-sm focus:outline-none focus:border-blue-500"
+                        >
+                            <option value="minimal">{t('templateMinimal')}</option>
+                            <option value="classic">{t('templateClassic')}</option>
+                            <option value="compact">{t('templateCompact')}</option>
+                        </select>
+                    </div>
                     <button
                         type="button"
-                        onClick={() => window.print()}
+                        onClick={() => {
+                            document.body.dataset.printTemplate = printTemplate;
+                            window.print();
+                        }}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
                     >
                         <Printer className="w-4 h-4" />

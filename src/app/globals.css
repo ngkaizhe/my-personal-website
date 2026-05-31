@@ -289,6 +289,59 @@
   }
 }
 
+/* ===== Print template variants =====
+   The ResumeBuilder filter sidebar lets the user pick a template; the picker
+   writes the choice to body[data-print-template]. Each template adds its own
+   @media print overrides on top of the base block above. The base ("minimal")
+   needs no extra CSS — it's what runs when no data attribute is set OR when
+   data-print-template="minimal".
+*/
+
+/* "Classic": serif body, all-caps section headers, generous vertical spacing.
+   Reads like a traditional one-page CV. */
+@media print {
+  body[data-print-template="classic"] {
+    font-family: Georgia, 'Times New Roman', serif !important;
+  }
+  body[data-print-template="classic"] h3 {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 1.05rem !important;
+    border-bottom: 1px solid #333 !important;
+    padding-bottom: 0.25rem !important;
+    margin-top: 1.5rem !important;
+  }
+  body[data-print-template="classic"] h2 {
+    font-size: 1.4rem !important;
+  }
+  body[data-print-template="classic"] section {
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* "Compact": tighter line-height + smaller body text — fits more on a page,
+   good for résumés with lots of bullets. */
+@media print {
+  body[data-print-template="compact"] {
+    font-size: 0.85rem !important;
+    line-height: 1.35 !important;
+  }
+  body[data-print-template="compact"] h2 {
+    font-size: 1.15rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  body[data-print-template="compact"] h3 {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  body[data-print-template="compact"] section {
+    margin-bottom: 0.5rem !important;
+  }
+  body[data-print-template="compact"] ul {
+    margin-bottom: 0.25rem !important;
+  }
+}
+
 /* ===== Background Texture ===== */
 
 .bg-page {
