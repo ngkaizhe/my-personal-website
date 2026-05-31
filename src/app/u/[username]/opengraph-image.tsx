@@ -10,8 +10,8 @@ export const size = { width: 1200, height: 630 };
 // Generates the social-preview card for /@username. Shows display name +
 // username + bio + the top 5 most-used skills aggregated across the user's
 // entries. Anything beyond that gets noisy at 630px tall.
-export default async function OgImage({ params }: { params: { username: string } }) {
-    const { username } = params;
+export default async function OgImage({ params }: { params: Promise<{ username: string }> }) {
+    const { username } = await params;
 
     const user = await prisma.user.findUnique({
         where: { username },
