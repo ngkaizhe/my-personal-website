@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { saveSetup } from './actions';
 
@@ -22,8 +20,6 @@ const inputClass = `
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 export function SetupForm({ defaultDisplayName }: Props) {
-    const router = useRouter();
-    const { update } = useSession();
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [username, setUsername] = useState('');
@@ -41,10 +37,11 @@ export function SetupForm({ defaultDisplayName }: Props) {
                 setError(result.error ?? 'Something went wrong.');
                 return;
             }
-            // Refresh the JWT so middleware no longer redirects to /setup.
-            await update({ user: { username: username.trim().toLowerCase() } });
-            router.push('/dashboard');
-            router.refresh();
+            // Hard navigation — useSession().update() doesn't survive the
+            // Credentials provider so we can't refresh the JWT in place.
+            // The dashboard reads userId for queries (not username), so the
+            // JWT can stay username=null without breaking anything.
+            window.location.href = '/dashboard';
         });
     };
 

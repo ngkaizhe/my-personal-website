@@ -24,14 +24,14 @@ export default auth((req) => {
         return NextResponse.redirect(new URL('/', nextUrl));
     }
 
-    // Authenticated users without a username must finish /setup before /dashboard.
-    if (
-        session?.user &&
-        !session.user.username &&
-        nextUrl.pathname.startsWith('/dashboard')
-    ) {
-        return NextResponse.redirect(new URL('/setup', nextUrl));
-    }
+    // NOTE: we deliberately do NOT redirect "logged-in but no username" users
+    // away from /dashboard. The JWT can carry username=null for the entire
+    // lifetime of the cookie (because useSession().update() doesn't survive
+    // the Credentials provider), so trusting that check creates an infinite
+    // dashboard ↔ setup loop. Instead the UserMenu surfaces "Set up your
+    // profile" when username is missing, and /setup itself is reachable for
+    // any signed-in user. The dashboard reads userId for queries, not
+    // username, so missing username never breaks data access.
 });
 
 export const config = {
