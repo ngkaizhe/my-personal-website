@@ -267,6 +267,65 @@ The seed marks 6 of 8 demo entries as `featured=true`. Without filter: 8 bullets
 
 Catches regressions in `globals.css` print rules or anyone accidentally removing the `.resume-print-hide` / `.no-print` classes from ResumeBuilder / resume pages.
 
+### T1.21 — Try-as-Demo button signs in as the seeded demo user
+
+1. Clear cookies, navigate to `/`.
+2. Find the "Try as Demo (no signup)" / "用 Demo 帳號試試" button (server action submit button).
+3. Click via Playwright's `.click()`.
+4. Assert URL settles on `/dashboard` AND nav contains all 5 links AND `<h1>` text equals "MY JOURNEY".
+
+Catches: the `demo` Credentials provider missing or broken, the seed `demo` username changing, or the landing page accidentally losing the demo CTA.
+
+### T1.22 — Timeline search filters cards live + `/` shortcut focuses input
+
+1. With a session that has ≥ 1 entry (demo works), navigate to `/dashboard` (or `/@demo` for an unauth check).
+2. Count cards via `[role="button"][aria-label^="View details"]` → record N1.
+3. Press `/` via `page.keyboard.press('/')`.
+4. Assert `document.activeElement.type === 'search'`.
+5. Type a token that appears in only one seed entry (e.g. "Docker" matches the CI/CD entry).
+6. Count cards again → record N2.
+7. Assert N2 < N1 AND N2 > 0.
+
+Catches regressions in the `useEffect` keyboard listener, the haystack composition, or the empty-state fallback.
+
+### T1.23 — Quick Add Q&A: sparse input triggers follow-up questions
+
+Requires `ANTHROPIC_API_KEY` (this is a Tier-1 check but skip with reason if absent).
+
+1. Sign in as demo (or any auth'd user).
+2. Navigate to `/dashboard/quick-add`.
+3. Fill `#quick-input` with deliberately sparse text: "Today I shipped a feature".
+4. Click "Parse with AI".
+5. Wait for `input[name="title"]` to appear AND for at least 1 element with `id^="qa-followup-"` to be present (the model should ask follow-ups because the input is intentionally thin).
+6. Fill at least one of the follow-up textareas with a concrete answer.
+7. Click "Apply answers".
+8. Wait for the refinement round-trip to complete (button no longer shows "Refining…").
+9. Assert one of the parsed form fields updated to reflect the answer (e.g. the `description` textarea no longer matches the original sparse model output).
+
+Catches: the questions array missing in the response, the refinement turn parameter not propagating, or the form not re-rendering on state update.
+
+### T1.24 — Markdown rendering in EntryCard doesn't crash on plain text or markdown
+
+Smoke test for the MarkdownText component. Any successful dashboard / public profile / entry detail page load already exercises this (every TimelineModal opens an EntryCard). If the dashboard or `/@demo` returns 200 + h1 renders, this passes. No separate Playwright step needed unless you want to verify markdown formatting renders:
+
+1. Create or pick a test entry whose description contains `**bold text**` and `[a link](https://example.com)`.
+2. Navigate to that entry's timeline modal.
+3. Assert the rendered description contains a `<strong>` element AND an `<a>` element pointing at `https://example.com`.
+
+(Optional — skip if no markdown-flavoured test entry is available.)
+
+### T1.25 — Print template selector + variants apply
+
+1. Navigate to `/dashboard/resume` or `/@demo/resume`.
+2. Find `select#print-template` — assert it has options `minimal`, `classic`, `compact`.
+3. Select `classic` → assert `document.body.dataset.printTemplate === 'classic'`.
+4. Emulate print media: `await page.emulateMedia({ media: 'print' })`.
+5. Assert the body computed font-family contains "Georgia" / "serif".
+6. Restore: select `minimal` → confirm body font-family is back to the default sans-serif.
+7. `await page.emulateMedia({ media: 'screen' })` before finishing.
+
+Catches: the data attribute writer missing, the @media print blocks getting accidentally outside their gate, or one of the templates getting deleted from globals.css.
+
 ### T1.16 — /api/translate-content degrades cleanly without ANTHROPIC_API_KEY
 
 ```bash
@@ -437,6 +496,9 @@ This skill is intentionally a checklist, not a fixed test suite — it's expecte
 | Add a new auth provider | Add a Tier-1 check parallel to T1.17 that drives the new provider's signup/signin |
 | Add a new résumé filter | Extend T1.19 with a check that flipping the filter changes the bullet count |
 | Add new print-hidden chrome | Add the class (`resume-print-hide` or `no-print`) and confirm T1.20 still picks it up |
+| Add a new print template | Extend T1.25 with a selector for the new template value + a check on a distinguishing CSS property |
+| Add a new searchable field on entries | Update T1.22 to use a token from that field in the test query |
+| Add a new follow-up question id in QuickAdd | Update the route's VALID_QUESTION_IDS allowlist; T1.23 stays valid as long as the model still asks at least one question |
 | Remove a feature | Mark the corresponding check `### Removed in <commit-sha>` rather than deleting (so reviewers can see the history) |
 | Add an interactive flow that mutates DB | Add a Tier 2 check with its own cleanup step (or declare the residue clearly) |
 
