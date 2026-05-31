@@ -326,6 +326,103 @@ Smoke test for the MarkdownText component. Any successful dashboard / public pro
 
 Catches: the data attribute writer missing, the @media print blocks getting accidentally outside their gate, or one of the templates getting deleted from globals.css.
 
+### T1.26 — Edit button in TimelineModal when viewer owns the timeline
+
+1. Sign in (any user with at least one entry).
+2. Navigate to `/dashboard`.
+3. Click any timeline card to open the modal.
+4. Assert at least one `a[href^="/dashboard/entries/"]` element exists inside the `[role="dialog"]`.
+5. Sign out (or use a different cookie) and navigate to `/@demo`.
+6. Open any card → assert NO `a[href^="/dashboard/entries/"]` appears in the modal.
+
+Catches regressions in the `editable` prop wiring or in the ownership check in `/u/[username]/page.tsx`.
+
+### T1.27 — Rate limit on /api/parse-entry
+
+```bash
+for i in {1..35}; do
+  curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:3000/api/parse-entry \
+    -H "Content-Type: application/json" \
+    -d '{"text":"test"}'
+done | sort | uniq -c
+```
+
+- Expect a mix of 200/500 responses for the first 30 (depending on whether ANTHROPIC_API_KEY is set), then at least 1 `429` once the cap is hit.
+- 429 responses should include `Retry-After` header.
+
+### T1.28 — Skills view exists + filters timeline by ?skill=
+
+1. Navigate to `/dashboard/skills` (auth'd) or `/@demo/skills` (public).
+2. Count `a[href*="skill="]` elements — expect ≥ 1 (any user with techStack entries).
+3. Click the first skill link.
+4. Assert URL contains `?skill=…`.
+5. Assert a "Filtering by …" pill appears on the timeline.
+6. Assert the visible card count is ≤ unfiltered card count.
+
+### T1.29 — Year review page renders stats + highlights
+
+1. Navigate to `/dashboard/year/<current-year>` (auth'd) or `/@demo/year/2024` (public, demo data spans multiple years).
+2. Assert `<h1>` text matches the year heading pattern.
+3. If the year has data: assert 4 stat cards exist (entries / impact / featured / top tag), plus at least one of: "Top categories", "Top skills", "Highlights" sections.
+4. If the year is empty: assert the empty-state message renders without crashing.
+
+### T1.30 — OG image at /u/<username>/opengraph-image returns PNG
+
+```bash
+curl -sI -o /dev/null -w "%{http_code} %{content_type}\n" --max-time 30 http://localhost:3000/u/demo/opengraph-image
+```
+
+- Expect `200 image/png`. Catches regressions in the `params: Promise<...>` async signature (Next 16 made these async — easy to miss), in the database aggregation that powers the card, or in any next/og update.
+
+### T1.31 — /@username/entry/[id] permalink renders or 404s correctly
+
+- Valid id (use a known seed entry from the demo profile):
+  - `curl -sI -w "%{http_code}" http://localhost:3000/@demo/entry/<valid-id>` → expect `200`.
+- Invalid id:
+  - `curl -sI -w "%{http_code}" http://localhost:3000/@demo/entry/00000000-0000-0000-0000-000000000000` → expect `404`.
+
+### T1.32 — /api/improve-bullet returns improved + feedback (with key)
+
+```bash
+curl -s -X POST http://localhost:3000/api/improve-bullet \
+  -H "Content-Type: application/json" \
+  -d '{"actionVerb":"Did","title":"some work","impact":"","description":"I worked on stuff"}' | jq .
+```
+
+- With key: expect 200 + `improved` (non-empty string) + `feedback` (non-empty string).
+- Without key: expect 503 + `{"error":"ANTHROPIC_API_KEY not configured"}`.
+
+### T1.33 — Avatar URL field accepts https, rejects non-http schemes
+
+Not Playwright-able without writing to the DB. Verify via Prisma:
+
+```bash
+npx dotenv -e .env.local -- node -e "
+const {PrismaClient} = require('@prisma/client');
+const p = new PrismaClient();
+(async () => {
+  // Look up any user with image set — confirm it starts with http(s).
+  const u = await p.user.findFirst({ where: { image: { not: null } }, select: { image: true } });
+  if (u && !/^https?:\/\//.test(u.image)) {
+    console.error('FAIL: bad image scheme', u.image);
+    process.exit(1);
+  }
+  console.log('OK');
+  await p.\$disconnect();
+})();
+"
+```
+
+- Expect `OK`. Catches a regression where saveSetup's URL validator changes and lets through `data:` / `javascript:` schemes.
+
+### T1.34 — vitest suite green
+
+```bash
+npm test
+```
+
+- Expect all suites pass. Currently translations / skills / rateLimit. Add more as features land.
+
 ### T1.16 — /api/translate-content degrades cleanly without ANTHROPIC_API_KEY
 
 ```bash
@@ -499,6 +596,9 @@ This skill is intentionally a checklist, not a fixed test suite — it's expecte
 | Add a new print template | Extend T1.25 with a selector for the new template value + a check on a distinguishing CSS property |
 | Add a new searchable field on entries | Update T1.22 to use a token from that field in the test query |
 | Add a new follow-up question id in QuickAdd | Update the route's VALID_QUESTION_IDS allowlist; T1.23 stays valid as long as the model still asks at least one question |
+| Add a new AI API endpoint | Wire rateLimit + auth like the others; add an env-aware Tier 1 check parallel to T1.27 / T1.32 |
+| Change the OG image card | Re-run T1.30 to confirm 200 + image/png; consider snapshot-diffing the PNG bytes |
+| Add a new dashboard route | Add a Tier-1 check that navigates there + asserts heading; if it accepts a URL param, parallel T1.28 / T1.29 |
 | Remove a feature | Mark the corresponding check `### Removed in <commit-sha>` rather than deleting (so reviewers can see the history) |
 | Add an interactive flow that mutates DB | Add a Tier 2 check with its own cleanup step (or declare the residue clearly) |
 
