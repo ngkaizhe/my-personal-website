@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, MessageCircleQuestion } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import EntryFormPreview from '@/components/Entry/EntryFormPreview';
 import TagInput from '@/components/ui/TagInput';
@@ -23,15 +23,25 @@ const inputClass = `
 
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
+interface FollowUpQuestion {
+    id: string;
+    label: string;
+    placeholder?: string;
+}
+
 interface ParsedFields {
     actionVerb: string;
     title: string;
     description: string;
     impact: string;
+    details: string;
     tag: string;
     techStack: string[];
     color: string;
     iconName: string;
+    questions?: FollowUpQuestion[];
+    done?: boolean;
+    turn?: number;
 }
 
 interface Props {
@@ -42,9 +52,11 @@ interface Props {
 export default function QuickAdd({ experiences, action }: Props) {
     const [input, setInput] = useState('');
     const [parsing, setParsing] = useState(false);
+    const [refining, setRefining] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [parsed, setParsed] = useState<ParsedFields | null>(null);
+    const [answers, setAnswers] = useState<Record<string, string>>({});
     const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
     const [experienceId, setExperienceId] = useState('');
     const [experiencesState, setExperiencesState] = useState(experiences);
@@ -54,6 +66,8 @@ export default function QuickAdd({ experiences, action }: Props) {
     const tCommon = useTranslations('Common');
 
     const selectedExperience = experiencesState.find(e => e.id === experienceId);
+    const questions = parsed?.questions ?? [];
+    const hasQuestions = questions.length > 0 && !parsed?.done;
 
     const handleExperienceChange = (value: string) => {
         if (value === NEW_EXPERIENCE_SENTINEL) {
@@ -67,11 +81,12 @@ export default function QuickAdd({ experiences, action }: Props) {
         if (!input.trim()) return;
         setParsing(true);
         setError(null);
+        setAnswers({});
         try {
             const res = await fetch('/api/parse-entry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: input }),
+                body: JSON.stringify({ text: input, turn: 1 }),
             });
             if (!res.ok) {
                 const err = await res.json();
@@ -84,6 +99,63 @@ export default function QuickAdd({ experiences, action }: Props) {
         } finally {
             setParsing(false);
         }
+    };
+
+    const refine = async () => {
+        if (!parsed) return;
+        // Only send non-empty answers — the model shouldn't spend tokens on
+        // questions the user skipped.
+        const trimmedAnswers: Record<string, string> = {};
+        for (const [k, v] of Object.entries(answers)) {
+            const trimmed = v.trim();
+            if (trimmed) trimmedAnswers[k] = trimmed;
+        }
+        if (Object.keys(trimmedAnswers).length === 0) {
+            // No answers filled — just mark questions as done so the UI advances.
+            setParsed({ ...parsed, questions: [], done: true });
+            return;
+        }
+        setRefining(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/parse-entry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: input,
+                    previousState: {
+                        actionVerb: parsed.actionVerb,
+                        title: parsed.title,
+                        description: parsed.description,
+                        impact: parsed.impact,
+                        details: parsed.details,
+                        tag: parsed.tag,
+                        techStack: parsed.techStack,
+                        color: parsed.color,
+                        iconName: parsed.iconName,
+                    },
+                    answers: trimmedAnswers,
+                    turn: (parsed.turn ?? 1) + 1,
+                }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || t('parseFailed'));
+            }
+            const data = await res.json();
+            setParsed(data);
+            setAnswers({});
+        } catch (err) {
+            setError(err instanceof Error ? err.message : t('parseFailed'));
+        } finally {
+            setRefining(false);
+        }
+    };
+
+    const skipQuestions = () => {
+        if (!parsed) return;
+        setParsed({ ...parsed, questions: [], done: true });
+        setAnswers({});
     };
 
     const save = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -141,104 +213,158 @@ export default function QuickAdd({ experiences, action }: Props) {
             {/* Parsed preview + edit */}
             {parsed && (
                 <form onSubmit={save} className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6 items-start">
-                    <div className="space-y-5 bg-form-bg backdrop-blur-sm p-4 md:p-6 rounded-2xl border border-form-border shadow-2xl">
-                        <h2 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">
-                            {t('reviewAndEdit')}
-                        </h2>
+                    <div className="space-y-5">
+                        <div className="space-y-5 bg-form-bg backdrop-blur-sm p-4 md:p-6 rounded-2xl border border-form-border shadow-2xl">
+                            <h2 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">
+                                {t('reviewAndEdit')}
+                            </h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="qa-date" className={labelClass}>{tForm('date')}</label>
-                                <input id="qa-date" type="date" name="date" value={date} onChange={e => setDate(e.target.value)} required className={inputClass} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="qa-date" className={labelClass}>{tForm('date')}</label>
+                                    <input id="qa-date" type="date" name="date" value={date} onChange={e => setDate(e.target.value)} required className={inputClass} />
+                                </div>
+                                <div>
+                                    <label htmlFor="qa-experience" className={labelClass}>{tForm('experience')}</label>
+                                    <select id="qa-experience" name="experienceId" value={experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
+                                        <option value="">{tForm('experienceNone')}</option>
+                                        {experiencesState.map(exp => (
+                                            <option key={exp.id} value={exp.id}>{exp.name}</option>
+                                        ))}
+                                        <option value={NEW_EXPERIENCE_SENTINEL}>{tForm('createNewExperience')}</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label htmlFor="qa-experience" className={labelClass}>{tForm('experience')}</label>
-                                <select id="qa-experience" name="experienceId" value={experienceId} onChange={e => handleExperienceChange(e.target.value)} className={inputClass}>
-                                    <option value="">{tForm('experienceNone')}</option>
-                                    {experiencesState.map(exp => (
-                                        <option key={exp.id} value={exp.id}>{exp.name}</option>
-                                    ))}
-                                    <option value={NEW_EXPERIENCE_SENTINEL}>{tForm('createNewExperience')}</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4">
-                            <div>
-                                <label htmlFor="qa-verb" className={labelClass}>{tForm('actionVerb')}</label>
-                                <input id="qa-verb" name="actionVerb" value={parsed.actionVerb} onChange={e => updateParsed('actionVerb', e.target.value)} className={inputClass} />
+                            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4">
+                                <div>
+                                    <label htmlFor="qa-verb" className={labelClass}>{tForm('actionVerb')}</label>
+                                    <input id="qa-verb" name="actionVerb" value={parsed.actionVerb} onChange={e => updateParsed('actionVerb', e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label htmlFor="qa-title" className={labelClass}>{tForm('title')}</label>
+                                    <input id="qa-title" name="title" value={parsed.title} onChange={e => updateParsed('title', e.target.value)} required className={inputClass} />
+                                </div>
                             </div>
+
                             <div>
-                                <label htmlFor="qa-title" className={labelClass}>{tForm('title')}</label>
-                                <input id="qa-title" name="title" value={parsed.title} onChange={e => updateParsed('title', e.target.value)} required className={inputClass} />
+                                <label htmlFor="qa-desc" className={labelClass}>{tForm('description')}</label>
+                                <textarea id="qa-desc" name="description" value={parsed.description} onChange={e => updateParsed('description', e.target.value)} rows={2} required className={inputClass} />
                             </div>
-                        </div>
 
-                        <div>
-                            <label htmlFor="qa-desc" className={labelClass}>{tForm('description')}</label>
-                            <textarea id="qa-desc" name="description" value={parsed.description} onChange={e => updateParsed('description', e.target.value)} rows={2} required className={inputClass} />
-                        </div>
-
-                        <div>
-                            <label htmlFor="qa-impact" className={labelClass}>{tForm('impact')} <span className="text-text-faint">{tForm('impactHint')}</span></label>
-                            <input id="qa-impact" name="impact" value={parsed.impact} onChange={e => updateParsed('impact', e.target.value)} className={inputClass} />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="qa-tag" className={labelClass}>{tForm('tag')}</label>
-                                <input id="qa-tag" name="tag" value={parsed.tag} onChange={e => updateParsed('tag', e.target.value)} required className={inputClass} />
+                                <label htmlFor="qa-impact" className={labelClass}>{tForm('impact')} <span className="text-text-faint">{tForm('impactHint')}</span></label>
+                                <input id="qa-impact" name="impact" value={parsed.impact} onChange={e => updateParsed('impact', e.target.value)} className={inputClass} />
                             </div>
+
                             <div>
-                                <label htmlFor="qa-icon" className={labelClass}>{tForm('icon')}</label>
-                                <IconPicker
-                                    id="qa-icon"
-                                    name="iconName"
-                                    value={parsed.iconName}
-                                    onChange={v => updateParsed('iconName', v)}
+                                <label htmlFor="qa-details" className={labelClass}>{tForm('details')} <span className="text-text-faint">{tCommon('optional')}</span></label>
+                                <textarea id="qa-details" name="details" value={parsed.details} onChange={e => updateParsed('details', e.target.value)} rows={3} className={inputClass} />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="qa-tag" className={labelClass}>{tForm('tag')}</label>
+                                    <input id="qa-tag" name="tag" value={parsed.tag} onChange={e => updateParsed('tag', e.target.value)} required className={inputClass} />
+                                </div>
+                                <div>
+                                    <label htmlFor="qa-icon" className={labelClass}>{tForm('icon')}</label>
+                                    <IconPicker
+                                        id="qa-icon"
+                                        name="iconName"
+                                        value={parsed.iconName}
+                                        onChange={v => updateParsed('iconName', v)}
+                                        className={inputClass}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="qa-tech" className={labelClass}>{tForm('techStack')}</label>
+                                <TagInput
+                                    id="qa-tech"
+                                    values={parsed.techStack}
+                                    onChange={(techStack) => updateParsed('techStack', techStack)}
                                     className={inputClass}
                                 />
                             </div>
-                        </div>
 
-                        <div>
-                            <label htmlFor="qa-tech" className={labelClass}>{tForm('techStack')}</label>
-                            <TagInput
-                                id="qa-tech"
-                                values={parsed.techStack}
-                                onChange={(techStack) => updateParsed('techStack', techStack)}
-                                className={inputClass}
+                            <ColorPicker
+                                name="color"
+                                label={tForm('color')}
+                                value={parsed.color}
+                                onChange={c => updateParsed('color', c)}
                             />
+
+                            <input type="hidden" name="linkUrl" value="" />
+                            <input type="hidden" name="linkText" value="" />
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-form-action-border">
+                                <button
+                                    type="button"
+                                    onClick={() => { setParsed(null); setInput(''); setAnswers({}); }}
+                                    disabled={submitting}
+                                    className="px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer disabled:opacity-50"
+                                >
+                                    {t('startOver')}
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20"
+                                >
+                                    {submitting ? tCommon('saving') : tForm('saveEntry')}
+                                </button>
+                            </div>
                         </div>
 
-                        <ColorPicker
-                            name="color"
-                            label={tForm('color')}
-                            value={parsed.color}
-                            onChange={c => updateParsed('color', c)}
-                        />
-
-                        <input type="hidden" name="details" value="" />
-                        <input type="hidden" name="linkUrl" value="" />
-                        <input type="hidden" name="linkText" value="" />
-
-                        <div className="flex justify-end gap-3 pt-4 border-t border-form-action-border">
-                            <button
-                                type="button"
-                                onClick={() => { setParsed(null); setInput(''); }}
-                                disabled={submitting}
-                                className="px-6 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-all duration-200 cursor-pointer disabled:opacity-50"
-                            >
-                                {t('startOver')}
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20"
-                            >
-                                {submitting ? tCommon('saving') : tForm('saveEntry')}
-                            </button>
-                        </div>
+                        {/* Follow-up Q&A card */}
+                        {hasQuestions && (
+                            <div className="space-y-4 bg-blue-500/5 backdrop-blur-sm p-4 md:p-6 rounded-2xl border border-blue-500/20 shadow-xl">
+                                <div className="flex items-center gap-2 text-form-section-text">
+                                    <MessageCircleQuestion className="w-5 h-5 text-blue-500" />
+                                    <h3 className="text-base font-semibold">{t('followUpHeading')}</h3>
+                                </div>
+                                <p className="text-sm text-text-muted">{t('followUpSubtitle')}</p>
+                                <div className="space-y-4">
+                                    {questions.map((q) => (
+                                        <div key={q.id}>
+                                            <label htmlFor={`qa-followup-${q.id}`} className={labelClass}>
+                                                {q.label}
+                                            </label>
+                                            <textarea
+                                                id={`qa-followup-${q.id}`}
+                                                rows={2}
+                                                value={answers[q.id] ?? ''}
+                                                onChange={(e) => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                                                placeholder={q.placeholder}
+                                                className={inputClass}
+                                                disabled={refining}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-end gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={skipQuestions}
+                                        disabled={refining}
+                                        className="px-4 py-2 rounded-lg border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium text-sm transition-colors cursor-pointer disabled:opacity-50"
+                                    >
+                                        {t('skipQuestions')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={refine}
+                                        disabled={refining}
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {refining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                        {refining ? t('refining') : t('refine')}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="sticky top-24">
@@ -250,7 +376,7 @@ export default function QuickAdd({ experiences, action }: Props) {
                                 actionVerb: parsed.actionVerb,
                                 description: parsed.description,
                                 impact: parsed.impact,
-                                details: '',
+                                details: parsed.details,
                                 tag: parsed.tag,
                                 color: parsed.color,
                                 iconName: parsed.iconName,
