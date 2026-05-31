@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw, Star } from 'lucide-react';
 import { EntryDetail, EntryTranslationDraft } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -75,6 +75,7 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
         date: item.date,
         primaryLocale: item.primaryLocale,
         color: item.color,
+        featured: item.featured,
         iconName: item.iconName,
         techStack: item.techStack,
         linkUrl: item.linkUrl,
@@ -267,6 +268,23 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
                         </div>
                     </div>
                     <ColorPicker name="color" label={t('color')} value={shared.color} onChange={c => updateShared('color', c)} />
+
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                        <input
+                            type="checkbox"
+                            name="featured"
+                            checked={shared.featured}
+                            onChange={e => updateShared('featured', e.target.checked)}
+                            className="mt-1 w-4 h-4 rounded cursor-pointer accent-blue-600"
+                        />
+                        <span>
+                            <span className="flex items-center gap-1.5 text-sm font-medium text-form-label">
+                                <Star className={`w-4 h-4 ${shared.featured ? 'fill-amber-400 text-amber-400' : 'text-text-faint'}`} />
+                                {t('featured')}
+                            </span>
+                            <span className="block text-xs text-text-faint mt-0.5">{t('featuredHint')}</span>
+                        </span>
+                    </label>
                 </Section>
 
                 {/* Per-locale tabs */}

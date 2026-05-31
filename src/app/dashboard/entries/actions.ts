@@ -19,6 +19,7 @@ export interface EntrySummary {
     title: string;
     tag: string;
     color: string;
+    featured: boolean;
     experienceName?: string;
 }
 
@@ -45,6 +46,7 @@ export interface EntryDetail {
     date: string;                // YYYY-MM-DD
     primaryLocale: string;
     color: string;
+    featured: boolean;
     techStack: string[];
     linkUrl: string;
     linkText: string;
@@ -107,6 +109,7 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
                 title: tr.title,
                 tag: tr.tag,
                 color: i.color,
+                featured: i.featured,
                 experienceName: expTr?.organization,
             }];
         });
@@ -150,6 +153,7 @@ export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
             date: item.date.toISOString().substring(0, 10),
             primaryLocale: item.primaryLocale,
             color: item.color,
+            featured: item.featured,
             techStack: item.techStack,
             linkUrl: item.linkUrl ?? '',
             linkText: item.linkText ?? '',
@@ -177,6 +181,7 @@ interface ParsedFormData {
     date: Date;
     primaryLocale: string;
     color: string;
+    featured: boolean;
     techStack: string[];
     linkUrl: string | null;
     linkText: string | null;
@@ -232,6 +237,9 @@ function extractFormData(formData: FormData): ParsedFormData {
         date: new Date(raw.date as string),
         primaryLocale,
         color: (raw.color as string) || 'blue',
+        // HTML checkboxes only post their value when checked; an unchecked
+        // box yields no key at all, which becomes false here.
+        featured: raw.featured === 'on' || raw.featured === 'true',
         techStack,
         linkUrl: (raw.linkUrl as string) || null,
         linkText: (raw.linkText as string) || null,

@@ -36,6 +36,7 @@ export default async function NewEntryPage() {
         date: new Date().toISOString().substring(0, 10),
         primaryLocale: locale,
         color: 'blue',
+        featured: false,
         techStack: [],
         linkUrl: '',
         linkText: '',

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
+import { Star } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { getBadgeClass } from '@/lib/colors';
@@ -12,6 +13,7 @@ export interface EntrySummary {
     title: string;
     tag: string;
     color: string;
+    featured: boolean;
     experienceName?: string;
 }
 
@@ -66,7 +68,12 @@ export default function EntryList({ items, deleteAction }: Props) {
                         {items.map((item) => (
                             <tr key={item.id} className="border-b border-border-light hover:bg-surface-elevated/50">
                                 <td className="p-4 font-medium text-text-primary whitespace-nowrap">{formatDate(item.date, locale)}</td>
-                                <td className="p-4 text-text-secondary">{item.title}</td>
+                                <td className="p-4 text-text-secondary">
+                                    <span className="inline-flex items-center gap-2">
+                                        {item.featured && <Star className="w-4 h-4 fill-amber-400 text-amber-400 shrink-0" aria-label={tCommon('featuredAriaLabel')} />}
+                                        {item.title}
+                                    </span>
+                                </td>
                                 <td className="p-4 text-text-muted text-sm">{item.experienceName || '—'}</td>
                                 <td className="p-4">
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClass(item.color)}`}>
@@ -101,7 +108,10 @@ export default function EntryList({ items, deleteAction }: Props) {
                         <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="min-w-0">
                                 <div className="text-xs text-text-muted mb-0.5">{formatDate(item.date, locale)}</div>
-                                <div className="font-semibold text-text-primary">{item.title}</div>
+                                <div className="font-semibold text-text-primary inline-flex items-center gap-1.5">
+                                    {item.featured && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-label={tCommon('featuredAriaLabel')} />}
+                                    {item.title}
+                                </div>
                                 {item.experienceName && (
                                     <div className="text-text-muted text-sm">{item.experienceName}</div>
                                 )}
