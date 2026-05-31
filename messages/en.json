@@ -45,7 +45,8 @@
         "signInWithEmail": "Sign in with email",
         "signUpWithEmail": "Sign up with email",
         "noAccount": "No account yet?",
-        "haveAccount": "Already have an account?"
+        "haveAccount": "Already have an account?",
+        "tryAsDemo": "Try as Demo (no signup)"
     },
     "EmailAuth": {
         "signInHeading": "Sign in",
@@ -95,7 +96,11 @@
         "copied": "Copied!",
         "viewDetails": "View details",
         "viewDetailsFor": "View details for {title}",
-        "closeDialog": "Close details dialog"
+        "closeDialog": "Close details dialog",
+        "searchPlaceholder": "Search entries…",
+        "searchAriaLabel": "Search timeline entries",
+        "clearSearch": "Clear search",
+        "searchEmpty": "No entries match \"{query}\""
     },
     "Entries": {
         "manageTitle": "Manage Entries",
@@ -178,6 +183,11 @@
         "parseWithAi": "Parse with AI",
         "parsing": "Parsing…",
         "reviewAndEdit": "Review & edit",
+        "followUpHeading": "Quick questions to fill in the gaps",
+        "followUpSubtitle": "Answer any you have something to say about — skip the rest.",
+        "refine": "Apply answers",
+        "refining": "Refining…",
+        "skipQuestions": "Skip & keep as-is",
         "startOver": "Start over",
         "unavailableTitle": "Quick Add is unavailable",
         "unavailableBody": "AI-assisted parsing requires an <keyName>ANTHROPIC_API_KEY</keyName> environment variable. You can still log entries manually with the same fields.",
@@ -264,6 +274,10 @@
         "copySrManual": "Markdown selected. Press Ctrl+C or Command+C to copy.",
         "downloadMd": "Download .md",
         "printPdf": "Print / Save PDF",
+        "printTemplate": "Print template",
+        "templateMinimal": "Minimal",
+        "templateClassic": "Classic",
+        "templateCompact": "Compact",
         "preview": "Preview",
         "markdown": "Markdown",
         "noMatching": "No entries match your filters.",

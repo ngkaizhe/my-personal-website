@@ -45,7 +45,8 @@
         "signInWithEmail": "用 Email 登入",
         "signUpWithEmail": "用 Email 註冊",
         "noAccount": "還沒有帳號?",
-        "haveAccount": "已經有帳號?"
+        "haveAccount": "已經有帳號?",
+        "tryAsDemo": "用 Demo 帳號試試（免註冊）"
     },
     "EmailAuth": {
         "signInHeading": "登入",
@@ -95,7 +96,11 @@
         "copied": "已複製！",
         "viewDetails": "查看詳情",
         "viewDetailsFor": "查看 {title} 的詳情",
-        "closeDialog": "關閉詳情對話框"
+        "closeDialog": "關閉詳情對話框",
+        "searchPlaceholder": "搜尋紀錄…",
+        "searchAriaLabel": "搜尋時間軸紀錄",
+        "clearSearch": "清除搜尋",
+        "searchEmpty": "沒有符合「{query}」的紀錄"
     },
     "Entries": {
         "manageTitle": "管理紀錄",
@@ -178,6 +183,11 @@
         "parseWithAi": "用 AI 解析",
         "parsing": "解析中…",
         "reviewAndEdit": "審閱與編輯",
+        "followUpHeading": "補幾個問題,讓內容更完整",
+        "followUpSubtitle": "有想到的就填,沒有的跳過。",
+        "refine": "套用回答",
+        "refining": "調整中…",
+        "skipQuestions": "跳過,維持現狀",
         "startOver": "重新開始",
         "unavailableTitle": "快速新增無法使用",
         "unavailableBody": "AI 解析功能需要 <keyName>ANTHROPIC_API_KEY</keyName> 環境變數。你仍然可以手動新增同樣欄位的紀錄。",
@@ -264,6 +274,10 @@
         "copySrManual": "Markdown 已選取,請按 Ctrl+C 或 Command+C 複製。",
         "downloadMd": "下載 .md",
         "printPdf": "列印／存 PDF",
+        "printTemplate": "列印版型",
+        "templateMinimal": "簡約",
+        "templateClassic": "經典",
+        "templateCompact": "精簡",
         "preview": "預覽",
         "markdown": "Markdown",
         "noMatching": "目前的篩選條件下沒有任何紀錄。",
