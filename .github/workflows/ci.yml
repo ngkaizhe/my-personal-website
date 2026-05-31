@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: i18n key parity
+        run: |
+          node -e "
+          const en = require('./messages/en.json');
+          const zh = require('./messages/zh-TW.json');
+          function keys(obj, prefix='') {
+            return Object.entries(obj).flatMap(([k,v]) =>
+              typeof v === 'object' && v !== null ? keys(v, prefix+k+'.') : [prefix+k]
+            );
+          }
+          const enKeys = new Set(keys(en));
+          const zhKeys = new Set(keys(zh));
+          const onlyEn = [...enKeys].filter(k => !zhKeys.has(k));
+          const onlyZh = [...zhKeys].filter(k => !enKeys.has(k));
+          if (onlyEn.length || onlyZh.length) {
+            console.error('MISMATCH');
+            if (onlyEn.length) console.error('  EN-only:', onlyEn);
+            if (onlyZh.length) console.error('  ZH-only:', onlyZh);
+            process.exit(1);
+          }
+          console.log('OK', enKeys.size, 'keys match');
+          "
+
+      - name: Unit tests
+        run: npm test
