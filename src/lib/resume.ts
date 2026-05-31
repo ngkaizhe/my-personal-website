@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { pickTranslation } from '@/lib/translations';
+import { aggregateSkills } from '@/lib/skills';
 import type { ExperienceType } from '@/lib/types';
 
 export interface ResumeEntry {
@@ -10,6 +11,7 @@ export interface ResumeEntry {
     description: string;
     impact: string | null;
     techStack: string[];
+    featured: boolean;
 }
 
 export interface ResumeExperience {
@@ -62,6 +64,7 @@ export async function fetchResumeByUserId(userId: string, locale: string): Promi
             description: tr.description,
             impact: tr.impact,
             techStack: e.techStack,
+            featured: e.featured,
         };
     };
 
@@ -88,15 +91,7 @@ export async function fetchResumeByUserId(userId: string, locale: string): Promi
         .filter((e): e is ResumeEntry => e !== null);
 
     const allEntries = [...flattenedUnlinked, ...flattenedExperiences.flatMap(e => e.entries)];
-    const skillCounts = new Map<string, number>();
-    for (const entry of allEntries) {
-        for (const skill of entry.techStack) {
-            skillCounts.set(skill, (skillCounts.get(skill) ?? 0) + 1);
-        }
-    }
-    const skills = Array.from(skillCounts.entries())
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count);
+    const skills = aggregateSkills(allEntries.map(e => e.techStack));
 
     return {
         experiences: flattenedExperiences,

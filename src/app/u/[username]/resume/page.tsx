@@ -39,7 +39,7 @@ export default async function PublicResumePage({ params }: Props) {
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-6xl mx-auto">
-                <div className="mb-8 flex flex-col gap-2">
+                <div className="mb-8 flex flex-col gap-2 no-print">
                     <Link
                         href={`/@${user.username}`}
                         className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"

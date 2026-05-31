@@ -13,7 +13,7 @@ export default async function ResumePage() {
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-6xl mx-auto">
-                <div className="mb-8">
+                <div className="mb-8 no-print">
                     <h1 className="text-3xl font-bold text-text-primary">{t('heading')}</h1>
                     <p className="text-text-muted mt-2">
                         {t('subtitle')}

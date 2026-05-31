@@ -237,6 +237,58 @@
   }
 }
 
+/* ===== Print stylesheet for /dashboard/resume + /@user/resume =====
+   The user hits Ctrl+P / Cmd+P; the browser produces a clean one-column
+   résumé suitable for Save-as-PDF. We hide every piece of chrome that
+   isn't résumé content. Elements that opt in via `.print-only` show up
+   ONLY when printing; `.no-print` is hidden during print.
+
+   Strategy: force light backgrounds + dark text, hide nav / filter
+   sidebar / markdown export box, single-column the preview, kill the
+   sticky positioning so the page can flow naturally across pages.
+*/
+@media print {
+  /* Hide all the chrome — nav, theme toggle, dev tools overlay, etc. */
+  header[class*="sticky"],
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  /* Hide the filter sidebar and the editable markdown textarea — these
+     are tool-shed UI, not résumé content. The preview is what prints. */
+  .resume-print-hide {
+    display: none !important;
+  }
+  /* Collapse the 2-column résumé layout to a single column for paper. */
+  .resume-print-page {
+    display: block !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+  /* Force readable B&W typography regardless of active theme. */
+  body, body * {
+    background: transparent !important;
+    color: #111 !important;
+    box-shadow: none !important;
+    border-color: #ccc !important;
+  }
+  /* Keep section bullets together with their headers across page breaks. */
+  section, h2, h3 {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /* Underline links so they survive removal of color. */
+  a {
+    text-decoration: underline !important;
+  }
+  /* Print page margins — most browsers respect this. */
+  @page {
+    margin: 1.5cm;
+  }
+}
+
 /* ===== Background Texture ===== */
 
 .bg-page {

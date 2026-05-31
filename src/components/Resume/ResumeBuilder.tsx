@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
-import { Copy, Check, Download } from 'lucide-react';
+import { Copy, Check, Download, Printer, Star } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 import type { ExperienceType } from '@/lib/types';
+import { aggregateSkills } from '@/lib/skills';
 
 // Ordering for sections in the résumé output. BREAK is rendered together with
 // the "Other" bucket alongside unlinked entries.
@@ -56,6 +57,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
         new Set(['unlinked', ...data.experiences.map(e => e.id)])
     );
+    const [featuredOnly, setFeaturedOnly] = useState(false);
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
     const markdownRef = useRef<HTMLTextAreaElement>(null);
     const t = useTranslations('Resume');
@@ -73,31 +75,26 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     };
 
     const filtered = useMemo(() => {
+        const entryPredicate = (e: ResumeEntry) =>
+            inRange(e.date, from, to) && (!featuredOnly || e.featured);
+
         const experiences: ResumeExperience[] = data.experiences
             .filter(exp => selectedExperiences.has(exp.id))
             .map(exp => ({
                 ...exp,
-                entries: exp.entries.filter(e => inRange(e.date, from, to)),
+                entries: exp.entries.filter(entryPredicate),
             }))
             .filter(exp => exp.entries.length > 0);
 
         const unlinked = selectedExperiences.has('unlinked')
-            ? data.unlinkedEntries.filter(e => inRange(e.date, from, to))
+            ? data.unlinkedEntries.filter(entryPredicate)
             : [];
 
-        const usedSkills = new Map<string, number>();
         const allEntries = [...experiences.flatMap(e => e.entries), ...unlinked];
-        for (const entry of allEntries) {
-            for (const skill of entry.techStack) {
-                usedSkills.set(skill, (usedSkills.get(skill) ?? 0) + 1);
-            }
-        }
-        const skills = Array.from(usedSkills.entries())
-            .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => b.count - a.count);
+        const skills = aggregateSkills(allEntries.map(e => e.techStack));
 
         return { experiences, unlinked, skills };
-    }, [data, from, to, selectedExperiences]);
+    }, [data, from, to, selectedExperiences, featuredOnly]);
 
     const grouped = useMemo(() => {
         const byType: Record<ExperienceType, ResumeExperience[]> = {
@@ -190,9 +187,9 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
     };
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-6 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-6 items-start resume-print-page">
             {/* Filters */}
-            <div className="bg-form-bg backdrop-blur-sm p-5 rounded-2xl border border-form-border space-y-5">
+            <div className="bg-form-bg backdrop-blur-sm p-5 rounded-2xl border border-form-border space-y-5 resume-print-hide">
                 <h2 className="text-lg font-semibold text-form-section-text border-b border-form-section-border pb-2">
                     {t('filtersTitle')}
                 </h2>
@@ -229,6 +226,22 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                     </div>
                 </div>
 
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={featuredOnly}
+                        onChange={e => setFeaturedOnly(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded cursor-pointer accent-blue-600"
+                    />
+                    <span>
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-form-label">
+                            <Star className={`w-4 h-4 ${featuredOnly ? 'fill-amber-400 text-amber-400' : 'text-text-faint'}`} />
+                            {t('featuredOnly')}
+                        </span>
+                        <span className="block text-xs text-text-faint mt-0.5">{t('featuredOnlyHint')}</span>
+                    </span>
+                </label>
+
                 <div>
                     <label htmlFor="from" className="block text-sm font-medium text-form-label mb-2">{t('from')}</label>
                     <input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputClass} />
@@ -259,6 +272,14 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                         <Download className="w-4 h-4" />
                         {t('downloadMd')}
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
+                    >
+                        <Printer className="w-4 h-4" />
+                        {t('printPdf')}
+                    </button>
                     <span role="status" aria-live="polite" className="sr-only">
                         {copyState === 'copied'
                             ? t('copySrCopied')
@@ -272,7 +293,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
             {/* Preview + markdown */}
             <div className="space-y-6">
                 <div className="bg-surface rounded-2xl shadow-sm border border-border p-5 md:p-8">
-                    <h2 className="text-lg font-semibold text-text-primary border-b border-border-light pb-2 mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary border-b border-border-light pb-2 mb-4 no-print">
                         {t('preview')}
                     </h2>
 
@@ -366,7 +387,7 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                     )}
                 </div>
 
-                <div>
+                <div className="resume-print-hide">
                     <label htmlFor="md" className="text-sm font-medium text-text-muted mb-2 uppercase tracking-wide block">
                         {t('markdown')}
                     </label>
