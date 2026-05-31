@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapPin, Search, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types';
 import { TimelineRow } from './TimelineRow';
@@ -9,13 +10,18 @@ import { TimelineModal } from './TimelineModal';
 
 interface TimelineProps {
     items: TimelineItem[];
+    /** Pass true when the signed-in user owns the timeline (i.e. dashboard
+     *  view) so the modal can show an Edit button. */
+    editable?: boolean;
 }
 
-const Timeline = ({ items }: TimelineProps) => {
+const Timeline = ({ items, editable = false }: TimelineProps) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [query, setQuery] = useState('');
     const t = useTranslations('Timeline');
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const searchParams = useSearchParams();
+    const skillFilter = searchParams.get('skill');
 
     // Press `/` from anywhere on the page (when not typing into another field)
     // to focus the search box. Esc clears + blurs. Mirrors GitHub / Linear.
@@ -41,9 +47,14 @@ const Timeline = ({ items }: TimelineProps) => {
     }, []);
 
     const filteredItems = useMemo(() => {
+        let pool = items;
+        if (skillFilter) {
+            const skillLc = skillFilter.toLowerCase();
+            pool = pool.filter(item => item.techStack.some(s => s.toLowerCase() === skillLc));
+        }
         const q = query.trim().toLowerCase();
-        if (!q) return items;
-        return items.filter(item => {
+        if (!q) return pool;
+        return pool.filter(item => {
             const haystack = [
                 item.title.content,
                 item.actionVerb ?? '',
@@ -57,7 +68,7 @@ const Timeline = ({ items }: TimelineProps) => {
             ].join(' ').toLowerCase();
             return haystack.includes(q);
         });
-    }, [items, query]);
+    }, [items, query, skillFilter]);
 
     return (
         <div className="container mx-auto px-4 py-8 relative">
@@ -70,6 +81,20 @@ const Timeline = ({ items }: TimelineProps) => {
                     {t('subtitle')}
                 </p>
             </div>
+
+            {skillFilter && (
+                <div className="max-w-xl mx-auto mb-4 flex justify-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-sm text-text-secondary">
+                        <span>{t('filteringBySkill', { skill: skillFilter })}</span>
+                        <a
+                            href={typeof window !== 'undefined' ? window.location.pathname : '/'}
+                            className="text-blue-600 hover:text-blue-500 font-medium"
+                        >
+                            {t('clearSkillFilter')}
+                        </a>
+                    </div>
+                </div>
+            )}
 
             {items.length > 0 && (
                 <div className="max-w-xl mx-auto mb-8">
@@ -131,6 +156,7 @@ const Timeline = ({ items }: TimelineProps) => {
                         selectedId={selectedId}
                         items={filteredItems}
                         onClose={() => setSelectedId(null)}
+                        editable={editable}
                     />
                 </>
             )}

@@ -4,6 +4,7 @@
         "quickAdd": "快速新增",
         "entries": "紀錄",
         "experiences": "經歷",
+        "skills": "技能",
         "resume": "履歷",
         "primaryNav": "主導覽",
         "skipToMain": "跳至主要內容"
@@ -81,6 +82,8 @@
         "usernameHint": "英文字母、數字、連字號。3–24 個字元。",
         "displayName": "顯示名稱",
         "displayNameHint": "會顯示在你的公開個人檔案頂部。",
+        "avatar": "頭像網址",
+        "avatarHint": "貼一個公開圖片網址,Gravatar 或 https://github.com/<你>.png 都可以。",
         "bio": "簡短自我介紹",
         "bioHint": "（選填）",
         "bioPlaceholder": "用一兩句話介紹自己。",
@@ -97,10 +100,14 @@
         "viewDetails": "查看詳情",
         "viewDetailsFor": "查看 {title} 的詳情",
         "closeDialog": "關閉詳情對話框",
+        "edit": "編輯",
+        "editEntry": "編輯這筆紀錄",
         "searchPlaceholder": "搜尋紀錄…",
         "searchAriaLabel": "搜尋時間軸紀錄",
         "clearSearch": "清除搜尋",
-        "searchEmpty": "沒有符合「{query}」的紀錄"
+        "searchEmpty": "沒有符合「{query}」的紀錄",
+        "filteringBySkill": "依「{skill}」篩選中",
+        "clearSkillFilter": "清除"
     },
     "Entries": {
         "manageTitle": "管理紀錄",
@@ -256,6 +263,28 @@
         "creating": "建立中…",
         "errorGeneric": "建立經歷失敗。"
     },
+    "YearReview": {
+        "heading": "{year} 年度回顧",
+        "publicHeading": "{name} 的 {year} 年",
+        "subtitle": "一眼看完這一年做了什麼、學了什麼。",
+        "empty": "{year} 年沒有任何紀錄,還沒得回顧。",
+        "entriesLabel": "紀錄數",
+        "impactLabel": "有 impact",
+        "featuredLabel": "履歷重點",
+        "topTagLabel": "最常分類",
+        "topTagsHeading": "熱門分類",
+        "topSkillsHeading": "熱門技能",
+        "highlightsHeading": "亮點",
+        "entryCount": "{count, plural, =1 {1 筆紀錄} other {# 筆紀錄}}"
+    },
+    "Skills": {
+        "heading": "技能",
+        "subtitle": "依使用次數排序的所有技能。點任一技能可以篩選時間軸。",
+        "publicHeading": "{name} 的技能",
+        "publicSubtitle": "點任一技能可以篩選 ta 的時間軸。",
+        "empty": "還沒有技能。在任一筆紀錄加上 tech stack 就會出現。",
+        "clickHint": "{count} 個不重複技能。點任一個查看相關紀錄。"
+    },
     "Resume": {
         "heading": "履歷產生器",
         "subtitle": "從你的紀錄產生履歷條目。依經歷與日期篩選,然後複製 markdown 或下載 .md 檔。",
@@ -286,7 +315,11 @@
         "sectionProjects": "個人專案",
         "sectionVolunteer": "志工",
         "sectionOther": "其他",
-        "skills": "技能"
+        "skills": "技能",
+        "improveBullet": "強化這條 bullet (AI)",
+        "improveFailed": "強化失敗。",
+        "copyImproved": "複製強化版",
+        "dismissImproved": "關掉"
     },
     "Theme": {
         "label": "切換主題,目前：{current}",

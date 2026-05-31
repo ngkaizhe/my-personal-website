@@ -18,7 +18,7 @@ export default async function Page() {
       <div className="max-w-7xl mx-auto px-6 pt-6 flex justify-end">
         <CopyPublicUrlButton username={session?.user?.username ?? null} />
       </div>
-      <Timeline items={timelineData} />
+      <Timeline items={timelineData} editable />
     </div>
   );
 }

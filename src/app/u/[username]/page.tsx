@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
 import { fetchTimelineByUserId } from '@/lib/timeline';
+import { auth } from '@/auth';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -46,9 +46,14 @@ export default async function PublicProfilePage({ params }: Props) {
     if (!user) notFound();
 
     const locale = await getLocale();
-    const timeline = await fetchTimelineByUserId(user.id, locale);
+    const [timeline, session, t] = await Promise.all([
+        fetchTimelineByUserId(user.id, locale),
+        auth(),
+        getTranslations('PublicProfile'),
+    ]);
     const displayName = user.displayName || user.name || `@${user.username}`;
-    const t = await getTranslations('PublicProfile');
+    // Editable when the signed-in viewer owns this profile.
+    const editable = session?.user?.id === user.id;
 
     return (
         <div className="bg-page min-h-screen">
@@ -56,11 +61,13 @@ export default async function PublicProfilePage({ params }: Props) {
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
                     <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-elevated border border-border-light shrink-0 flex items-center justify-center text-2xl font-semibold text-text-secondary">
                         {user.image ? (
-                            <Image
+                            // Using a plain <img> instead of next/image because the user
+                            // can set this URL to any external host (Gravatar, GitHub, etc).
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
                                 src={user.image}
                                 alt=""
-                                width={96}
-                                height={96}
+                                referrerPolicy="no-referrer"
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -88,7 +95,7 @@ export default async function PublicProfilePage({ params }: Props) {
                 </div>
             </section>
 
-            <Timeline items={timeline} />
+            <Timeline items={timeline} editable={editable} />
         </div>
     );
 }

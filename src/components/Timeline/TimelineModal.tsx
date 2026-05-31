@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import Link from 'next/link';
+import { X, Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types';
 import EntryCard from '@/components/Entry/EntryCard';
@@ -10,9 +11,13 @@ interface TimelineModalProps {
     selectedId: string | null;
     items: TimelineItem[];
     onClose: () => void;
+    /** When true, an Edit button appears in the modal that links to
+     *  /dashboard/entries/[id]. Pass true only when the viewer owns the
+     *  timeline being displayed. */
+    editable?: boolean;
 }
 
-export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps) => {
+export const TimelineModal = ({ selectedId, items, onClose, editable = false }: TimelineModalProps) => {
     const selectedItem = items.find((_, index) => `card-${index}` === selectedId);
     const modalRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -77,15 +82,29 @@ export const TimelineModal = ({ selectedId, items, onClose }: TimelineModalProps
                 ref={modalRef}
                 className="bg-surface rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 modal-pop-in"
             >
-                <button
-                    ref={closeButtonRef}
-                    onClick={(e) => { e.stopPropagation(); onClose(); }}
-                    className="absolute top-4 right-4 p-2 bg-btn-secondary-bg rounded-full hover:bg-btn-secondary-bg-hover transition-colors z-20
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    aria-label={t('closeDialog')}
-                >
-                    <X size={20} className="text-text-muted" />
-                </button>
+                <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
+                    {editable && (
+                        <Link
+                            href={`/dashboard/entries/${selectedItem.id}`}
+                            onClick={(e) => { e.stopPropagation(); }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-btn-secondary-bg hover:bg-btn-secondary-bg-hover text-text-secondary hover:text-text-primary rounded-full transition-colors text-sm font-medium
+                                focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            aria-label={t('editEntry')}
+                        >
+                            <Pencil className="w-3.5 h-3.5" />
+                            {t('edit')}
+                        </Link>
+                    )}
+                    <button
+                        ref={closeButtonRef}
+                        onClick={(e) => { e.stopPropagation(); onClose(); }}
+                        className="p-2 bg-btn-secondary-bg rounded-full hover:bg-btn-secondary-bg-hover transition-colors
+                            focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        aria-label={t('closeDialog')}
+                    >
+                        <X size={20} className="text-text-muted" />
+                    </button>
+                </div>
 
                 <EntryCard
                     titleId={titleId}

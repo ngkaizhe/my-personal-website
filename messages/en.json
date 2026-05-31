@@ -4,6 +4,7 @@
         "quickAdd": "Quick Add",
         "entries": "Entries",
         "experiences": "Experiences",
+        "skills": "Skills",
         "resume": "Resume",
         "primaryNav": "Primary navigation",
         "skipToMain": "Skip to main content"
@@ -81,6 +82,8 @@
         "usernameHint": "Letters, numbers, hyphens. 3–24 characters.",
         "displayName": "Display name",
         "displayNameHint": "Shown at the top of your public profile.",
+        "avatar": "Avatar URL",
+        "avatarHint": "Paste a public image URL. Gravatar or https://github.com/<you>.png works well.",
         "bio": "Short bio",
         "bioHint": "(Optional)",
         "bioPlaceholder": "A sentence or two about you.",
@@ -97,10 +100,14 @@
         "viewDetails": "View details",
         "viewDetailsFor": "View details for {title}",
         "closeDialog": "Close details dialog",
+        "edit": "Edit",
+        "editEntry": "Edit this entry",
         "searchPlaceholder": "Search entries…",
         "searchAriaLabel": "Search timeline entries",
         "clearSearch": "Clear search",
-        "searchEmpty": "No entries match \"{query}\""
+        "searchEmpty": "No entries match \"{query}\"",
+        "filteringBySkill": "Filtering by {skill}",
+        "clearSkillFilter": "Clear"
     },
     "Entries": {
         "manageTitle": "Manage Entries",
@@ -256,6 +263,28 @@
         "creating": "Creating…",
         "errorGeneric": "Failed to create experience."
     },
+    "YearReview": {
+        "heading": "{year} in review",
+        "publicHeading": "{name}'s {year}",
+        "subtitle": "What you shipped and learned, at a glance.",
+        "empty": "No entries from {year} — nothing to look back on yet.",
+        "entriesLabel": "Entries",
+        "impactLabel": "With impact",
+        "featuredLabel": "Featured",
+        "topTagLabel": "Top category",
+        "topTagsHeading": "Top categories",
+        "topSkillsHeading": "Top skills",
+        "highlightsHeading": "Highlights",
+        "entryCount": "{count, plural, =1 {1 entry} other {# entries}}"
+    },
+    "Skills": {
+        "heading": "Skills",
+        "subtitle": "Every skill from your entries, ranked by how often you've used it. Click a skill to filter the timeline.",
+        "publicHeading": "{name}'s skills",
+        "publicSubtitle": "Click a skill to filter their timeline.",
+        "empty": "No skills yet. Add a tech stack to any entry to populate this view.",
+        "clickHint": "{count} unique skills. Click any to see related entries."
+    },
     "Resume": {
         "heading": "Resume Builder",
         "subtitle": "Generate resume bullets from your entries. Filter by experience and date, then copy the markdown or download a .md file.",
@@ -286,7 +315,11 @@
         "sectionProjects": "Projects",
         "sectionVolunteer": "Volunteer",
         "sectionOther": "Other",
-        "skills": "Skills"
+        "skills": "Skills",
+        "improveBullet": "Improve this bullet (AI)",
+        "improveFailed": "Could not improve bullet.",
+        "copyImproved": "Copy improved bullet",
+        "dismissImproved": "Dismiss"
     },
     "Theme": {
         "label": "Change theme, current: {current}",
