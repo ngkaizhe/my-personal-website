@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getResumeData } from "./actions";
 import ResumeBuilder from "@/components/Resume/ResumeBuilder";
+import { isAiParseAvailable } from "@/lib/aiAvailable";
 
 export const metadata = {
     title: "Resume Builder",
@@ -20,7 +21,7 @@ export default async function ResumePage() {
                     </p>
                 </div>
 
-                <ResumeBuilder data={data} />
+                <ResumeBuilder data={data} canImproveBullets={isAiParseAvailable()} />
             </div>
         </div>
     );

@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 import type { ExperienceType } from '@/lib/types';
 import { aggregateSkills } from '@/lib/skills';
+import BulletImprover from '@/components/Resume/BulletImprover';
 
 // Ordering for sections in the résumé output. BREAK is rendered together with
 // the "Other" bucket alongside unlinked entries.
@@ -51,7 +52,14 @@ function inRange(iso: string, from: string, to: string) {
     return true;
 }
 
-export default function ResumeBuilder({ data }: { data: ResumeData }) {
+interface ResumeBuilderProps {
+    data: ResumeData;
+    /** Enables the per-bullet "Improve" AI coaching button. Caller decides
+     *  based on (aiAvailable && viewer-owns-the-resume). */
+    canImproveBullets?: boolean;
+}
+
+export default function ResumeBuilder({ data, canImproveBullets = false }: ResumeBuilderProps) {
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
@@ -349,6 +357,14 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                                             {e.techStack.length > 0 && (
                                                                 <span className="text-text-muted italic"> ({e.techStack.join(', ')})</span>
                                                             )}
+                                                            {canImproveBullets && (
+                                                                <BulletImprover
+                                                                    actionVerb={e.actionVerb}
+                                                                    title={e.title}
+                                                                    impact={e.impact}
+                                                                    description={e.description}
+                                                                />
+                                                            )}
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -376,6 +392,14 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                                         {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
                                                         {e.title}
                                                         {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
+                                                        {canImproveBullets && (
+                                                            <BulletImprover
+                                                                actionVerb={e.actionVerb}
+                                                                title={e.title}
+                                                                impact={e.impact}
+                                                                description={e.description}
+                                                            />
+                                                        )}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -388,6 +412,14 @@ export default function ResumeBuilder({ data }: { data: ResumeData }) {
                                                     {e.actionVerb && <span className="font-semibold text-text-primary">{e.actionVerb} </span>}
                                                     {e.title}
                                                     {e.impact && <span className="text-green-700 dark:text-green-400"> — {e.impact}</span>}
+                                                    {canImproveBullets && (
+                                                        <BulletImprover
+                                                            actionVerb={e.actionVerb}
+                                                            title={e.title}
+                                                            impact={e.impact}
+                                                            description={e.description}
+                                                        />
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>
