@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { LogIn, Mail } from 'lucide-react';
+import { LogIn, Mail, Sparkles } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { auth, signIn } from '@/auth';
 
@@ -68,15 +68,31 @@ export default async function Home({
                     </Link>
                 </p>
 
-                <p className="text-sm text-text-faint">
-                    {t('seeExample')}{' '}
-                    <Link
-                        href="/@demo"
-                        className="text-blue-600 hover:text-blue-500 underline-offset-2 hover:underline"
+                <div className="flex flex-col items-center gap-3 pt-2">
+                    <form
+                        action={async () => {
+                            'use server';
+                            await signIn('demo', { redirectTo: '/dashboard' });
+                        }}
                     >
-                        /@demo
-                    </Link>
-                </p>
+                        <button
+                            type="submit"
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary bg-surface-elevated hover:bg-surface border border-border-light rounded-lg transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            {t('tryAsDemo')}
+                        </button>
+                    </form>
+                    <p className="text-sm text-text-faint">
+                        {t('seeExample')}{' '}
+                        <Link
+                            href="/@demo"
+                            className="text-blue-600 hover:text-blue-500 underline-offset-2 hover:underline"
+                        >
+                            /@demo
+                        </Link>
+                    </p>
+                </div>
             </div>
         </main>
     );

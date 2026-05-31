@@ -52,6 +52,30 @@ export default {
                 };
             },
         }),
+        // Zero-friction demo signin: clicking "Try as Demo" on the landing
+        // page POSTs no credentials and just resolves to the seeded demo user.
+        // The provider only succeeds if a User with username='demo' exists, so
+        // it can't be used to log into anyone else's account.
+        Credentials({
+            id: 'demo',
+            name: 'Demo',
+            credentials: {},
+            async authorize() {
+                const { prisma } = await import('@/lib/prisma');
+                const user = await prisma.user.findUnique({
+                    where: { username: 'demo' },
+                    select: { id: true, email: true, name: true, image: true, username: true },
+                });
+                if (!user) return null;
+                return {
+                    id: user.id,
+                    email: user.email ?? undefined,
+                    name: user.name ?? undefined,
+                    image: user.image ?? undefined,
+                    username: user.username ?? null,
+                };
+            },
+        }),
     ],
     session: { strategy: 'jwt' },
     pages: {
