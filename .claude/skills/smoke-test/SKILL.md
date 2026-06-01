@@ -469,6 +469,38 @@ curl -sI -o /dev/null -w "%{http_code} %{content_type}\n" --max-time 30 https://
 grep -q "runtime: 'nodejs'" src/middleware.ts && echo OK || (echo "MISSING — restore the nodejs runtime export" && exit 1)
 ```
 
+### T1.39 — Image upload via /api/upload-image
+
+The Attachments field has an "Upload image" button that POSTs to `/api/upload-image`. The endpoint layers `auth() → rate-limit → BLOB_READ_WRITE_TOKEN check → mime + size guards → @vercel/blob put()`. This check verifies the whole flow end-to-end; what it asserts depends on whether the Blob store is connected.
+
+**Pre-step.** Confirm a small test image is available inside an allowed Playwright root. The MCP server only lets `browser_file_upload` read paths under the project root, so something like `cp /tmp/smoke-upload.png .playwright-mcp/smoke-upload.png` first (the `.playwright-mcp` directory is gitignored). Any small PNG / JPEG works; 16×16 PNG is plenty.
+
+**Steps.**
+
+1. Sign in (the Try-as-Demo button is fine).
+2. Navigate to `/dashboard/entries/new`.
+3. Assert: a `button` with text matching `/Upload image/i` exists AND a sibling `input[type="file"]` with `accept` containing `image/png` exists.
+4. Click the Upload button → assert a file-chooser dialog opens (Playwright's `browser_file_upload` will detect it).
+5. Provide the test PNG via `browser_file_upload`.
+6. Wait ~3 seconds for the upload round-trip, then inspect the page state. Branch on environment:
+   - **Blob connected** (BLOB_READ_WRITE_TOKEN set on the server): `textarea[name="attachmentUrls"].value` contains a `https://*.public.blob.vercel-storage.com/` URL AND a thumbnail `<img>` with that same `src` renders below the textarea.
+   - **Blob not connected**: a `[role="alert"]` appears under the textarea with text "BLOB_READ_WRITE_TOKEN not configured." AND the textarea stays empty AND the POST to `/api/upload-image` returned `503` (verify via `browser_network_requests` filter).
+7. Check console: 0 errors specific to the upload flow (a generic 503 logged by the route handler is expected when Blob is unconnected — it's a `console.error` on the server, not the browser).
+
+Catches: the file input losing its accept attribute, the upload handler not appending the returned URL to attachmentUrls, the thumbnail strip regressing, the rate-limit / auth / env guards getting reordered (rate-limit must precede the env check so an unauthenticated flood gets 401, and an authenticated flood gets 429 — not 503).
+
+**Sub-check (auth path).** Without a session cookie, `curl -s -o /dev/null -w "%{http_code}" -X POST https://<your-domain>/api/upload-image` returns `401`.
+
+**Sub-check (rate limit).**
+
+```bash
+for i in {1..15}; do
+  curl -s -o /dev/null -w "%{http_code}\n" -X POST -b 'authjs.session-token=<token>' http://localhost:3000/api/upload-image
+done | sort | uniq -c
+```
+
+Expect a mix of `400` (no file body) for the first 10 then `429` after the cap. The `Retry-After` header should appear on 429.
+
 ### T1.16 — /api/translate-content degrades cleanly without ANTHROPIC_API_KEY
 
 ```bash
@@ -648,6 +680,7 @@ This skill is intentionally a checklist, not a fixed test suite — it's expecte
 | Add a new optional User column | Extend T1.35 with the new field; update SetupForm + /setup/page select |
 | Add styling to an OG image | Re-run T1.37 against the production URL; satori is stricter than dev |
 | Touch middleware imports | Keep the `runtime: 'nodejs'` export — T1.38 guards this. Edge limit is 1MB and auth.config.ts is bigger |
+| Change the upload pipeline (file size cap, accepted mime types, Blob path prefix, etc.) | Update T1.39 — the mime whitelist + size cap + 401/429/503 sub-checks all depend on the route handler's guard order |
 | Remove a feature | Mark the corresponding check `### Removed in <commit-sha>` rather than deleting (so reviewers can see the history) |
 | Add an interactive flow that mutates DB | Add a Tier 2 check with its own cleanup step (or declare the residue clearly) |
 
