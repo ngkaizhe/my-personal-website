@@ -7,9 +7,13 @@ export const contentType = 'image/png';
 export const alt = 'Personal portfolio';
 export const size = { width: 1200, height: 630 };
 
-// Generates the social-preview card for /@username. Shows display name +
-// username + bio + the top 5 most-used skills aggregated across the user's
-// entries. Anything beyond that gets noisy at 630px tall.
+// Generates the social-preview card for /@username. Satori (the renderer
+// behind next/og) is stricter than browser CSS:
+//   - every parent of multiple children must have display: flex
+//   - no em / rem units — only px
+//   - linear-gradient backgrounds are fine but keep them simple
+//   - no shorthand 'gap' on non-flex parents
+// Earlier version used em letterSpacing + complex nesting and 500'd on prod.
 export default async function OgImage({ params }: { params: Promise<{ username: string }> }) {
     const { username } = await params;
 
@@ -21,10 +25,11 @@ export default async function OgImage({ params }: { params: Promise<{ username: 
             bio: true,
             entries: { select: { techStack: true } },
         },
-    });
+    }).catch(() => null);
 
     const displayName = user?.displayName || user?.name || `@${username}`;
-    const bio = user?.bio?.trim() || '';
+    const bioRaw = user?.bio?.trim() || '';
+    const bio = bioRaw.length > 180 ? bioRaw.slice(0, 180) + '…' : bioRaw;
     const topSkills = user
         ? aggregateSkills(user.entries.map(e => e.techStack)).slice(0, 5).map(s => s.name)
         : [];
@@ -38,18 +43,18 @@ export default async function OgImage({ params }: { params: Promise<{ username: 
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    padding: '64px',
-                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                    padding: 64,
+                    backgroundColor: '#0f172a',
                     color: '#f8fafc',
-                    fontFamily: 'sans-serif',
                 }}
             >
+                {/* Top block */}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div
                         style={{
+                            display: 'flex',
                             fontSize: 28,
                             color: '#64748b',
-                            fontFamily: 'monospace',
                             marginBottom: 16,
                         }}
                     >
@@ -57,10 +62,9 @@ export default async function OgImage({ params }: { params: Promise<{ username: 
                     </div>
                     <div
                         style={{
+                            display: 'flex',
                             fontSize: 88,
                             fontWeight: 700,
-                            lineHeight: 1.05,
-                            letterSpacing: '-0.02em',
                             marginBottom: 24,
                         }}
                     >
@@ -69,27 +73,37 @@ export default async function OgImage({ params }: { params: Promise<{ username: 
                     {bio && (
                         <div
                             style={{
+                                display: 'flex',
                                 fontSize: 28,
                                 color: '#cbd5e1',
-                                lineHeight: 1.4,
                                 maxWidth: 1000,
                             }}
                         >
-                            {bio.length > 180 ? bio.slice(0, 180) + '…' : bio}
+                            {bio}
                         </div>
                     )}
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Bottom block */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {topSkills.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                marginBottom: 16,
+                            }}
+                        >
                             {topSkills.map((s) => (
                                 <div
                                     key={s}
                                     style={{
+                                        display: 'flex',
                                         padding: '8px 18px',
+                                        marginRight: 12,
+                                        marginBottom: 12,
                                         borderRadius: 999,
-                                        background: '#1e40af',
+                                        backgroundColor: '#1e40af',
                                         color: '#dbeafe',
                                         fontSize: 22,
                                         fontWeight: 500,
@@ -104,15 +118,13 @@ export default async function OgImage({ params }: { params: Promise<{ username: 
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'flex-end',
+                            alignItems: 'center',
                             color: '#94a3b8',
                             fontSize: 22,
                         }}
                     >
-                        <span>Track. Reflect. Resume.</span>
-                        <span style={{ fontFamily: 'monospace', fontSize: 18 }}>
-                            My Journey
-                        </span>
+                        <div style={{ display: 'flex' }}>Track. Reflect. Resume.</div>
+                        <div style={{ display: 'flex', fontSize: 18 }}>My Journey</div>
                     </div>
                 </div>
             </div>
