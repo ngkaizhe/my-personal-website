@@ -423,6 +423,52 @@ npm test
 
 - Expect all suites pass. Currently translations / skills / rateLimit. Add more as features land.
 
+### T1.35 — Profile contact links render on /@username
+
+The setup form gains four optional URL fields (contactEmail / linkedin / github / website). Filled-in ones show as small icon buttons next to "View résumé" on the public profile.
+
+1. Sign in (or use any seed user) and visit `/setup`.
+2. Fill at least one of the contact fields (e.g. `github = https://github.com/demo`), Save.
+3. Navigate to `/@<your-username>`.
+4. Assert an icon-button `a[href*="github.com"]` exists next to the View résumé button.
+5. Repeat for `mailto:` (contactEmail), `linkedin.com` (linkedin), and a free-form `website` URL.
+
+Catches regressions in the setup form wiring, the public profile select query (must include the four new columns), and the URL safety check (saveSetup drops non-http(s) values silently).
+
+### T1.36 — Entry attachment URL grid renders in EntryCard
+
+1. Sign in. Navigate to `/dashboard/entries/new`.
+2. In the Attachments textarea, paste two image URLs on separate lines (any public https image works for the test — `https://github.com/octocat.png` is a stable choice).
+3. Assert a thumbnail preview strip appears below the textarea with two `<img>` elements.
+4. Fill the rest of the required fields and Save.
+5. From the entries list, click Edit on the new row → assert the Attachments textarea is pre-populated with the two URLs.
+6. Optional: open the same entry's public permalink (`/@<user>/entry/<id>`) → assert two `<img>` elements appear in the attachment grid above the tech stack.
+
+Catches: EntryDetail / PreviewData missing the field, extractFormData's http(s) regex rejecting valid URLs, EntryCard losing the grid section.
+
+### T1.37 — Production OG image is satori-compliant
+
+Smoke test for the next/og route specifically — satori is stricter than browser CSS and prod can 500 while local renders fine. This is the one that bit us during the first deploy.
+
+```bash
+curl -sI -o /dev/null -w "%{http_code} %{content_type}\n" --max-time 30 https://<your-domain>/u/demo/opengraph-image
+```
+
+- Expect `200 image/png`.
+- If `500` + `text/html`, the satori renderer failed. Likely causes:
+  - em / rem units anywhere in inline styles (use px)
+  - a div with multiple children but no `display: flex` on the parent
+  - a complex linear-gradient that satori can't parse
+  - a runtime error before ImageResponse renders (Prisma query, missing data)
+
+### T1.38 — Middleware runs on nodejs runtime
+
+`src/middleware.ts` must declare `runtime: 'nodejs'` in its config export. Edge runtime bundles auth.config.ts > 1MB and Vercel rejects the deploy. Static check:
+
+```bash
+grep -q "runtime: 'nodejs'" src/middleware.ts && echo OK || (echo "MISSING — restore the nodejs runtime export" && exit 1)
+```
+
 ### T1.16 — /api/translate-content degrades cleanly without ANTHROPIC_API_KEY
 
 ```bash
@@ -599,6 +645,9 @@ This skill is intentionally a checklist, not a fixed test suite — it's expecte
 | Add a new AI API endpoint | Wire rateLimit + auth like the others; add an env-aware Tier 1 check parallel to T1.27 / T1.32 |
 | Change the OG image card | Re-run T1.30 to confirm 200 + image/png; consider snapshot-diffing the PNG bytes |
 | Add a new dashboard route | Add a Tier-1 check that navigates there + asserts heading; if it accepts a URL param, parallel T1.28 / T1.29 |
+| Add a new optional User column | Extend T1.35 with the new field; update SetupForm + /setup/page select |
+| Add styling to an OG image | Re-run T1.37 against the production URL; satori is stricter than dev |
+| Touch middleware imports | Keep the `runtime: 'nodejs'` export — T1.38 guards this. Edge limit is 1MB and auth.config.ts is bigger |
 | Remove a feature | Mark the corresponding check `### Removed in <commit-sha>` rather than deleting (so reviewers can see the history) |
 | Add an interactive flow that mutates DB | Add a Tier 2 check with its own cleanup step (or declare the residue clearly) |
 
