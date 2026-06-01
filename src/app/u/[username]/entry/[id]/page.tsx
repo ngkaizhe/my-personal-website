@@ -83,6 +83,7 @@ export default async function PublicEntryPage({ params }: Props) {
                         impact={tr.impact ?? undefined}
                         details={tr.details ?? undefined}
                         techStack={entry.techStack}
+                        attachmentUrls={entry.attachmentUrls}
                         link={entry.linkUrl ? { url: entry.linkUrl, text: entry.linkText ?? 'Link' } : null}
                         experienceName={expTr?.organization}
                         experienceRole={expTr?.role ?? undefined}

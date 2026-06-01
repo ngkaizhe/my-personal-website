@@ -20,6 +20,7 @@ function blankTranslation(locale: string) {
         tag: '',
         sourceHash: null,
         lastTranslatedAt: null,
+        isStale: false,
     };
 }
 
@@ -38,6 +39,7 @@ export default async function NewEntryPage() {
         color: 'blue',
         featured: false,
         techStack: [],
+        attachmentUrls: [],
         linkUrl: '',
         linkText: '',
         iconName: 'help-circle',

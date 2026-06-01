@@ -23,6 +23,7 @@ export interface TimelineItem {
     impact?: string;
     details?: string;
     techStack: string[];
+    attachmentUrls: string[];
     iconName: string;
     experience?: {
         id: string;

@@ -15,6 +15,7 @@ export interface PreviewData {
     impact: string;
     details: string;
     techStack: string[];
+    attachmentUrls: string[];
     linkUrl: string;
     linkText: string;
     experienceId: string;
@@ -46,6 +47,7 @@ export default function EntryFormPreview({ data, experienceName, experienceRole 
                 impact={data.impact || undefined}
                 details={data.details || undefined}
                 techStack={data.techStack}
+                attachmentUrls={data.attachmentUrls.filter(s => /^https?:\/\//.test(s.trim()))}
                 link={data.linkUrl ? { url: data.linkUrl, text: data.linkText || t('previewLinkFallback') } : null}
                 experienceName={experienceName}
                 experienceRole={experienceRole}

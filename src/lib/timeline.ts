@@ -58,6 +58,7 @@ export async function fetchTimelineByUserId(userId: string, locale: string): Pro
                 impact: tr.impact || undefined,
                 details: tr.details || undefined,
                 techStack: dbItem.techStack,
+                attachmentUrls: dbItem.attachmentUrls,
                 iconName: dbItem.icon?.name ?? 'help-circle',
                 experience,
                 link: dbItem.linkUrl ? {

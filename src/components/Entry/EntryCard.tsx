@@ -18,6 +18,7 @@ export interface EntryCardProps {
     impact?: string;
     details?: string;
     techStack: string[];
+    attachmentUrls?: string[];
     link?: { url: string; text: string } | null;
     experienceName?: string;
     experienceRole?: string;
@@ -36,6 +37,7 @@ export default function EntryCard({
     impact,
     details,
     techStack,
+    attachmentUrls,
     link,
     experienceName,
     experienceRole,
@@ -90,6 +92,30 @@ export default function EntryCard({
                     </MarkdownText>
                 )}
             </div>
+
+            {/* Attachments */}
+            {attachmentUrls && attachmentUrls.length > 0 && (
+                <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {attachmentUrls.map((url, i) => (
+                        <a
+                            key={`${url}-${i}`}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block aspect-video rounded-lg overflow-hidden border border-border-light hover:opacity-90 transition-opacity"
+                        >
+                            {/* Plain <img> — URLs are user-supplied, any hostname. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={url}
+                                alt=""
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover"
+                            />
+                        </a>
+                    ))}
+                </div>
+            )}
 
             {/* Tech Stack */}
             {techStack.length > 0 && (

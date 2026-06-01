@@ -381,6 +381,7 @@ export default function QuickAdd({ experiences, action }: Props) {
                                 color: parsed.color,
                                 iconName: parsed.iconName,
                                 techStack: parsed.techStack,
+                                attachmentUrls: [],
                                 linkUrl: '',
                                 linkText: '',
                                 experienceId,

@@ -48,6 +48,7 @@ export interface EntryDetail {
     color: string;
     featured: boolean;
     techStack: string[];
+    attachmentUrls: string[];
     linkUrl: string;
     linkText: string;
     iconName: string;
@@ -155,6 +156,7 @@ export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
             color: item.color,
             featured: item.featured,
             techStack: item.techStack,
+            attachmentUrls: item.attachmentUrls,
             linkUrl: item.linkUrl ?? '',
             linkText: item.linkText ?? '',
             iconName: item.icon?.name ?? 'help-circle',
@@ -183,6 +185,7 @@ interface ParsedFormData {
     color: string;
     featured: boolean;
     techStack: string[];
+    attachmentUrls: string[];
     linkUrl: string | null;
     linkText: string | null;
     experienceId: string | null;
@@ -208,6 +211,13 @@ interface ParsedFormData {
 function extractFormData(formData: FormData): ParsedFormData {
     const raw = Object.fromEntries(formData.entries());
     const techStack = formData.getAll('techStack').map(String).filter(Boolean);
+    // attachmentUrls arrives as a single textarea, newline-separated. We
+    // accept http(s) URLs only to avoid javascript:/data: payloads ending up
+    // on the public profile.
+    const attachmentRaw = ((raw.attachmentUrls as string) ?? '').split(/\r?\n/);
+    const attachmentUrls = attachmentRaw
+        .map(s => s.trim())
+        .filter(s => /^https?:\/\//.test(s));
     const primaryLocale = (raw.primaryLocale as string) || 'en';
 
     const translations = SUPPORTED_LOCALES.map(locale => {
@@ -241,6 +251,7 @@ function extractFormData(formData: FormData): ParsedFormData {
         // box yields no key at all, which becomes false here.
         featured: raw.featured === 'on' || raw.featured === 'true',
         techStack,
+        attachmentUrls,
         linkUrl: (raw.linkUrl as string) || null,
         linkText: (raw.linkText as string) || null,
         experienceId: (raw.experienceId as string) || null,

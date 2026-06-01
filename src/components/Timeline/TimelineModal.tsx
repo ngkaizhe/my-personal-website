@@ -119,6 +119,7 @@ export const TimelineModal = ({ selectedId, items, onClose, editable = false }: 
                     impact={selectedItem.impact}
                     details={selectedItem.details}
                     techStack={selectedItem.techStack}
+                    attachmentUrls={selectedItem.attachmentUrls}
                     link={selectedItem.link}
                     experienceName={selectedItem.experience?.organization}
                     experienceRole={selectedItem.experience?.role ?? undefined}

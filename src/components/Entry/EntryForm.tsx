@@ -78,6 +78,7 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
         featured: item.featured,
         iconName: item.iconName,
         techStack: item.techStack,
+        attachmentUrls: item.attachmentUrls,
         linkUrl: item.linkUrl,
         linkText: item.linkText,
         experienceId: item.experienceId,
@@ -232,6 +233,7 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
         color: shared.color,
         iconName: shared.iconName,
         techStack: shared.techStack,
+        attachmentUrls: shared.attachmentUrls,
         linkUrl: shared.linkUrl,
         linkText: shared.linkText,
         experienceId: shared.experienceId,
@@ -413,6 +415,40 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
                             placeholder={t('techStackPlaceholder')}
                             className={inputClass}
                         />
+                    </div>
+                </Section>
+
+                {/* Attachments — shared, one URL per line */}
+                <Section title={t('sectionAttachments')} delay={0.15}>
+                    <div>
+                        <label htmlFor="field-attachmentUrls" className={labelClass}>
+                            {t('attachmentUrls')} <span className="text-text-faint">{tCommon('optional')}</span>
+                        </label>
+                        <textarea
+                            id="field-attachmentUrls"
+                            name="attachmentUrls"
+                            value={shared.attachmentUrls.join('\n')}
+                            onChange={e => updateShared('attachmentUrls', e.target.value.split(/\r?\n/).filter(s => s !== '' || true))}
+                            rows={3}
+                            className={inputClass}
+                            placeholder="https://i.imgur.com/abc.png&#10;https://example.com/screenshot.jpg"
+                        />
+                        <p className="text-xs text-text-faint mt-1">{t('attachmentHint')}</p>
+                        {shared.attachmentUrls.filter(s => /^https?:\/\//.test(s.trim())).length > 0 && (
+                            <div className="mt-3 grid grid-cols-3 md:grid-cols-4 gap-2">
+                                {shared.attachmentUrls.filter(s => /^https?:\/\//.test(s.trim())).map((url, i) => (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                        key={`${url}-${i}`}
+                                        src={url.trim()}
+                                        alt=""
+                                        referrerPolicy="no-referrer"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.3'; }}
+                                        className="w-full aspect-square object-cover rounded border border-border-light"
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </Section>
 
