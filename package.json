@@ -20,6 +20,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
     "@auth/prisma-adapter": "^2.11.2",
+    "@vercel/blob": "^2.4.0",
     "bcryptjs": "^3.0.2",
     "@prisma/client": "^6.19.2",
     "@types/node": "^25.2.3",

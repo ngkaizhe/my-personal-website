@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw, Star } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw, Star, Upload } from 'lucide-react';
 import { EntryDetail, EntryTranslationDraft } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -101,6 +101,33 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
     const [creatingExperience, setCreatingExperience] = useState(false);
     const [translatingTo, setTranslatingTo] = useState<SupportedLocale | null>(null);
     const [translateError, setTranslateError] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        setUploadError(null);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await fetch('/api/upload-image', { method: 'POST', body: fd });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || t('uploadFailed'));
+            }
+            const { url } = await res.json();
+            updateShared('attachmentUrls', [...shared.attachmentUrls, url]);
+        } catch (err) {
+            setUploadError(err instanceof Error ? err.message : t('uploadFailed'));
+        } finally {
+            setUploading(false);
+            // Reset so selecting the same file again triggers onChange
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     // Translate the *source* tab's content into the target locale. Source is
     // either the entry's primaryLocale (if it has content) or the only
@@ -433,7 +460,32 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
                             className={inputClass}
                             placeholder="https://i.imgur.com/abc.png&#10;https://example.com/screenshot.jpg"
                         />
-                        <p className="text-xs text-text-faint mt-1">{t('attachmentHint')}</p>
+                        <div className="flex items-center gap-3 mt-2">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                                onChange={handleFileSelected}
+                                className="hidden"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploading}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-form-section-border text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
+                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            >
+                                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                {uploading ? t('uploading') : t('uploadImage')}
+                            </button>
+                            <p className="text-xs text-text-faint flex-1">{t('attachmentHint')}</p>
+                        </div>
+                        {uploadError && (
+                            <p role="alert" className="text-xs text-red-500 mt-2 flex items-center gap-1.5">
+                                <AlertCircle className="w-3.5 h-3.5" />
+                                {uploadError}
+                            </p>
+                        )}
                         {shared.attachmentUrls.filter(s => /^https?:\/\//.test(s.trim())).length > 0 && (
                             <div className="mt-3 grid grid-cols-3 md:grid-cols-4 gap-2">
                                 {shared.attachmentUrls.filter(s => /^https?:\/\//.test(s.trim())).map((url, i) => (
