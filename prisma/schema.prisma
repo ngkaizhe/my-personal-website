@@ -22,6 +22,13 @@ model User {
   // bcrypt hash for the email + password sign-up path. Null for users who
   // came in via Google OAuth (or any other future provider).
   passwordHash  String?
+  // Optional public contact links shown on /@username. Each is a free-form
+  // string the user enters in /setup; we treat them as URLs (or @-handles)
+  // for display purposes.
+  contactEmail  String?
+  linkedin      String?
+  github        String?
+  website       String?
   accounts      Account[]
   sessions      Session[]
   experiences   Experience[]
@@ -138,6 +145,10 @@ model Entry {
   tagSlug       String
   color         String
   techStack     String[]
+  // Free-form image URLs the user pasted in the entry form. Display rendered
+  // as a grid in EntryCard / public entry permalink. Plain <img> — no Next
+  // image optimization — because the URLs can point anywhere.
+  attachmentUrls String[] @default([])
   linkUrl       String?
   linkText      String?
   iconId        String?

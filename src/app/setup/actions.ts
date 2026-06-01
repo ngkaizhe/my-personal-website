@@ -9,6 +9,10 @@ export interface SetupInput {
     displayName: string;
     bio: string;
     image: string;
+    contactEmail: string;
+    linkedin: string;
+    github: string;
+    website: string;
 }
 
 export interface SetupResult {
@@ -31,6 +35,10 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
     const displayName = input.displayName.trim();
     const bio = input.bio.trim();
     const image = input.image.trim();
+    const contactEmail = input.contactEmail.trim();
+    const linkedin = input.linkedin.trim();
+    const github = input.github.trim();
+    const website = input.website.trim();
     // Only accept https URLs for the avatar — http and data: URIs open us up
     // to mixed-content warnings and stored payloads on the public profile.
     const safeImage = image && (image.startsWith('https://') || image.startsWith('http://'))
@@ -55,6 +63,10 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
                 displayName: displayName || null,
                 bio: bio || null,
                 ...(safeImage !== null || image === '' ? { image: safeImage } : {}),
+                contactEmail: contactEmail || null,
+                linkedin: linkedin || null,
+                github: github || null,
+                website: website || null,
             },
         });
     } catch (err) {

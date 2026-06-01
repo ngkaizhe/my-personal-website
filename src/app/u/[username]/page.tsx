@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { FileText, Mail, Linkedin, Github, Globe } from 'lucide-react';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
@@ -41,6 +41,10 @@ export default async function PublicProfilePage({ params }: Props) {
             bio: true,
             image: true,
             username: true,
+            contactEmail: true,
+            linkedin: true,
+            github: true,
+            website: true,
         },
     });
     if (!user) notFound();
@@ -82,7 +86,7 @@ export default async function PublicProfilePage({ params }: Props) {
                         {user.bio && (
                             <p className="text-text-secondary text-base leading-relaxed max-w-2xl">{user.bio}</p>
                         )}
-                        <div className="pt-2 flex justify-center md:justify-start">
+                        <div className="pt-2 flex flex-wrap items-center gap-2 justify-center md:justify-start">
                             <Link
                                 href={`/@${user.username}/resume`}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
@@ -90,6 +94,49 @@ export default async function PublicProfilePage({ params }: Props) {
                                 <FileText className="w-4 h-4" />
                                 {t('viewResume')}
                             </Link>
+                            {user.contactEmail && (
+                                <a
+                                    href={`mailto:${user.contactEmail}`}
+                                    aria-label={t('contactEmail')}
+                                    title={user.contactEmail}
+                                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light transition-colors"
+                                >
+                                    <Mail className="w-4 h-4" />
+                                </a>
+                            )}
+                            {user.linkedin && (
+                                <a
+                                    href={user.linkedin}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="LinkedIn"
+                                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light transition-colors"
+                                >
+                                    <Linkedin className="w-4 h-4" />
+                                </a>
+                            )}
+                            {user.github && (
+                                <a
+                                    href={user.github}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="GitHub"
+                                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light transition-colors"
+                                >
+                                    <Github className="w-4 h-4" />
+                                </a>
+                            )}
+                            {user.website && (
+                                <a
+                                    href={user.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={t('contactWebsite')}
+                                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light transition-colors"
+                                >
+                                    <Globe className="w-4 h-4" />
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>

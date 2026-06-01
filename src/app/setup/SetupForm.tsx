@@ -4,9 +4,17 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { saveSetup } from './actions';
 
+interface ContactDefaults {
+    contactEmail: string;
+    linkedin: string;
+    github: string;
+    website: string;
+}
+
 interface Props {
     defaultDisplayName: string;
     defaultImage: string;
+    defaultContact: ContactDefaults;
 }
 
 const inputClass = `
@@ -20,13 +28,17 @@ const inputClass = `
 
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
-export function SetupForm({ defaultDisplayName, defaultImage }: Props) {
+export function SetupForm({ defaultDisplayName, defaultImage, defaultContact }: Props) {
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [username, setUsername] = useState('');
     const [displayName, setDisplayName] = useState(defaultDisplayName);
     const [bio, setBio] = useState('');
     const [image, setImage] = useState(defaultImage);
+    const [contactEmail, setContactEmail] = useState(defaultContact.contactEmail);
+    const [linkedin, setLinkedin] = useState(defaultContact.linkedin);
+    const [github, setGithub] = useState(defaultContact.github);
+    const [website, setWebsite] = useState(defaultContact.website);
     const t = useTranslations('Setup');
     const tCommon = useTranslations('Common');
 
@@ -34,7 +46,10 @@ export function SetupForm({ defaultDisplayName, defaultImage }: Props) {
         e.preventDefault();
         setError(null);
         startTransition(async () => {
-            const result = await saveSetup({ username, displayName, bio, image });
+            const result = await saveSetup({
+                username, displayName, bio, image,
+                contactEmail, linkedin, github, website,
+            });
             if (!result.success) {
                 setError(result.error ?? 'Something went wrong.');
                 return;
@@ -128,6 +143,59 @@ export function SetupForm({ defaultDisplayName, defaultImage }: Props) {
                 />
                 <p className="text-xs text-text-faint mt-1">{bio.length} / 280</p>
             </div>
+
+            <fieldset className="border border-form-section-border rounded-xl p-5">
+                <legend className="px-2 text-sm font-semibold text-form-section-text">
+                    {t('contactSection')}
+                </legend>
+                <p className="text-xs text-text-faint mb-4">{t('contactHint')}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="setup-contact-email" className={labelClass}>{t('contactEmail')}</label>
+                        <input
+                            id="setup-contact-email"
+                            type="email"
+                            value={contactEmail}
+                            onChange={e => setContactEmail(e.target.value)}
+                            placeholder="hi@yourname.dev"
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="setup-linkedin" className={labelClass}>{t('linkedin')}</label>
+                        <input
+                            id="setup-linkedin"
+                            type="url"
+                            value={linkedin}
+                            onChange={e => setLinkedin(e.target.value)}
+                            placeholder="https://linkedin.com/in/yourname"
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="setup-github" className={labelClass}>{t('github')}</label>
+                        <input
+                            id="setup-github"
+                            type="url"
+                            value={github}
+                            onChange={e => setGithub(e.target.value)}
+                            placeholder="https://github.com/yourname"
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="setup-website" className={labelClass}>{t('website')}</label>
+                        <input
+                            id="setup-website"
+                            type="url"
+                            value={website}
+                            onChange={e => setWebsite(e.target.value)}
+                            placeholder="https://yourname.dev"
+                            className={inputClass}
+                        />
+                    </div>
+                </div>
+            </fieldset>
 
             {error && (
                 <div role="alert" className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">

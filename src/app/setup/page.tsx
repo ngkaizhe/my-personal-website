@@ -16,7 +16,15 @@ export default async function SetupPage() {
     // a sign-in or right after a previous setup completes.
     const dbUser = await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { username: true, name: true, image: true },
+        select: {
+            username: true,
+            name: true,
+            image: true,
+            contactEmail: true,
+            linkedin: true,
+            github: true,
+            website: true,
+        },
     });
 
     if (dbUser?.username) {
@@ -37,7 +45,16 @@ export default async function SetupPage() {
                         })}
                     </p>
                 </div>
-                <SetupForm defaultDisplayName={dbUser?.name ?? ''} defaultImage={dbUser?.image ?? ''} />
+                <SetupForm
+                    defaultDisplayName={dbUser?.name ?? ''}
+                    defaultImage={dbUser?.image ?? ''}
+                    defaultContact={{
+                        contactEmail: dbUser?.contactEmail ?? '',
+                        linkedin: dbUser?.linkedin ?? '',
+                        github: dbUser?.github ?? '',
+                        website: dbUser?.website ?? '',
+                    }}
+                />
             </div>
         </div>
     );
