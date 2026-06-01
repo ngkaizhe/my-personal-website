@@ -34,6 +34,13 @@ export default auth((req) => {
     // username, so missing username never breaks data access.
 });
 
+// Pinned to nodejs runtime because the Credentials provider compiled into
+// auth.config.ts pushes the bundle past Vercel's 1MB edge limit. Node runtime
+// raises the limit to 250MB and gives us a proper require() so the dynamic
+// imports of @/lib/prisma + bcryptjs in authorize() don't get statically
+// bundled into the edge graph. Cold-start cost (~50ms vs ~5ms) is negligible
+// for a personal portfolio.
 export const config = {
+    runtime: 'nodejs',
     matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
