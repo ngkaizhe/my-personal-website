@@ -97,7 +97,23 @@ export default {
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.sub as string;
-                session.user.username = (token.username as string | null) ?? null;
+                // Always re-read username from the DB rather than trusting the
+                // JWT snapshot. The JWT is signed at signin time, so any later
+                // /setup save (or username edit) wouldn't show until the user
+                // signed out + back in. The middleware runs on nodejs runtime,
+                // so a lazy Prisma import here is safe everywhere session() is
+                // called. One DB query per request is fine at this scale.
+                try {
+                    const { prisma } = await import('@/lib/prisma');
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: token.sub as string },
+                        select: { username: true },
+                    });
+                    session.user.username = dbUser?.username ?? null;
+                } catch {
+                    // Fall back to the JWT snapshot if the DB is unreachable.
+                    session.user.username = (token.username as string | null) ?? null;
+                }
             }
             return session;
         },
