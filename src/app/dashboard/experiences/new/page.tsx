@@ -17,6 +17,7 @@ function blankExpTranslation(locale: string) {
         description: '',
         sourceHash: null,
         lastTranslatedAt: null,
+        isStale: false,
     };
 }
 
