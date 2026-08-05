@@ -344,5 +344,10 @@
         "label": "切換語言,目前：{current}",
         "en": "English",
         "zh-TW": "中文"
+    },
+    "DomainNotBound": {
+        "title": "此網域尚未綁定",
+        "description": "{domain} 已指向本平台，但還沒有任何個人檔案綁定它。",
+        "cta": "前往主站"
     }
 }

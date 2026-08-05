@@ -344,5 +344,10 @@
         "label": "Change language, current: {current}",
         "en": "English",
         "zh-TW": "中文"
+    },
+    "DomainNotBound": {
+        "title": "This domain isn't bound yet",
+        "description": "{domain} points at our platform but no profile has claimed it.",
+        "cta": "Go to the main site"
     }
 }
