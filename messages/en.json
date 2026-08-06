@@ -6,6 +6,7 @@
         "experiences": "Experiences",
         "skills": "Skills",
         "resume": "Resume",
+        "domain": "Domain",
         "primaryNav": "Primary navigation",
         "skipToMain": "Skip to main content"
     },
@@ -349,5 +350,24 @@
         "title": "This domain isn't bound yet",
         "description": "{domain} points at our platform but no profile has claimed it.",
         "cta": "Go to the main site"
+    },
+    "DomainSettings": {
+        "title": "Custom Domain",
+        "subtitle": "Point a domain you own at your public profile.",
+        "inputLabel": "Domain",
+        "bind": "Bind",
+        "rebind": "Change",
+        "remove": "Remove",
+        "recheck": "Re-check",
+        "hint": "Enter a bare domain like yourname.com. Its homepage will show your timeline, /resume your résumé.",
+        "stateActive": "Active",
+        "statePendingDns": "Waiting for DNS",
+        "stateNeedsVerification": "Needs TXT verification",
+        "stateNotFound": "Not attached",
+        "stateError": "Status unavailable",
+        "dnsInstructions": "Add these records at your DNS provider, then re-check:",
+        "error_invalid": "That doesn't look like a valid domain.",
+        "error_taken": "This domain is already bound to another profile.",
+        "error_vercel_failed": "Couldn't register the domain with the platform. Try again later."
     }
 }
