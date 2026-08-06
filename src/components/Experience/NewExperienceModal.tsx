@@ -78,8 +78,13 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
     }, [open, onClose]);
 
     // Reset state every time the modal re-opens so the next entry doesn't see
-    // leftover values from a previous attempt.
-    useEffect(() => {
+    // leftover values from a previous attempt. Done as a render-time
+    // adjustment (React's "storing information from previous renders"
+    // pattern) instead of an effect: React restarts the render immediately,
+    // before committing, so the stale values never reach the DOM.
+    const [prevOpen, setPrevOpen] = useState(open);
+    if (open !== prevOpen) {
+        setPrevOpen(open);
         if (open) {
             setType('JOB');
             setOrganization('');
@@ -89,7 +94,7 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
             setError(null);
             setSubmitting(false);
         }
-    }, [open]);
+    }
 
     if (!open) return null;
 

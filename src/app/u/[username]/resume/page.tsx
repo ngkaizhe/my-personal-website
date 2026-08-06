@@ -14,12 +14,15 @@ export async function generateMetadata({ params }: Props) {
     const { username } = await params;
     const user = await prisma.user.findUnique({
         where: { username },
-        select: { displayName: true, name: true },
+        select: { displayName: true, name: true, customDomain: true },
     });
     if (!user) return { title: 'Not found' };
     const display = user.displayName || user.name || username;
     return {
         title: `${display} — Résumé`,
+        ...(user.customDomain
+            ? { alternates: { canonical: `https://${user.customDomain}/resume` } }
+            : {}),
     };
 }
 

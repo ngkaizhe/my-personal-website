@@ -29,6 +29,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
             <NavLink href="/dashboard/experiences">{tNav('experiences')}</NavLink>
             <NavLink href="/dashboard/skills">{tNav('skills')}</NavLink>
             <NavLink href="/dashboard/resume">{tNav('resume')}</NavLink>
+            <NavLink href="/dashboard/domain">{tNav('domain')}</NavLink>
           </div>
           <div className="flex items-center gap-2">
             <LocaleToggle />

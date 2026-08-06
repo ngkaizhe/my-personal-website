@@ -6,6 +6,7 @@
         "experiences": "經歷",
         "skills": "技能",
         "resume": "履歷",
+        "domain": "網域",
         "primaryNav": "主導覽",
         "skipToMain": "跳至主要內容"
     },
@@ -344,5 +345,29 @@
         "label": "切換語言,目前：{current}",
         "en": "English",
         "zh-TW": "中文"
+    },
+    "DomainNotBound": {
+        "title": "此網域尚未綁定",
+        "description": "{domain} 已指向本平台，但還沒有任何個人檔案綁定它。",
+        "cta": "前往主站"
+    },
+    "DomainSettings": {
+        "title": "自訂網域",
+        "subtitle": "把你擁有的網域指向你的公開檔案。",
+        "inputLabel": "網域",
+        "bind": "綁定",
+        "rebind": "更換",
+        "remove": "移除",
+        "recheck": "重新檢查",
+        "hint": "輸入裸網域，例如 yourname.com。該網域首頁會顯示你的時間軸，/resume 顯示公開履歷。",
+        "stateActive": "已生效",
+        "statePendingDns": "等待 DNS 生效",
+        "stateNeedsVerification": "需要 TXT 驗證",
+        "stateNotFound": "尚未掛載",
+        "stateError": "無法取得狀態",
+        "dnsInstructions": "到你的 DNS 服務商新增以下記錄，然後重新檢查：",
+        "error_invalid": "這看起來不是有效的網域。",
+        "error_taken": "此網域已被其他使用者綁定。",
+        "error_vercel_failed": "無法向平台註冊此網域，請稍後再試。"
     }
 }

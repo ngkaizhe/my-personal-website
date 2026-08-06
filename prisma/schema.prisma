@@ -29,6 +29,9 @@ model User {
   linkedin      String?
   github        String?
   website       String?
+  // Bare hostname (e.g. "ngkaizhe.com") the user bound to their public
+  // profile. Root of that domain serves their timeline, /resume their résumé.
+  customDomain  String?      @unique
   accounts      Account[]
   sessions      Session[]
   experiences   Experience[]

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Copy, Check, Link as LinkIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -8,18 +8,24 @@ interface Props {
     username: string | null;
 }
 
+// window.location.origin is a client-only constant: the server snapshot ('')
+// keeps SSR markup identical to the first client render (no hydration
+// mismatch on the title attribute), and the no-op subscribe is fine because
+// the value never changes within a page's lifetime.
+const emptySubscribe = () => () => {};
+function useOrigin(): string {
+    return useSyncExternalStore(
+        emptySubscribe,
+        () => window.location.origin,
+        () => '',
+    );
+}
+
 export function CopyPublicUrlButton({ username }: Props) {
     const [copied, setCopied] = useState(false);
-    // Defer origin to effect so SSR and first client render produce the same
-    // markup (empty string). Without this, the title attribute differs across
-    // the SSR/hydration boundary and React 19 reports a hydration mismatch.
-    const [origin, setOrigin] = useState('');
+    const origin = useOrigin();
     const t = useTranslations('Timeline');
     const tAuth = useTranslations('Auth');
-
-    useEffect(() => {
-        setOrigin(window.location.origin);
-    }, []);
 
     if (!username) {
         return (
