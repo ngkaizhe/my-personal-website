@@ -15,13 +15,18 @@ export async function generateMetadata({ params }: Props) {
     const { username } = await params;
     const user = await prisma.user.findUnique({
         where: { username },
-        select: { displayName: true, name: true, bio: true },
+        select: { displayName: true, name: true, bio: true, customDomain: true },
     });
     if (!user) return { title: 'Not found' };
     const display = user.displayName || user.name || username;
     return {
         title: display,
         description: user.bio || `${display}'s journey timeline.`,
+        // When the profile has a bound custom domain, that domain is the
+        // canonical home so the /u and /d copies don't compete in search.
+        ...(user.customDomain
+            ? { alternates: { canonical: `https://${user.customDomain}/` } }
+            : {}),
         openGraph: {
             title: display,
             description: user.bio || `${display}'s journey timeline.`,
