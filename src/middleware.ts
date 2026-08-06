@@ -12,8 +12,16 @@ export default auth((req) => {
     // A bound domain serves only the owner's two public pages; everything
     // else bounces to the main app. Pure string logic: the /d/[domain]
     // pages own the DB lookup so middleware stays DB-free.
-    const host = req.headers.get('host') ?? '';
-    if (!isMainHost(host)) {
+    //
+    // x-forwarded-host is preferred because Vercel re-invokes middleware for
+    // rewritten requests with an internal Host header; acting on that value
+    // turned the /@ -> /u rewrite into a visible 307 on *.vercel.app hosts.
+    // Rewrite targets (/u, /d) are likewise skipped so a re-entrant pass can
+    // never bounce a path the first pass just rewrote to.
+    const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '';
+    const isInternalTarget =
+        nextUrl.pathname.startsWith('/u/') || nextUrl.pathname.startsWith('/d/');
+    if (!isInternalTarget && !isMainHost(host)) {
         const bare = host.toLowerCase().split(':')[0];
         if (nextUrl.pathname === '/') {
             const rewritten = nextUrl.clone();
