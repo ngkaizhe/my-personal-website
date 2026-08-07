@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { normalizeDomain, isMainHost } from './customDomain';
+import { normalizeDomain, isMainHost, mainAppHost } from './customDomain';
 
 describe('normalizeDomain', () => {
     it('lowercases and trims', () => {
@@ -40,5 +40,22 @@ describe('isMainHost', () => {
     it('rejects custom domains', () => {
         expect(isMainHost('ngkaizhe.com')).toBe(false);
         expect(isMainHost('www.ngkaizhe.com')).toBe(false);
+    });
+});
+
+describe('mainAppHost', () => {
+    const OLD = process.env.NEXT_PUBLIC_APP_HOST;
+    afterEach(() => { process.env.NEXT_PUBLIC_APP_HOST = OLD; });
+
+    it('tolerates a scheme-prefixed env value (real misconfiguration we hit)', () => {
+        process.env.NEXT_PUBLIC_APP_HOST = 'https://my-app.vercel.app/';
+        expect(mainAppHost()).toBe('my-app.vercel.app');
+        // The custom-domain check must also still recognize it as main.
+        expect(isMainHost('my-app.vercel.app')).toBe(true);
+    });
+
+    it('passes a bare host through unchanged', () => {
+        process.env.NEXT_PUBLIC_APP_HOST = 'my-app.vercel.app';
+        expect(mainAppHost()).toBe('my-app.vercel.app');
     });
 });

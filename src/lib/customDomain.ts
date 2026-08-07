@@ -6,12 +6,22 @@ const HOSTNAME_RE = /^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z
 const IP_RE = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 function bareHost(host: string): string {
-    return host.trim().toLowerCase().split(':')[0];
+    // Tolerates values like "https://example.com/" so a scheme-prefixed
+    // NEXT_PUBLIC_APP_HOST doesn't silently break host comparisons.
+    return host.trim().toLowerCase()
+        .replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
+        .split('/')[0]
+        .split(':')[0];
 }
 
 function appHost(): string | null {
     const raw = process.env.NEXT_PUBLIC_APP_HOST;
     return raw ? bareHost(raw) : null;
+}
+
+/** The main app host as a bare hostname, regardless of how the env was typed. */
+export function mainAppHost(): string | null {
+    return appHost();
 }
 
 /**

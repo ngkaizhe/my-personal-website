@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
+import { mainAppHost } from '@/lib/customDomain';
 
 export default async function DomainNotBound({ domain }: { domain: string }) {
     const t = await getTranslations('DomainNotBound');
-    const appHost = process.env.NEXT_PUBLIC_APP_HOST;
+    const appHost = mainAppHost();
     return (
         <div className="bg-page min-h-screen flex items-center justify-center px-6">
             <div className="max-w-md text-center space-y-4">

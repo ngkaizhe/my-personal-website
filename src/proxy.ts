@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 import authConfig from '@/auth.config';
-import { isMainHost } from '@/lib/customDomain';
+import { isMainHost, mainAppHost } from '@/lib/customDomain';
 import { isProtectedPath } from '@/lib/routes';
 
 // Next.js 16 proxy (formerly middleware.ts — the file convention was renamed;
@@ -38,7 +38,7 @@ export default auth((req) => {
             rewritten.pathname = `/d/${bare}/resume`;
             return NextResponse.rewrite(rewritten);
         }
-        const appHost = process.env.NEXT_PUBLIC_APP_HOST;
+        const appHost = mainAppHost();
         if (appHost) {
             return NextResponse.redirect(
                 new URL(nextUrl.pathname + nextUrl.search, `https://${appHost}`),
