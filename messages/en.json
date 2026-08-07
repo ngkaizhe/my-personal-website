@@ -371,14 +371,15 @@
         "error_taken": "This domain is already bound to another profile.",
         "error_vercel_failed": "Couldn't register the domain with the platform. Try again later.",
         "pathsTitle": "Paths",
-        "homepageShows": "Homepage shows",
         "viewTimeline": "Timeline",
         "viewResume": "Résumé",
-        "altPathLabel": "Path for {view}",
         "savePaths": "Save paths",
         "pathsSaved": "Saved.",
         "error_invalid_path": "Path must be a single lowercase segment like /resume.",
-        "error_reserved_path": "That path is reserved by the app."
+        "error_reserved_path": "That path is reserved by the app.",
+        "pathsHint": "Each view is served at its path on your domain. Exactly one of them must be /.",
+        "pathFor": "Path for {view}",
+        "error_need_root": "Exactly one of the two paths must be /."
     },
     "FormControls": {
         "searchIcons": "Search icons…",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDomainPaths, normalizeAltPath } from './domainPaths';
+import { resolveDomainPaths, normalizeAltPath, normalizeViewPaths } from './domainPaths';
 
 describe('resolveDomainPaths', () => {
     it('root=TIMELINE puts timeline at / and resume at altPath', () => {
@@ -30,5 +30,24 @@ describe('normalizeAltPath', () => {
             expect(normalizeAltPath(r)).toEqual({ ok: false, error: 'reserved_path' });
         }
         expect(normalizeAltPath('/resume')).toEqual({ ok: true, path: '/resume' });
+    });
+});
+
+describe('normalizeViewPaths', () => {
+    it('timeline at / stores TIMELINE root + resume alt', () => {
+        expect(normalizeViewPaths('/', '/resume'))
+            .toEqual({ ok: true, rootView: 'TIMELINE', altPath: '/resume' });
+    });
+    it('resume at / stores RESUME root + timeline alt (normalized)', () => {
+        expect(normalizeViewPaths(' Journey ', '/'))
+            .toEqual({ ok: true, rootView: 'RESUME', altPath: '/journey' });
+    });
+    it('rejects when neither or both paths are /', () => {
+        expect(normalizeViewPaths('/a', '/b')).toEqual({ ok: false, error: 'need_root' });
+        expect(normalizeViewPaths('/', '/')).toEqual({ ok: false, error: 'need_root' });
+    });
+    it('propagates alt-path validation errors', () => {
+        expect(normalizeViewPaths('/', '/a/b')).toEqual({ ok: false, error: 'invalid_path' });
+        expect(normalizeViewPaths('/dashboard', '/')).toEqual({ ok: false, error: 'reserved_path' });
     });
 });

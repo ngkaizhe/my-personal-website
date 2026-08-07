@@ -137,3 +137,13 @@ Validation (server-side, mirrored client-side for instant feedback):
   backfill needed — defaults reproduce current behavior).
 - Deploy order safe in either direction: old code ignores the new columns;
   new code's defaults match old behavior.
+
+## Amendment (2026-08-07, post-launch user feedback)
+
+The settings UI was reworked: instead of a "homepage shows" radio + a single
+alt-path input (which hid the "root at /, other at altPath" rule), the card
+now shows **both views as directly editable path rows** (timeline + résumé,
+each prefixed with the domain) and one Save button. The "exactly one path is
+/" invariant moved from UI construction into save-time validation
+(`normalizeViewPaths`, new error `need_root`). The storage model
+(`domainRootView` + `domainAltPath`) is unchanged.

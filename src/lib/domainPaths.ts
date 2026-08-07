@@ -33,3 +33,27 @@ export function normalizeAltPath(
     if (RESERVED_PATH_SEGMENTS.has(s.slice(1))) return { ok: false, error: 'reserved_path' };
     return { ok: true, path: s };
 }
+
+/**
+ * UI model: the user edits both views' paths directly. Converts that pair
+ * back into the storage model (rootView + altPath), enforcing the invariant
+ * that exactly one path is "/".
+ */
+export function normalizeViewPaths(
+    timelineInput: string,
+    resumeInput: string,
+):
+    | { ok: true; rootView: 'TIMELINE' | 'RESUME'; altPath: string }
+    | { ok: false; error: 'invalid_path' | 'reserved_path' | 'need_root' } {
+    const t = timelineInput.trim();
+    const r = resumeInput.trim();
+    const tIsRoot = t === '/';
+    const rIsRoot = r === '/';
+    if (tIsRoot === rIsRoot) return { ok: false, error: 'need_root' };
+
+    const alt = normalizeAltPath(tIsRoot ? r : t);
+    if (!alt.ok) return alt;
+    return tIsRoot
+        ? { ok: true, rootView: 'TIMELINE', altPath: alt.path }
+        : { ok: true, rootView: 'RESUME', altPath: alt.path };
+}

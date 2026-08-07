@@ -31,15 +31,16 @@ export default function DomainSettings({ initialDomain, initialStatus, initialRo
     const [domain, setDomain] = useState(initialDomain);
     const [status, setStatus] = useState(initialStatus);
     const [error, setError] = useState<string | null>(null);
-    const [rootView, setRootView] = useState<RootView>(initialRootView);
-    const [altPath, setAltPath] = useState(initialAltPath);
+    const initialPaths = resolveDomainPaths({ domainRootView: initialRootView, domainAltPath: initialAltPath });
+    const [timelinePath, setTimelinePath] = useState(initialPaths.timelinePath);
+    const [resumePath, setResumePath] = useState(initialPaths.resumePath);
     const [pathError, setPathError] = useState<string | null>(null);
     const [pathSaved, setPathSaved] = useState(false);
     const [pending, startTransition] = useTransition();
 
     const onSavePaths = () => startTransition(async () => {
         setPathSaved(false);
-        const r = await saveDomainPaths(rootView, altPath);
+        const r = await saveDomainPaths(timelinePath, resumePath);
         if (r.ok) {
             setPathError(null);
             setPathSaved(true);
@@ -184,75 +185,40 @@ export default function DomainSettings({ initialDomain, initialStatus, initialRo
             {domain && (
                 <div className="bg-surface border border-border-light rounded-xl p-6 space-y-4">
                     <h2 className="text-sm font-medium text-text-secondary">{t('pathsTitle')}</h2>
+                    <p className="text-xs text-text-muted">{t('pathsHint')}</p>
 
-                    {/* Live preview of the mapping the current controls produce —
-                        without this the "/ + alt path" rule is invisible. */}
-                    {(() => {
-                        const preview = resolveDomainPaths({ domainRootView: rootView, domainAltPath: altPath.trim() || '/…' });
-                        const rows = [
-                            { label: t('viewTimeline'), path: preview.timelinePath },
-                            { label: t('viewResume'), path: preview.resumePath },
-                        ];
-                        return (
-                            <div className="rounded-lg bg-surface-elevated border border-border-light divide-y divide-border-light">
-                                {rows.map(row => (
-                                    <div key={row.label} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
-                                        <span className="text-text-secondary">{row.label}</span>
-                                        <a
-                                            href={`https://${domain}${row.path === '/' ? '' : row.path}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="font-mono text-blue-600 hover:text-blue-500 truncate"
-                                        >
-                                            {domain}{row.path === '/' ? '/' : row.path}
-                                        </a>
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })()}
-
-                    <fieldset className="space-y-2">
-                        <legend className="text-sm text-text-secondary mb-1">{t('homepageShows')}</legend>
-                        {(['TIMELINE', 'RESUME'] as const).map(v => (
-                            <label key={v} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="domain-root-view"
-                                    checked={rootView === v}
-                                    onChange={() => { setRootView(v); setPathSaved(false); }}
-                                    className="accent-blue-600"
-                                />
-                                {v === 'TIMELINE' ? t('viewTimeline') : t('viewResume')}
-                            </label>
-                        ))}
-                    </fieldset>
-                    <div>
-                        <label htmlFor="domain-alt-path" className="block text-sm font-medium text-text-secondary mb-1">
-                            {t('altPathLabel', { view: rootView === 'TIMELINE' ? t('viewResume') : t('viewTimeline') })}
-                        </label>
-                        <div className="flex items-center gap-2">
+                    {([
+                        { key: 'timeline', label: t('viewTimeline'), value: timelinePath, set: setTimelinePath },
+                        { key: 'resume', label: t('viewResume'), value: resumePath, set: setResumePath },
+                    ] as const).map(row => (
+                        <div key={row.key} className="flex items-center gap-3">
+                            <span className="w-16 shrink-0 text-sm text-text-secondary">{row.label}</span>
                             <span className="text-sm font-mono text-text-muted shrink-0">{domain}</span>
                             <input
-                                id="domain-alt-path"
-                                value={altPath}
-                                onChange={(e) => { setAltPath(e.target.value); setPathSaved(false); }}
-                                placeholder="/resume"
+                                id={`domain-path-${row.key}`}
+                                aria-label={t('pathFor', { view: row.label })}
+                                value={row.value}
+                                onChange={(e) => { row.set(e.target.value); setPathSaved(false); }}
+                                placeholder="/"
                                 className={`flex-1 ${inputClass}`}
                             />
-                            <button
-                                type="button"
-                                onClick={onSavePaths}
-                                disabled={pending}
-                                className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-                            >
-                                {t('savePaths')}
-                            </button>
                         </div>
-                        {pathError && <p role="alert" className="mt-2 text-sm text-red-600">{pathError}</p>}
-                        {pathSaved && <p className="mt-2 text-sm text-green-600">{t('pathsSaved')}</p>}
+                    ))}
+
+                    <div className="flex items-center justify-end gap-3">
+                        {pathError && <p role="alert" className="text-sm text-red-600">{pathError}</p>}
+                        {pathSaved && <p className="text-sm text-green-600">{t('pathsSaved')}</p>}
+                        <button
+                            type="button"
+                            onClick={onSavePaths}
+                            disabled={pending}
+                            className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                        >
+                            {t('savePaths')}
+                        </button>
                     </div>
                 </div>
+            )}
             )}
         </div>
     );
