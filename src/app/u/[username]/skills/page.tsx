@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
-import { fetchSkillsByUserId } from '@/lib/skills';
+import { fetchSkillsByUserId } from '@/lib/skillsQuery';
 
 interface Props {
     params: Promise<{ username: string }>;

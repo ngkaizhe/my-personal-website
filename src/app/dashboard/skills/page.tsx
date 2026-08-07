@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { getCurrentUserId } from '@/lib/currentUser';
-import { fetchSkillsByUserId } from '@/lib/skills';
+import { fetchSkillsByUserId } from '@/lib/skillsQuery';
 
 export const metadata = {
     title: 'Skills',

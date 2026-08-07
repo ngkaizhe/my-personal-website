@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma';
-
+// PURE module — imported by client components (ResumeBuilder), so it must
+// never pull in Prisma / pg. The DB-backed query lives in skillsQuery.ts.
 // Skill aggregation with case-insensitive de-duplication. Without this,
 // "Node", "node", and "Node.js" would each count as separate skills on the
 // résumé. We bucket by trim+lowercase and keep the first-seen display label
@@ -28,17 +28,4 @@ export function aggregateSkills(perEntryStacks: string[][]): AggregatedSkill[] {
     return Array.from(counts.entries())
         .map(([key, count]) => ({ name: displayFor.get(key)!, count }))
         .sort((a, b) => b.count - a.count);
-}
-
-/**
- * Query helper: aggregated skills for one user. Single source of truth for
- * both the dashboard page and the public /@username/skills page (matching
- * the lib/timeline.ts + lib/resume.ts convention).
- */
-export async function fetchSkillsByUserId(userId: string): Promise<AggregatedSkill[]> {
-    const entries = await prisma.entry.findMany({
-        where: { userId },
-        select: { techStack: true },
-    });
-    return aggregateSkills(entries.map(e => e.techStack));
 }
