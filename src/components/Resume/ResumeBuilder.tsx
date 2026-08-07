@@ -7,6 +7,7 @@ import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/
 import type { ExperienceType } from '@/lib/types';
 import { aggregateSkills } from '@/lib/skills';
 import BulletImprover from '@/components/Resume/BulletImprover';
+import { inputClassCompact } from '@/lib/formStyles';
 
 // Ordering for sections in the résumé output. BREAK is rendered together with
 // the "Other" bucket alongside unlinked entries.
@@ -20,13 +21,6 @@ const SECTION_KEY: Record<ExperienceType, string> = {
     BREAK: 'sectionOther',
 };
 
-const inputClass = `
-    w-full px-4 py-2.5 rounded-xl
-    bg-input-bg border border-input-border
-    text-input-text placeholder-input-placeholder
-    focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50
-    outline-none transition-all duration-200
-`;
 
 function formatExperienceRange(start: string, end: string | null, locale: string, presentLabel: string) {
     const s = new Date(start).toLocaleDateString(locale, { year: 'numeric', month: 'short' });
@@ -253,11 +247,11 @@ export default function ResumeBuilder({ data, canImproveBullets = false }: Resum
 
                 <div>
                     <label htmlFor="from" className="block text-sm font-medium text-form-label mb-2">{t('from')}</label>
-                    <input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputClass} />
+                    <input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputClassCompact} />
                 </div>
                 <div>
                     <label htmlFor="to" className="block text-sm font-medium text-form-label mb-2">{t('to')}</label>
-                    <input id="to" type="date" value={to} onChange={e => setTo(e.target.value)} className={inputClass} />
+                    <input id="to" type="date" value={to} onChange={e => setTo(e.target.value)} className={inputClassCompact} />
                 </div>
 
                 <div className="pt-3 border-t border-form-section-border space-y-2">

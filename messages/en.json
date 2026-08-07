@@ -370,5 +370,10 @@
         "error_invalid": "That doesn't look like a valid domain.",
         "error_taken": "This domain is already bound to another profile.",
         "error_vercel_failed": "Couldn't register the domain with the platform. Try again later."
+    },
+    "FormControls": {
+        "searchIcons": "Search icons…",
+        "removeTag": "Remove {tag}",
+        "tagInputPlaceholder": "Type and press Enter…"
     }
 }

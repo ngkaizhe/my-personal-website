@@ -1,13 +1,9 @@
 import { PrismaClient } from '@prisma/client';
+// Same helper the write path uses, so seeded tagSlug values can't drift from
+// the ones the app generates.
+import { tagToSlug } from '../src/lib/slug';
 
 const prisma = new PrismaClient();
-
-// Cross-locale stable key for a tag. UI text can differ per language
-// ("Engineering" / "工程") but resume sectioning, badge colour, and filtering
-// key off this slug.
-function tagToSlug(tag: string): string {
-  return tag.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
 
 async function main() {
   console.log('Cleaning up existing data...');

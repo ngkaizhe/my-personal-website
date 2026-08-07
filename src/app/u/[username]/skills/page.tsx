@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
-import { aggregateSkills } from '@/lib/skills';
+import { fetchSkillsByUserId } from '@/lib/skills';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -19,15 +19,15 @@ export default async function PublicSkillsPage({ params }: Props) {
     const user = await prisma.user.findUnique({
         where: { username },
         select: {
+            id: true,
             displayName: true,
             name: true,
             username: true,
-            entries: { select: { techStack: true } },
         },
     });
     if (!user) notFound();
 
-    const skills = aggregateSkills(user.entries.map(e => e.techStack));
+    const skills = await fetchSkillsByUserId(user.id);
     const t = await getTranslations('Skills');
     const tBack = await getTranslations('PublicProfile');
     const displayName = user.displayName || user.name || `@${user.username}`;

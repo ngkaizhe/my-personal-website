@@ -24,6 +24,7 @@ function initialsFrom(name?: string | null, email?: string | null) {
 export function UserMenu({ user }: Props) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const t = useTranslations('Auth');
 
@@ -46,6 +47,44 @@ export function UserMenu({ user }: Props) {
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
+    }, [open]);
+
+    // Arrow-key navigation over the menu items, matching the ThemeToggle
+    // pattern the project treats as the reference implementation.
+    const menuItems = () => Array.from(
+        menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+    );
+
+    const focusItem = (index: number) => {
+        const items = menuItems();
+        if (items.length === 0) return;
+        const wrapped = (index + items.length) % items.length;
+        items[wrapped]?.focus();
+    };
+
+    const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        const items = menuItems();
+        const current = items.indexOf(document.activeElement as HTMLElement);
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            focusItem(current + 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            focusItem(current - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            focusItem(0);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            focusItem(items.length - 1);
+        }
+    };
+
+    // Move focus into the menu when it opens so keyboard users land inside it.
+    useEffect(() => {
+        if (!open) return;
+        const first = menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]');
+        first?.focus();
     }, [open]);
 
     const profileHref = user.username ? `/@${user.username}` : null;
@@ -78,8 +117,10 @@ export function UserMenu({ user }: Props) {
 
             {open && (
                 <div
+                    ref={menuRef}
                     role="menu"
                     aria-label={t('menuLabel')}
+                    onKeyDown={onMenuKeyDown}
                     className="absolute right-0 top-full mt-2 bg-surface border border-border rounded-lg shadow-xl overflow-hidden z-50 min-w-[220px]"
                 >
                     {/* User info header */}

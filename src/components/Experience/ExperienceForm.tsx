@@ -1,32 +1,21 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, Languages, Loader2, RefreshCw } from 'lucide-react';
 import { ExperienceDetail, ExperienceTranslationDraft } from '@/app/dashboard/experiences/actions';
 import type { ExperienceType } from '@/lib/types';
 import ColorPicker from '@/components/ui/ColorPicker';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { LocaleTabs } from '@/components/ui/LocaleTabs';
+import { useUnsavedChangesWarning } from '@/components/ui/useUnsavedChangesWarning';
+import { inputClass, labelClass, LOCALE_LABEL } from '@/lib/formStyles';
+import { SUPPORTED_LOCALES, type Locale as SupportedLocale } from '@/i18n/locales';
 
 const TYPE_OPTIONS: ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER', 'BREAK'];
-const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
-type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
-const LOCALE_LABEL: Record<SupportedLocale, string> = { en: 'English', 'zh-TW': '中文' };
-
 const EXPERIENCES_LIST = '/dashboard/experiences';
-
-const inputClass = `
-    w-full px-4 py-3 rounded-xl
-    bg-input-bg border border-input-border
-    text-input-text placeholder-input-placeholder
-    focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50
-    outline-none transition-all duration-200
-    hover:border-input-border-hover
-`;
-
-const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 function isBlankExpTranslation(t: ExperienceTranslationDraft): boolean {
     return !t.organization.trim();
@@ -137,15 +126,7 @@ export default function ExperienceForm({ item, action, aiAvailable }: Props) {
         [shared, translations, initialShared, initialTranslations, submitting],
     );
 
-    useEffect(() => {
-        if (!isDirty) return;
-        const handler = (e: BeforeUnloadEvent) => {
-            e.preventDefault();
-            e.returnValue = '';
-        };
-        window.addEventListener('beforeunload', handler);
-        return () => window.removeEventListener('beforeunload', handler);
-    }, [isDirty]);
+    useUnsavedChangesWarning(isDirty);
 
     const handleCancelClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         if (isDirty) {
@@ -208,36 +189,20 @@ export default function ExperienceForm({ item, action, aiAvailable }: Props) {
 
             {/* Locale tabs */}
             <div>
-                <div role="tablist" aria-label={tEntryForm('localeTabsLabel')} className="flex gap-1 border-b border-form-section-border">
-                    {SUPPORTED_LOCALES.map(loc => {
-                        const blank = isBlankExpTranslation(translations[loc]);
-                        const stale = translations[loc].isStale && !blank;
-                        const active = activeLocale === loc;
-                        return (
-                            <button
-                                key={loc}
-                                type="button"
-                                role="tab"
-                                aria-selected={active}
-                                aria-controls={`exp-tabpanel-${loc}`}
-                                id={`exp-tab-${loc}`}
-                                onClick={() => setActiveLocale(loc)}
-                                className={`px-4 py-2.5 text-sm font-medium rounded-t-lg cursor-pointer transition-colors
-                                    flex items-center gap-2
-                                    ${active
-                                        ? 'bg-surface-elevated text-text-primary border border-form-section-border border-b-transparent -mb-px'
-                                        : 'text-text-muted hover:text-text-primary hover:bg-surface-elevated/50'
-                                    }
-                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
-                            >
-                                {LOCALE_LABEL[loc]}
-                                {blank && <AlertCircle className="w-4 h-4 text-amber-500" aria-label={tEntryForm('localeMissing')} />}
-                                {stale && <RefreshCw className="w-3.5 h-3.5 text-amber-500" aria-label={tEntryForm('localeStale')} />}
-                                {!blank && !stale && <CheckCircle2 className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />}
-                            </button>
-                        );
-                    })}
-                </div>
+                <LocaleTabs
+                    activeLocale={activeLocale}
+                    onSelect={setActiveLocale}
+                    idPrefix="exp-"
+                    states={Object.fromEntries(SUPPORTED_LOCALES.map(loc => [loc, {
+                        blank: isBlankExpTranslation(translations[loc]),
+                        stale: Boolean(translations[loc].isStale),
+                    }]))}
+                    labels={{
+                        tablist: tEntryForm('localeTabsLabel'),
+                        missing: tEntryForm('localeMissing'),
+                        stale: tEntryForm('localeStale'),
+                    }}
+                />
 
                 {SUPPORTED_LOCALES.map(loc => (
                     <div

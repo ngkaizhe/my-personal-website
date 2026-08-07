@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
-import { aggregateSkills } from '@/lib/skills';
+import { fetchSkillsByUserId } from '@/lib/skills';
 
 export const metadata = {
     title: 'Skills',
@@ -10,11 +9,7 @@ export const metadata = {
 
 export default async function SkillsPage() {
     const userId = await getCurrentUserId();
-    const entries = await prisma.entry.findMany({
-        where: { userId },
-        select: { techStack: true },
-    });
-    const skills = aggregateSkills(entries.map(e => e.techStack));
+    const skills = await fetchSkillsByUserId(userId);
     const t = await getTranslations('Skills');
 
     return (

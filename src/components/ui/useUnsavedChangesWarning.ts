@@ -1,0 +1,16 @@
+'use client';
+
+import { useEffect } from 'react';
+
+/** Warns before a browser navigation discards unsaved form edits. */
+export function useUnsavedChangesWarning(isDirty: boolean) {
+    useEffect(() => {
+        if (!isDirty) return;
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [isDirty]);
+}

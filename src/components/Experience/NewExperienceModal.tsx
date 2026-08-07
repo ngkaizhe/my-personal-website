@@ -6,19 +6,10 @@ import { useTranslations } from 'next-intl';
 import { useModalFocusTrap } from '@/components/ui/useModalFocusTrap';
 import type { ExperienceType } from '@/lib/types';
 import { createExperienceInline, InlineExperienceOption } from '@/app/dashboard/experiences/actions';
+import { inputClass, labelClass } from '@/lib/formStyles';
 
 const TYPE_OPTIONS: ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER', 'BREAK'];
 
-const inputClass = `
-    w-full px-4 py-3 rounded-xl
-    bg-input-bg border border-input-border
-    text-input-text placeholder-input-placeholder
-    focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50
-    outline-none transition-all duration-200
-    hover:border-input-border-hover
-`;
-
-const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 interface Props {
     open: boolean;
