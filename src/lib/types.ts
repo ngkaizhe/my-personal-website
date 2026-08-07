@@ -1,6 +1,9 @@
-// Re-exported from the Prisma enum so a schema change (new experience type)
-// flows into the DTO layer automatically instead of silently drifting.
-export type { ExperienceType } from '@prisma/client';
+// Sourced from the Prisma enum so a schema change (new experience type) flows
+// into the DTO layer automatically instead of silently drifting. Imported as
+// well as re-exported because TimelineItem below references it locally.
+import type { ExperienceType } from '@prisma/client';
+
+export type { ExperienceType };
 
 // Display-layer Timeline DTO. Already collapsed to a single locale by the
 // query helper (via pickTranslation) — the consumer doesn't need to think
