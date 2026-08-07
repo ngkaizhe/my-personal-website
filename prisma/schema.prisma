@@ -16,6 +16,13 @@ datasource db {
   provider = "postgresql"
 }
 
+// Which public view a custom domain's root path serves. The other view lives
+// at User.domainAltPath.
+enum DomainView {
+  TIMELINE
+  RESUME
+}
+
 model User {
   id            String       @id @default(uuid())
   name          String?
@@ -36,8 +43,13 @@ model User {
   github        String?
   website       String?
   // Bare hostname (e.g. "ngkaizhe.com") the user bound to their public
-  // profile. Root of that domain serves their timeline, /resume their résumé.
+  // profile. Which view lives at which path is configured by the two fields
+  // below.
   customDomain  String?      @unique
+  // Custom-domain path mapping: the root view sits at "/", the other view at
+  // domainAltPath. Defaults reproduce the original hardcoded behavior.
+  domainRootView DomainView  @default(TIMELINE)
+  domainAltPath  String      @default("/resume")
   accounts      Account[]
   sessions      Session[]
   experiences   Experience[]
