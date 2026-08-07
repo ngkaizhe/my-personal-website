@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertCircle, CheckCircle2, Languages, Loader2, RefreshCw, Star, Upload } from 'lucide-react';
+import { AlertCircle, Languages, Loader2, RefreshCw, Star, Upload } from 'lucide-react';
 import { EntryDetail, EntryTranslationDraft } from '@/app/dashboard/entries/actions';
 import ColorPicker from '@/components/ui/ColorPicker';
 import TagInput from '@/components/ui/TagInput';
@@ -12,14 +12,14 @@ import IconPicker from '@/components/ui/IconPicker';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import EntryFormPreview, { PreviewData } from '@/components/Entry/EntryFormPreview';
 import NewExperienceModal from '@/components/Experience/NewExperienceModal';
+import { LocaleTabs } from '@/components/ui/LocaleTabs';
+import { useUnsavedChangesWarning } from '@/components/ui/useUnsavedChangesWarning';
+import { inputClass, labelClass, LOCALE_LABEL } from '@/lib/formStyles';
+import { SUPPORTED_LOCALES, type Locale as SupportedLocale } from '@/i18n/locales';
+import type { ExperienceType } from '@/lib/types';
 
 const ENTRIES_LIST = '/dashboard/entries';
 const NEW_EXPERIENCE_SENTINEL = '__new__';
-const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
-type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
-const LOCALE_LABEL: Record<SupportedLocale, string> = { en: 'English', 'zh-TW': '中文' };
-
-import type { ExperienceType } from '@/lib/types';
 
 export interface ExperienceOption {
     id: string;
@@ -27,17 +27,6 @@ export interface ExperienceOption {
     name: string;
     role: string | null;
 }
-
-const inputClass = `
-    w-full px-4 py-3 rounded-xl
-    bg-input-bg border border-input-border
-    text-input-text placeholder-input-placeholder
-    focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50
-    outline-none transition-all duration-200
-    hover:border-input-border-hover
-`;
-
-const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 function Section({ title, delay, children }: { title: string; delay: number; children: React.ReactNode }) {
     return (
@@ -215,15 +204,7 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
         [shared, translations, initialShared, initialTranslations, submitting],
     );
 
-    useEffect(() => {
-        if (!isDirty) return;
-        const handler = (e: BeforeUnloadEvent) => {
-            e.preventDefault();
-            e.returnValue = '';
-        };
-        window.addEventListener('beforeunload', handler);
-        return () => window.removeEventListener('beforeunload', handler);
-    }, [isDirty]);
+    useUnsavedChangesWarning(isDirty);
 
     const handleCancelClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         if (isDirty) {
@@ -318,36 +299,19 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
 
                 {/* Per-locale tabs */}
                 <Section title={t('sectionContent')} delay={0.1}>
-                    <div role="tablist" aria-label={t('localeTabsLabel')} className="flex gap-1 border-b border-form-section-border">
-                        {SUPPORTED_LOCALES.map(loc => {
-                            const blank = isBlankTranslation(translations[loc]);
-                            const stale = translations[loc].isStale && !blank;
-                            const active = activeLocale === loc;
-                            return (
-                                <button
-                                    key={loc}
-                                    type="button"
-                                    role="tab"
-                                    aria-selected={active}
-                                    aria-controls={`tabpanel-${loc}`}
-                                    id={`tab-${loc}`}
-                                    onClick={() => setActiveLocale(loc)}
-                                    className={`px-4 py-2.5 text-sm font-medium rounded-t-lg cursor-pointer transition-colors
-                                        flex items-center gap-2
-                                        ${active
-                                            ? 'bg-surface-elevated text-text-primary border border-form-section-border border-b-transparent -mb-px'
-                                            : 'text-text-muted hover:text-text-primary hover:bg-surface-elevated/50'
-                                        }
-                                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
-                                >
-                                    {LOCALE_LABEL[loc]}
-                                    {blank && <AlertCircle className="w-4 h-4 text-amber-500" aria-label={t('localeMissing')} />}
-                                    {stale && <RefreshCw className="w-3.5 h-3.5 text-amber-500" aria-label={t('localeStale')} />}
-                                    {!blank && !stale && <CheckCircle2 className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />}
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <LocaleTabs
+                        activeLocale={activeLocale}
+                        onSelect={setActiveLocale}
+                        states={Object.fromEntries(SUPPORTED_LOCALES.map(loc => [loc, {
+                            blank: isBlankTranslation(translations[loc]),
+                            stale: Boolean(translations[loc].isStale),
+                        }]))}
+                        labels={{
+                            tablist: t('localeTabsLabel'),
+                            missing: t('localeMissing'),
+                            stale: t('localeStale'),
+                        }}
+                    />
 
                     {SUPPORTED_LOCALES.map(loc => (
                         <div
@@ -455,7 +419,7 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
                             id="field-attachmentUrls"
                             name="attachmentUrls"
                             value={shared.attachmentUrls.join('\n')}
-                            onChange={e => updateShared('attachmentUrls', e.target.value.split(/\r?\n/).filter(s => s !== '' || true))}
+                            onChange={e => updateShared('attachmentUrls', e.target.value.split(/\r?\n/))}
                             rows={3}
                             className={inputClass}
                             placeholder="https://i.imgur.com/abc.png&#10;https://example.com/screenshot.jpg"

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, Clock, ShieldAlert, RefreshCw, Trash2 } from 'lucide-react';
 import type { DomainStatus } from '@/lib/vercelDomains';
+import { inputClass } from '@/lib/formStyles';
 import {
     setCustomDomain,
     checkDomainStatus,
@@ -79,7 +80,7 @@ export default function DomainSettings({ initialDomain, initialStatus }: Props) 
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="yourname.com"
-                        className="flex-1 px-4 py-3 rounded-xl bg-input-bg border border-input-border text-input-text placeholder-input-placeholder focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all duration-200 hover:border-input-border-hover"
+                        className={`flex-1 ${inputClass}`}
                     />
                     <button
                         type="button"

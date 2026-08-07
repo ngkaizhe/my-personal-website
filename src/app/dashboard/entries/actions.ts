@@ -4,13 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
 import { iconNames } from '@/lib/iconNames';
 import { pickTranslation, tagToSlug, hashSource } from '@/lib/translations';
+import { sanitizeHttpUrl, parseFormDate } from '@/lib/urls';
+import { SUPPORTED_LOCALES, type Locale as SupportedLocale } from '@/i18n/locales';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 
 const validIconNames = new Set<string>(iconNames);
-const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
-type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 // Display DTO (locale-flattened) — what the entries list page renders.
 export interface EntrySummary {
@@ -89,84 +89,74 @@ function entrySourceFields(tr: {
 export async function getEntrySummaries(): Promise<EntrySummary[]> {
     const userId = await getCurrentUserId();
     const locale = await getLocale();
-    try {
-        const items = await prisma.entry.findMany({
-            where: { userId },
-            include: {
-                translations: true,
-                experience: { include: { translations: true } },
-            },
-            orderBy: { date: 'asc' },
-        });
-        return items.flatMap((i): EntrySummary[] => {
-            const tr = pickTranslation(i.translations, locale, i.primaryLocale);
-            if (!tr) return [];
-            const expTr = i.experience
-                ? pickTranslation(i.experience.translations, locale, i.experience.primaryLocale)
-                : null;
-            return [{
-                id: i.id,
-                date: i.date.toISOString(),
-                title: tr.title,
-                tag: tr.tag,
-                color: i.color,
-                featured: i.featured,
-                experienceName: expTr?.organization,
-            }];
-        });
-    } catch (error) {
-        console.error('Failed to fetch entry summaries:', error);
-        return [];
-    }
+    const items = await prisma.entry.findMany({
+        where: { userId },
+        include: {
+            translations: true,
+            experience: { include: { translations: true } },
+        },
+        orderBy: { date: 'asc' },
+    });
+    return items.flatMap((i): EntrySummary[] => {
+        const tr = pickTranslation(i.translations, locale, i.primaryLocale);
+        if (!tr) return [];
+        const expTr = i.experience
+            ? pickTranslation(i.experience.translations, locale, i.experience.primaryLocale)
+            : null;
+        return [{
+            id: i.id,
+            date: i.date.toISOString(),
+            title: tr.title,
+            tag: tr.tag,
+            color: i.color,
+            featured: i.featured,
+            experienceName: expTr?.organization,
+        }];
+    });
 }
 
 export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
     const userId = await getCurrentUserId();
-    try {
-        const item = await prisma.entry.findFirst({
-            where: { id, userId },
-            include: { icon: true, translations: true },
-        });
-        if (!item) return null;
-        const primaryTr = item.translations.find(t => t.locale === item.primaryLocale);
-        const currentSourceHash = primaryTr ? hashSource(entrySourceFields(primaryTr)) : null;
-        const translations: EntryTranslationDraft[] = SUPPORTED_LOCALES.map(locale => {
-            const tr = item.translations.find(t => t.locale === locale);
-            if (!tr) return { locale, ...BLANK_TRANSLATION };
-            const isStale = locale !== item.primaryLocale
-                && tr.sourceHash != null
-                && currentSourceHash != null
-                && tr.sourceHash !== currentSourceHash;
-            return {
-                locale,
-                title: tr.title,
-                actionVerb: tr.actionVerb ?? '',
-                description: tr.description,
-                impact: tr.impact ?? '',
-                details: tr.details ?? '',
-                tag: tr.tag,
-                sourceHash: tr.sourceHash,
-                lastTranslatedAt: tr.lastTranslatedAt?.toISOString() ?? null,
-                isStale,
-            };
-        });
+    const item = await prisma.entry.findFirst({
+        where: { id, userId },
+        include: { icon: true, translations: true },
+    });
+    if (!item) return null;
+    const primaryTr = item.translations.find(t => t.locale === item.primaryLocale);
+    const currentSourceHash = primaryTr ? hashSource(entrySourceFields(primaryTr)) : null;
+    const translations: EntryTranslationDraft[] = SUPPORTED_LOCALES.map(locale => {
+        const tr = item.translations.find(t => t.locale === locale);
+        if (!tr) return { locale, ...BLANK_TRANSLATION };
+        const isStale = locale !== item.primaryLocale
+            && tr.sourceHash != null
+            && currentSourceHash != null
+            && tr.sourceHash !== currentSourceHash;
         return {
-            date: item.date.toISOString().substring(0, 10),
-            primaryLocale: item.primaryLocale,
-            color: item.color,
-            featured: item.featured,
-            techStack: item.techStack,
-            attachmentUrls: item.attachmentUrls,
-            linkUrl: item.linkUrl ?? '',
-            linkText: item.linkText ?? '',
-            iconName: item.icon?.name ?? 'help-circle',
-            experienceId: item.experienceId ?? '',
-            translations,
+            locale,
+            title: tr.title,
+            actionVerb: tr.actionVerb ?? '',
+            description: tr.description,
+            impact: tr.impact ?? '',
+            details: tr.details ?? '',
+            tag: tr.tag,
+            sourceHash: tr.sourceHash,
+            lastTranslatedAt: tr.lastTranslatedAt?.toISOString() ?? null,
+            isStale,
         };
-    } catch (error) {
-        console.error('Failed to fetch entry detail:', error);
-        return null;
-    }
+    });
+    return {
+        date: item.date.toISOString().substring(0, 10),
+        primaryLocale: item.primaryLocale,
+        color: item.color,
+        featured: item.featured,
+        techStack: item.techStack,
+        attachmentUrls: item.attachmentUrls,
+        linkUrl: item.linkUrl ?? '',
+        linkText: item.linkText ?? '',
+        iconName: item.icon?.name ?? 'help-circle',
+        experienceId: item.experienceId ?? '',
+        translations,
+    };
 }
 
 async function getOrCreateIcon(iconName: string) {
@@ -243,8 +233,13 @@ function extractFormData(formData: FormData): ParsedFormData {
     const primaryTr = translations.find(t => t.locale === primaryLocale);
     const tagSource = primaryTr?.tag || translations[0]?.tag || '';
 
+    const date = parseFormDate(raw.date as string);
+    if (!date) {
+        throw new Error('Entry date must be a valid YYYY-MM-DD date.');
+    }
+
     return {
-        date: new Date(raw.date as string),
+        date,
         primaryLocale,
         color: (raw.color as string) || 'blue',
         // HTML checkboxes only post their value when checked; an unchecked
@@ -252,7 +247,9 @@ function extractFormData(formData: FormData): ParsedFormData {
         featured: raw.featured === 'on' || raw.featured === 'true',
         techStack,
         attachmentUrls,
-        linkUrl: (raw.linkUrl as string) || null,
+        // Same http(s)-only policy as attachmentUrls: this ends up as an
+        // <a href> on the public profile, so javascript:/data: must not pass.
+        linkUrl: sanitizeHttpUrl(raw.linkUrl as string),
         linkText: (raw.linkText as string) || null,
         experienceId: (raw.experienceId as string) || null,
         iconName: (raw.iconName as string) || 'help-circle',
@@ -339,29 +336,24 @@ export async function deleteEntry(id: string) {
 export async function getExperienceOptions() {
     const userId = await getCurrentUserId();
     const locale = await getLocale();
-    try {
-        const experiences = await prisma.experience.findMany({
-            where: { userId },
-            select: {
-                id: true,
-                type: true,
-                primaryLocale: true,
-                translations: { select: { locale: true, organization: true, role: true } },
-            },
-            orderBy: { startDate: 'desc' },
-        });
-        return experiences.flatMap(e => {
-            const tr = pickTranslation(e.translations, locale, e.primaryLocale);
-            if (!tr) return [];
-            return [{
-                id: e.id,
-                type: e.type,
-                name: tr.organization,
-                role: tr.role,
-            }];
-        });
-    } catch (error) {
-        console.error('Failed to fetch experience options:', error);
-        return [];
-    }
+    const experiences = await prisma.experience.findMany({
+        where: { userId },
+        select: {
+            id: true,
+            type: true,
+            primaryLocale: true,
+            translations: { select: { locale: true, organization: true, role: true } },
+        },
+        orderBy: { startDate: 'desc' },
+    });
+    return experiences.flatMap(e => {
+        const tr = pickTranslation(e.translations, locale, e.primaryLocale);
+        if (!tr) return [];
+        return [{
+            id: e.id,
+            type: e.type,
+            name: tr.organization,
+            role: tr.role,
+        }];
+    });
 }

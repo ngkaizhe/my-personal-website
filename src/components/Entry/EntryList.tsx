@@ -83,7 +83,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                                 <td className="p-4 text-right space-x-2 whitespace-nowrap">
                                     <Link
                                         href={`/dashboard/entries/${item.id}`}
-                                        className="inline-block px-3 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
+                                        className="inline-block px-3 py-2 rounded-lg text-blue-600 hover:bg-surface-elevated font-medium transition-colors"
                                     >
                                         {tCommon('edit')}
                                     </Link>
@@ -123,7 +123,7 @@ export default function EntryList({ items, deleteAction }: Props) {
                         <div className="flex gap-2 mt-3 pt-3 border-t border-border-light">
                             <Link
                                 href={`/dashboard/entries/${item.id}`}
-                                className="flex-1 text-center px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 font-medium transition-colors"
+                                className="flex-1 text-center px-4 py-2 rounded-lg text-blue-600 hover:bg-surface-elevated font-medium transition-colors"
                             >
                                 {tCommon('edit')}
                             </Link>

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapPin, Search, X } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types';
 import { TimelineRow } from './TimelineRow';
@@ -21,6 +21,7 @@ const Timeline = ({ items, editable = false }: TimelineProps) => {
     const t = useTranslations('Timeline');
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchParams = useSearchParams();
+    const pathname = usePathname();
     const skillFilter = searchParams.get('skill');
 
     // Press `/` from anywhere on the page (when not typing into another field)
@@ -87,7 +88,7 @@ const Timeline = ({ items, editable = false }: TimelineProps) => {
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-sm text-text-secondary">
                         <span>{t('filteringBySkill', { skill: skillFilter })}</span>
                         <a
-                            href={typeof window !== 'undefined' ? window.location.pathname : '/'}
+                            href={pathname}
                             className="text-blue-600 hover:text-blue-500 font-medium"
                         >
                             {t('clearSkillFilter')}

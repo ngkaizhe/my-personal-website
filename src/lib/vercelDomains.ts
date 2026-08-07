@@ -13,6 +13,10 @@ export type DomainStatus = {
     verification: { type: string; domain: string; value: string }[];
 };
 
+function envReady(): boolean {
+    return Boolean(process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID);
+}
+
 function headers(): Record<string, string> {
     return { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` };
 }
@@ -26,6 +30,9 @@ function projectBase(): string {
 }
 
 export async function addDomainToProject(domain: string): Promise<{ ok: boolean; errorCode?: string }> {
+    // Fail loudly on missing config instead of sending "Bearer undefined" and
+    // surfacing an opaque Vercel 403 to the user.
+    if (!envReady()) return { ok: false, errorCode: 'vercel_env_missing' };
     const res = await fetch(`${projectBase()}/domains${teamQs()}`, {
         method: 'POST',
         headers: { ...headers(), 'Content-Type': 'application/json' },
@@ -41,6 +48,7 @@ export async function addDomainToProject(domain: string): Promise<{ ok: boolean;
 }
 
 export async function getDomainStatus(domain: string): Promise<DomainStatus> {
+    if (!envReady()) return { state: 'error', dnsRecords: [], verification: [] };
     const [projRes, cfgRes] = await Promise.all([
         fetch(`${projectBase()}/domains/${domain}${teamQs()}`, { headers: headers(), cache: 'no-store' }),
         fetch(`${API}/v6/domains/${domain}/config${teamQs()}`, { headers: headers(), cache: 'no-store' }),
@@ -51,12 +59,21 @@ export async function getDomainStatus(domain: string): Promise<DomainStatus> {
     const proj = await projRes.json();
     const cfg = cfgRes.ok ? await cfgRes.json() : { misconfigured: true };
 
-    // Apex domains (example.com) need an A record; subdomains a CNAME.
+    // Prefer the record type Vercel itself recommends — it understands
+    // multi-label public suffixes (example.co.uk is an apex despite 3 labels).
+    // The label-count heuristic is only the fallback when the config endpoint
+    // returns neither recommendation.
     const labels = domain.split('.');
-    const isApex = labels.length === 2;
-    const dnsRecords: DomainStatus['dnsRecords'] = isApex
-        ? [{ type: 'A', name: '@', value: cfg.recommendedIPv4?.[0] ?? FALLBACK_APEX_A }]
-        : [{ type: 'CNAME', name: labels[0], value: cfg.recommendedCNAME?.[0] ?? FALLBACK_CNAME }];
+    let dnsRecords: DomainStatus['dnsRecords'];
+    if (cfg.recommendedIPv4?.length) {
+        dnsRecords = [{ type: 'A', name: '@', value: cfg.recommendedIPv4[0] }];
+    } else if (cfg.recommendedCNAME?.length) {
+        dnsRecords = [{ type: 'CNAME', name: labels[0], value: cfg.recommendedCNAME[0] }];
+    } else if (labels.length === 2) {
+        dnsRecords = [{ type: 'A', name: '@', value: FALLBACK_APEX_A }];
+    } else {
+        dnsRecords = [{ type: 'CNAME', name: labels[0], value: FALLBACK_CNAME }];
+    }
 
     const verification = (proj.verification ?? []).map(
         (v: { type: string; domain: string; value: string }) => ({
@@ -73,6 +90,7 @@ export async function getDomainStatus(domain: string): Promise<DomainStatus> {
 }
 
 export async function removeDomainFromProject(domain: string): Promise<{ ok: boolean }> {
+    if (!envReady()) return { ok: false };
     const res = await fetch(`${projectBase()}/domains/${domain}${teamQs()}`, {
         method: 'DELETE',
         headers: headers(),

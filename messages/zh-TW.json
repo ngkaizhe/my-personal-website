@@ -61,7 +61,8 @@
         "submitSignUp": "建立帳號",
         "submitting": "送出中…",
         "invalidCredentials": "Email 與密碼不符。",
-        "back": "返回"
+        "back": "返回",
+        "signInFailed": "登入失敗，請稍後再試。"
     },
     "PublicProfile": {
         "viewResume": "查看履歷",
@@ -369,5 +370,10 @@
         "error_invalid": "這看起來不是有效的網域。",
         "error_taken": "此網域已被其他使用者綁定。",
         "error_vercel_failed": "無法向平台註冊此網域，請稍後再試。"
+    },
+    "FormControls": {
+        "searchIcons": "搜尋圖示…",
+        "removeTag": "移除 {tag}",
+        "tagInputPlaceholder": "輸入後按 Enter…"
     }
 }

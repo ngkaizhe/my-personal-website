@@ -13,11 +13,7 @@ import { createHash } from 'node:crypto';
 // empty card — it should show the 中文 source, and the UI can hint that no
 // English version exists yet.
 
-export type Locale = 'en' | 'zh-TW';
-
-interface Translatable<T> {
-    locale: string;
-}
+export type { Locale } from '@/i18n/locales';
 
 export function pickTranslation<T extends { locale: string }>(
     translations: T[],
@@ -38,13 +34,9 @@ export function hasTranslation(translations: { locale: string }[], locale: strin
     return translations.some(t => t.locale === locale);
 }
 
-// Cross-locale stable key for a tag. The display label can be "Engineering"
-// in en and "工程" in zh-TW, but resume sectioning + badge colour + filtering
-// all key off this slug. Stored on Entry.tagSlug; regenerated from the
-// primary-locale tag whenever the entry is written.
-export function tagToSlug(tag: string): string {
-    return tag.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
+// Lives in its own dependency-free module so prisma/seed.ts can import it
+// under ts-node; re-exported here because callers expect it in translations.
+export { tagToSlug } from '@/lib/slug';
 
 // Sentinel value used by EntryForm / ExperienceForm to detect "user has
 // authored content for this locale". Empty title/organization counts as not
@@ -56,10 +48,6 @@ export function isBlankEntryTranslation(t: { title: string; description: string 
 export function isBlankExperienceTranslation(t: { organization: string }): boolean {
     return !t.organization.trim();
 }
-
-// Suppress unused-export warnings for the Translatable<T> placeholder above;
-// kept for type docs.
-export type { Translatable };
 
 // Stable hash of a source-locale translation's fields. Used both by the
 // translate API (when AI translates X → Y, we record what X looked like at

@@ -9,19 +9,10 @@ import IconPicker from '@/components/ui/IconPicker';
 import ColorPicker from '@/components/ui/ColorPicker';
 import NewExperienceModal from '@/components/Experience/NewExperienceModal';
 import { ExperienceOption } from '@/components/Entry/EntryForm';
+import { inputClass, labelClass } from '@/lib/formStyles';
 
 const NEW_EXPERIENCE_SENTINEL = '__new__';
 
-const inputClass = `
-    w-full px-4 py-3 rounded-xl
-    bg-input-bg border border-input-border
-    text-input-text placeholder-input-placeholder
-    focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50
-    outline-none transition-all duration-200
-    hover:border-input-border-hover
-`;
-
-const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
 interface FollowUpQuestion {
     id: string;

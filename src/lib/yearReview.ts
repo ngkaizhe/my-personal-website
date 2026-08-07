@@ -42,6 +42,29 @@ export async function fetchYearReview(userId: string, year: number, locale: stri
         orderBy: { date: 'desc' },
     });
 
+    return summariseYear(entries, year, locale);
+}
+
+/** One entry as the aggregation step needs it — the DB shape, minus Prisma. */
+export interface YearReviewEntryInput {
+    id: string;
+    date: Date;
+    featured: boolean;
+    primaryLocale: string;
+    tagSlug: string | null;
+    techStack: string[];
+    translations: { locale: string; title: string; actionVerb: string | null; impact: string | null; tag: string }[];
+}
+
+/**
+ * Pure aggregation: entries -> YearReviewData. Split out from the Prisma call
+ * so the counting/grouping/highlight rules are unit-testable.
+ */
+export function summariseYear(
+    entries: YearReviewEntryInput[],
+    year: number,
+    locale: string,
+): YearReviewData {
     const totalEntries = entries.length;
 
     // Featured = user explicitly marked résumé-worthy. Used to pick highlights.

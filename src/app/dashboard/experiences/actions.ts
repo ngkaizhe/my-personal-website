@@ -7,9 +7,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import type { ExperienceType } from '@/lib/types';
+import { parseFormDate } from '@/lib/urls';
+import { SUPPORTED_LOCALES } from '@/i18n/locales';
 
 const EXPERIENCE_TYPES: readonly ExperienceType[] = ['JOB', 'EDUCATION', 'PROJECT', 'VOLUNTEER', 'BREAK'] as const;
-const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
 
 function isExperienceType(value: string): value is ExperienceType {
     return (EXPERIENCE_TYPES as readonly string[]).includes(value);
@@ -67,74 +68,64 @@ function experienceSourceFields(tr: { organization: string; role: string | null;
 export async function getExperiences(): Promise<ExperienceSummary[]> {
     const userId = await getCurrentUserId();
     const locale = await getLocale();
-    try {
-        const experiences = await prisma.experience.findMany({
-            where: { userId },
-            include: {
-                translations: true,
-                _count: { select: { entries: true } },
-            },
-            orderBy: { startDate: 'desc' },
-        });
-        return experiences.flatMap((e): ExperienceSummary[] => {
-            const tr = pickTranslation(e.translations, locale, e.primaryLocale);
-            if (!tr) return [];
-            return [{
-                id: e.id,
-                type: e.type,
-                organization: tr.organization,
-                role: tr.role,
-                startDate: e.startDate.toISOString(),
-                endDate: e.endDate?.toISOString() ?? null,
-                entryCount: e._count.entries,
-                color: e.color,
-            }];
-        });
-    } catch (error) {
-        console.error('Failed to fetch experiences:', error);
-        return [];
-    }
+    const experiences = await prisma.experience.findMany({
+        where: { userId },
+        include: {
+            translations: true,
+            _count: { select: { entries: true } },
+        },
+        orderBy: { startDate: 'desc' },
+    });
+    return experiences.flatMap((e): ExperienceSummary[] => {
+        const tr = pickTranslation(e.translations, locale, e.primaryLocale);
+        if (!tr) return [];
+        return [{
+            id: e.id,
+            type: e.type,
+            organization: tr.organization,
+            role: tr.role,
+            startDate: e.startDate.toISOString(),
+            endDate: e.endDate?.toISOString() ?? null,
+            entryCount: e._count.entries,
+            color: e.color,
+        }];
+    });
 }
 
 export async function getExperienceDetail(id: string): Promise<ExperienceDetail | null> {
     const userId = await getCurrentUserId();
-    try {
-        const experience = await prisma.experience.findFirst({
-            where: { id, userId },
-            include: { translations: true },
-        });
-        if (!experience) return null;
-        const primaryTr = experience.translations.find(t => t.locale === experience.primaryLocale);
-        const currentSourceHash = primaryTr ? hashSource(experienceSourceFields(primaryTr)) : null;
-        const translations: ExperienceTranslationDraft[] = SUPPORTED_LOCALES.map(locale => {
-            const tr = experience.translations.find(t => t.locale === locale);
-            if (!tr) return { locale, ...BLANK_EXP_TRANSLATION };
-            const isStale = locale !== experience.primaryLocale
-                && tr.sourceHash != null
-                && currentSourceHash != null
-                && tr.sourceHash !== currentSourceHash;
-            return {
-                locale,
-                organization: tr.organization,
-                role: tr.role ?? '',
-                description: tr.description ?? '',
-                sourceHash: tr.sourceHash,
-                lastTranslatedAt: tr.lastTranslatedAt?.toISOString() ?? null,
-                isStale,
-            };
-        });
+    const experience = await prisma.experience.findFirst({
+        where: { id, userId },
+        include: { translations: true },
+    });
+    if (!experience) return null;
+    const primaryTr = experience.translations.find(t => t.locale === experience.primaryLocale);
+    const currentSourceHash = primaryTr ? hashSource(experienceSourceFields(primaryTr)) : null;
+    const translations: ExperienceTranslationDraft[] = SUPPORTED_LOCALES.map(locale => {
+        const tr = experience.translations.find(t => t.locale === locale);
+        if (!tr) return { locale, ...BLANK_EXP_TRANSLATION };
+        const isStale = locale !== experience.primaryLocale
+            && tr.sourceHash != null
+            && currentSourceHash != null
+            && tr.sourceHash !== currentSourceHash;
         return {
-            type: experience.type,
-            primaryLocale: experience.primaryLocale,
-            startDate: experience.startDate.toISOString().substring(0, 10),
-            endDate: experience.endDate?.toISOString().substring(0, 10) ?? '',
-            color: experience.color,
-            translations,
+            locale,
+            organization: tr.organization,
+            role: tr.role ?? '',
+            description: tr.description ?? '',
+            sourceHash: tr.sourceHash,
+            lastTranslatedAt: tr.lastTranslatedAt?.toISOString() ?? null,
+            isStale,
         };
-    } catch (error) {
-        console.error('Failed to fetch experience detail:', error);
-        return null;
-    }
+    });
+    return {
+        type: experience.type,
+        primaryLocale: experience.primaryLocale,
+        startDate: experience.startDate.toISOString().substring(0, 10),
+        endDate: experience.endDate?.toISOString().substring(0, 10) ?? '',
+        color: experience.color,
+        translations,
+    };
 }
 
 interface ParsedExperienceForm {
@@ -177,11 +168,20 @@ function extractFormData(formData: FormData): ParsedExperienceForm {
         };
     }).filter(t => t.organization !== '');
 
+    const startDate = parseFormDate(raw.startDate as string);
+    if (!startDate) {
+        throw new Error('Experience start date must be a valid YYYY-MM-DD date.');
+    }
+    const endDate = endDateRaw ? parseFormDate(endDateRaw) : null;
+    if (endDateRaw && !endDate) {
+        throw new Error('Experience end date must be a valid YYYY-MM-DD date.');
+    }
+
     return {
         type,
         primaryLocale,
-        startDate: new Date(raw.startDate as string),
-        endDate: endDateRaw ? new Date(endDateRaw) : null,
+        startDate,
+        endDate,
         color: (raw.color as string) || 'blue',
         translations,
     };
@@ -228,12 +228,17 @@ export async function createExperienceInline(formData: FormData): Promise<Inline
     if (organization === '') {
         throw new Error('Organization is required.');
     }
+    const inlineStartDate = parseFormDate(raw.startDate as string);
+    if (!inlineStartDate) {
+        throw new Error('Experience start date must be a valid YYYY-MM-DD date.');
+    }
+    const inlineEndDate = endDateRaw ? parseFormDate(endDateRaw) : null;
     const created = await prisma.experience.create({
         data: {
             type,
             primaryLocale: locale,
-            startDate: new Date(raw.startDate as string),
-            endDate: endDateRaw ? new Date(endDateRaw) : null,
+            startDate: inlineStartDate,
+            endDate: inlineEndDate,
             color: (raw.color as string) || 'blue',
             userId,
             translations: {

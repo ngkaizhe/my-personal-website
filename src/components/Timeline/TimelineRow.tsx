@@ -35,9 +35,8 @@ export const TimelineRow = ({
             <div className={`flex-1 ml-4 md:flex-none md:w-5/12 md:ml-0 ${isRight ? 'md:ml-auto' : ''}`}>
                 <TimelineCard
                     item={item}
-                    index={index}
                     isRight={isRight}
-                    onClick={() => setSelectedId(`card-${index}`)}
+                    onClick={() => setSelectedId(item.id)}
                 />
             </div>
         </div>
