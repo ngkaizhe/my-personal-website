@@ -1,13 +1,16 @@
 import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
+import { resolveDomainPaths } from '@/lib/domainPaths';
 
-// Resolves a bound custom domain to its owner's username. Wrapped in React
-// cache() so generateMetadata and the page body share one DB hit per request.
-// Server-only (Prisma) — middleware must keep using lib/customDomain instead.
-export const usernameForDomain = cache(async (domain: string): Promise<string | null> => {
+// Resolves a bound custom domain to its owner's username plus the owner's
+// path→view mapping. One cached DB hit per request shared by generateMetadata
+// and the page body. Server-only (Prisma) — the proxy must keep using
+// lib/customDomain's pure helpers instead.
+export const domainProfile = cache(async (domain: string) => {
     const user = await prisma.user.findUnique({
         where: { customDomain: domain.toLowerCase() },
-        select: { username: true },
+        select: { username: true, domainRootView: true, domainAltPath: true },
     });
-    return user?.username ?? null;
+    if (!user?.username) return null;
+    return { username: user.username, ...resolveDomainPaths(user) };
 });
