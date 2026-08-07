@@ -219,7 +219,6 @@ export default function DomainSettings({ initialDomain, initialStatus, initialRo
                     </div>
                 </div>
             )}
-            )}
         </div>
     );
 }
