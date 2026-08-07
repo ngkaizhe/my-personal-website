@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
 import { fetchTimelineByUserId } from '@/lib/timeline';
+import { resolveDomainPaths } from '@/lib/domainPaths';
 import { auth } from '@/auth';
 
 interface Props {
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props) {
     const { username } = await params;
     const user = await prisma.user.findUnique({
         where: { username },
-        select: { displayName: true, name: true, bio: true, customDomain: true },
+        select: { displayName: true, name: true, bio: true, customDomain: true, domainRootView: true, domainAltPath: true },
     });
     if (!user) return { title: 'Not found' };
     const display = user.displayName || user.name || username;
@@ -24,8 +25,9 @@ export async function generateMetadata({ params }: Props) {
         description: user.bio || `${display}'s journey timeline.`,
         // When the profile has a bound custom domain, that domain is the
         // canonical home so the /u and /d copies don't compete in search.
+        // The path follows the owner's configurable mapping.
         ...(user.customDomain
-            ? { alternates: { canonical: `https://${user.customDomain}/` } }
+            ? { alternates: { canonical: `https://${user.customDomain}${resolveDomainPaths(user).timelinePath}` } }
             : {}),
         openGraph: {
             title: display,

@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import ResumeBuilder from '@/components/Resume/ResumeBuilder';
 import { prisma } from '@/lib/prisma';
 import { fetchResumeByUserId } from '@/lib/resume';
+import { resolveDomainPaths } from '@/lib/domainPaths';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -14,14 +15,14 @@ export async function generateMetadata({ params }: Props) {
     const { username } = await params;
     const user = await prisma.user.findUnique({
         where: { username },
-        select: { displayName: true, name: true, customDomain: true },
+        select: { displayName: true, name: true, customDomain: true, domainRootView: true, domainAltPath: true },
     });
     if (!user) return { title: 'Not found' };
     const display = user.displayName || user.name || username;
     return {
         title: `${display} — Résumé`,
         ...(user.customDomain
-            ? { alternates: { canonical: `https://${user.customDomain}/resume` } }
+            ? { alternates: { canonical: `https://${user.customDomain}${resolveDomainPaths(user).resumePath}` } }
             : {}),
     };
 }
