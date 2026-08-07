@@ -529,6 +529,22 @@ bounces everything else to `NEXT_PUBLIC_APP_HOST`. Against production
 Dev variant: send `-H "Host: ngkaizhe.com"` to `http://localhost:3000` for
 checks 1–3 (needs `NEXT_PUBLIC_APP_HOST` in `.env.local`).
 
+**Paths are user-configurable** (timeline/résumé rows on /dashboard/domain;
+exactly one is `/`). Read the current mapping from the DB first, or reset to
+defaults, before asserting.
+
+**Use view-exclusive markers, never shared text.** The display name and the
+words "履歷/Résumé" appear on BOTH views (the timeline has a "View résumé"
+button), so grepping them cannot tell the views apart — a wrong mapping once
+passed verification that way. Reliable markers:
+- timeline: `type="search"` (the timeline search box)
+- résumé: `print-template` (the print-template selector)
+
+**Playwright caveat:** radio `.check()` can flip the DOM without firing
+React's onChange (state silently stale — a save then persists old values).
+Interact with `fill()`/real `click()` on labels, and verify writes against
+the DB, not just the success toast.
+
 ### T1.41 — AI routes require auth
 
 `curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"text":"x"}' <base>/api/parse-entry`
