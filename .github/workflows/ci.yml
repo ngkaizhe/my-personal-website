@@ -11,6 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    env:
+      # prisma.config.ts resolves DATABASE_URL at load time (Prisma 7), and
+      # `npm ci`'s postinstall runs `prisma generate`, which parses the config
+      # but never connects. CI has no real database, so a placeholder is
+      # enough — anything that actually tried to connect would fail loudly.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
     steps:
       - uses: actions/checkout@v4
 
