@@ -40,7 +40,8 @@ Expect `200`. If `000` or non-200, ask the user to start the dev server (`npm ru
 ### P2. Database reachable
 
 ```bash
-npx dotenv -e .env.local -- node -e "const{PrismaClient}=require('@prisma/client');const p=new PrismaClient();p.user.count().then(c=>{console.log('users:'+c);return p.\$disconnect();})"
+# DATABASE_URL from .env.local; docker psql avoids platform-specific Prisma engines
+docker run --rm postgres:16-alpine psql "$DATABASE_URL" -t -c 'SELECT COUNT(*) FROM "User";'
 ```
 
 Expect `users:N` with N ≥ 1. If 0, run `npm run db:seed` (after asking the user) — the demo user is required for public-profile checks. If connection error, halt and surface.
@@ -180,7 +181,7 @@ npm run lint
 ### T1.11 — Prisma client + schema in sync
 
 ```bash
-npx dotenv -e .env.local -- npx prisma validate
+npx prisma validate  # prisma.config.ts loads .env.local itself (Prisma 7)
 ```
 
 - Expect: `The schema at prisma/schema.prisma is valid`.
@@ -200,21 +201,11 @@ Catches: missed `getLocale()` plumbing in a query helper, broken `pickTranslatio
 In the demo data, the "Engineering" entry's tag becomes "工程" in 中文. They must share a slug so resume sectioning + badge colour stay consistent.
 
 ```bash
-npx dotenv -e .env.local -- node -e "
-const{PrismaClient}=require('@prisma/client');
-const p=new PrismaClient();
-(async()=>{
-  const e = await p.entry.findFirst({
-    where: { tagSlug: 'engineering' },
-    include: { translations: true },
-  });
-  if (!e) { console.error('no entry with tagSlug=engineering'); process.exit(1); }
-  const en = e.translations.find(t => t.locale === 'en')?.tag;
-  const zh = e.translations.find(t => t.locale === 'zh-TW')?.tag;
-  console.log(JSON.stringify({ slug: e.tagSlug, en, zh }));
-  await p.\$disconnect();
-})();
-"
+docker run --rm postgres:16-alpine psql "$DATABASE_URL" -t -c "
+SELECT e.\"tagSlug\",
+  (SELECT tag FROM \"EntryTranslation\" t WHERE t.\"entryId\"=e.id AND t.locale='en'),
+  (SELECT tag FROM \"EntryTranslation\" t WHERE t.\"entryId\"=e.id AND t.locale='zh-TW')
+FROM \"Entry\" e WHERE e.\"tagSlug\"='engineering' LIMIT 1;"
 ```
 
 - Expect: `slug` is a lowercase-kebab string AND `en` !== `zh` (different display labels) AND both are non-empty.
@@ -397,20 +388,9 @@ curl -s -X POST http://localhost:3000/api/improve-bullet \
 Not Playwright-able without writing to the DB. Verify via Prisma:
 
 ```bash
-npx dotenv -e .env.local -- node -e "
-const {PrismaClient} = require('@prisma/client');
-const p = new PrismaClient();
-(async () => {
-  // Look up any user with image set — confirm it starts with http(s).
-  const u = await p.user.findFirst({ where: { image: { not: null } }, select: { image: true } });
-  if (u && !/^https?:\/\//.test(u.image)) {
-    console.error('FAIL: bad image scheme', u.image);
-    process.exit(1);
-  }
-  console.log('OK');
-  await p.\$disconnect();
-})();
-"
+# Expect 0 — any row here has a non-http(s) avatar URL stored.
+docker run --rm postgres:16-alpine psql "$DATABASE_URL" -t -c \
+  "SELECT COUNT(*) FROM \"User\" WHERE image IS NOT NULL AND image !~ '^https?://';"
 ```
 
 - Expect `OK`. Catches a regression where saveSetup's URL validator changes and lets through `data:` / `javascript:` schemes.

@@ -41,3 +41,6 @@ __pycache__/
 # playwright mcp artifacts
 .playwright-mcp/
 .claude/scheduled_tasks.lock
+
+# Prisma 7 generated client (rebuilt by postinstall)
+src/generated/
