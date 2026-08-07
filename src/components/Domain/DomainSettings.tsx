@@ -10,22 +10,43 @@ import {
     setCustomDomain,
     checkDomainStatus,
     removeCustomDomain,
+    saveDomainPaths,
     type DomainActionResult,
 } from '@/app/dashboard/domain/actions';
+
+type RootView = 'TIMELINE' | 'RESUME';
 
 interface Props {
     initialDomain: string | null;
     initialStatus: DomainStatus | null;
+    initialRootView: RootView;
+    initialAltPath: string;
 }
 
-export default function DomainSettings({ initialDomain, initialStatus }: Props) {
+export default function DomainSettings({ initialDomain, initialStatus, initialRootView, initialAltPath }: Props) {
     const t = useTranslations('DomainSettings');
     const router = useRouter();
     const [input, setInput] = useState(initialDomain ?? '');
     const [domain, setDomain] = useState(initialDomain);
     const [status, setStatus] = useState(initialStatus);
     const [error, setError] = useState<string | null>(null);
+    const [rootView, setRootView] = useState<RootView>(initialRootView);
+    const [altPath, setAltPath] = useState(initialAltPath);
+    const [pathError, setPathError] = useState<string | null>(null);
+    const [pathSaved, setPathSaved] = useState(false);
     const [pending, startTransition] = useTransition();
+
+    const onSavePaths = () => startTransition(async () => {
+        setPathSaved(false);
+        const r = await saveDomainPaths(rootView, altPath);
+        if (r.ok) {
+            setPathError(null);
+            setPathSaved(true);
+            router.refresh();
+        } else if (r.error) {
+            setPathError(t(`error_${r.error}`));
+        }
+    });
 
     const onBind = () => startTransition(async () => {
         const r: DomainActionResult = await setCustomDomain(input);
@@ -156,6 +177,52 @@ export default function DomainSettings({ initialDomain, initialStatus }: Props) 
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {domain && (
+                <div className="bg-surface border border-border-light rounded-xl p-6 space-y-4">
+                    <h2 className="text-sm font-medium text-text-secondary">{t('pathsTitle')}</h2>
+                    <fieldset className="space-y-2">
+                        <legend className="text-sm text-text-secondary mb-1">{t('homepageShows')}</legend>
+                        {(['TIMELINE', 'RESUME'] as const).map(v => (
+                            <label key={v} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="domain-root-view"
+                                    checked={rootView === v}
+                                    onChange={() => { setRootView(v); setPathSaved(false); }}
+                                    className="accent-blue-600"
+                                />
+                                {v === 'TIMELINE' ? t('viewTimeline') : t('viewResume')}
+                            </label>
+                        ))}
+                    </fieldset>
+                    <div>
+                        <label htmlFor="domain-alt-path" className="block text-sm font-medium text-text-secondary mb-1">
+                            {t('altPathLabel', { view: rootView === 'TIMELINE' ? t('viewResume') : t('viewTimeline') })}
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-mono text-text-muted shrink-0">{domain}</span>
+                            <input
+                                id="domain-alt-path"
+                                value={altPath}
+                                onChange={(e) => { setAltPath(e.target.value); setPathSaved(false); }}
+                                placeholder="/resume"
+                                className={`flex-1 ${inputClass}`}
+                            />
+                            <button
+                                type="button"
+                                onClick={onSavePaths}
+                                disabled={pending}
+                                className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                            >
+                                {t('savePaths')}
+                            </button>
+                        </div>
+                        {pathError && <p role="alert" className="mt-2 text-sm text-red-600">{pathError}</p>}
+                        {pathSaved && <p className="mt-2 text-sm text-green-600">{t('pathsSaved')}</p>}
+                    </div>
                 </div>
             )}
         </div>

@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 import authConfig from '@/auth.config';
-import { isMainHost, mainAppHost } from '@/lib/customDomain';
+import { isMainHost } from '@/lib/customDomain';
 import { isProtectedPath } from '@/lib/routes';
 
 // Next.js 16 proxy (formerly middleware.ts — the file convention was renamed;
@@ -14,9 +14,9 @@ export default auth((req) => {
     const { nextUrl, auth: session } = req;
 
     // --- Custom domain branch -------------------------------------------
-    // A bound domain serves only the owner's two public pages; everything
-    // else bounces to the main app. Pure string logic: the /d/[domain]
-    // pages own the DB lookup so the proxy stays DB-free.
+    // Everything on a bound domain is forwarded into the /d catch-all, which
+    // resolves the owner's configurable path→view mapping (and bounces
+    // unmapped paths to the main app) — the proxy itself stays DB-free.
     //
     // x-forwarded-host is preferred because Vercel re-invokes the proxy for
     // rewritten requests with an internal Host header; acting on that value
@@ -28,25 +28,13 @@ export default auth((req) => {
         nextUrl.pathname.startsWith('/u/') || nextUrl.pathname.startsWith('/d/');
     if (!isInternalTarget && !isMainHost(host)) {
         const bare = host.toLowerCase().split(':')[0];
-        if (nextUrl.pathname === '/') {
-            const rewritten = nextUrl.clone();
-            rewritten.pathname = `/d/${bare}`;
-            return NextResponse.rewrite(rewritten);
-        }
-        if (nextUrl.pathname === '/resume') {
-            const rewritten = nextUrl.clone();
-            rewritten.pathname = `/d/${bare}/resume`;
-            return NextResponse.rewrite(rewritten);
-        }
-        const appHost = mainAppHost();
-        if (appHost) {
-            return NextResponse.redirect(
-                new URL(nextUrl.pathname + nextUrl.search, `https://${appHost}`),
-                307,
-            );
-        }
-        // NEXT_PUBLIC_APP_HOST unset: fall through and serve normally rather
-        // than risk a redirect loop.
+        // Whole-path rewrite: which paths render which view (and which
+        // bounce to the main app) is user-configurable and lives in the DB,
+        // so the /d/[domain]/[[...slug]] route owns that decision. The proxy
+        // stays a dumb, DB-free forwarder.
+        const rewritten = nextUrl.clone();
+        rewritten.pathname = `/d/${bare}${nextUrl.pathname === '/' ? '' : nextUrl.pathname}`;
+        return NextResponse.rewrite(rewritten);
     }
     // --------------------------------------------------------------------
 

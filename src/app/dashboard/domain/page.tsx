@@ -13,7 +13,7 @@ export default async function DomainPage() {
     const userId = await getCurrentUserId();
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { customDomain: true },
+        select: { customDomain: true, domainRootView: true, domainAltPath: true },
     });
     const domain = user?.customDomain ?? null;
     let status: DomainStatus | null = null;
@@ -28,7 +28,12 @@ export default async function DomainPage() {
                 <h1 className="text-3xl font-bold text-text-primary">{t('title')}</h1>
                 <p className="text-text-muted mt-1">{t('subtitle')}</p>
             </div>
-            <DomainSettings initialDomain={domain} initialStatus={status} />
+            <DomainSettings
+                initialDomain={domain}
+                initialStatus={status}
+                initialRootView={user?.domainRootView ?? 'TIMELINE'}
+                initialAltPath={user?.domainAltPath ?? '/resume'}
+            />
         </div>
     );
 }
