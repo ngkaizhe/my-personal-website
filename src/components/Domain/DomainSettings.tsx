@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { CheckCircle2, Clock, ShieldAlert, RefreshCw, Trash2 } from 'lucide-react';
 import type { DomainStatus } from '@/lib/vercelDomains';
 import { inputClass } from '@/lib/formStyles';
+import { resolveDomainPaths } from '@/lib/domainPaths';
 import {
     setCustomDomain,
     checkDomainStatus,
@@ -183,6 +184,34 @@ export default function DomainSettings({ initialDomain, initialStatus, initialRo
             {domain && (
                 <div className="bg-surface border border-border-light rounded-xl p-6 space-y-4">
                     <h2 className="text-sm font-medium text-text-secondary">{t('pathsTitle')}</h2>
+
+                    {/* Live preview of the mapping the current controls produce —
+                        without this the "/ + alt path" rule is invisible. */}
+                    {(() => {
+                        const preview = resolveDomainPaths({ domainRootView: rootView, domainAltPath: altPath.trim() || '/…' });
+                        const rows = [
+                            { label: t('viewTimeline'), path: preview.timelinePath },
+                            { label: t('viewResume'), path: preview.resumePath },
+                        ];
+                        return (
+                            <div className="rounded-lg bg-surface-elevated border border-border-light divide-y divide-border-light">
+                                {rows.map(row => (
+                                    <div key={row.label} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                                        <span className="text-text-secondary">{row.label}</span>
+                                        <a
+                                            href={`https://${domain}${row.path === '/' ? '' : row.path}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="font-mono text-blue-600 hover:text-blue-500 truncate"
+                                        >
+                                            {domain}{row.path === '/' ? '/' : row.path}
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+
                     <fieldset className="space-y-2">
                         <legend className="text-sm text-text-secondary mb-1">{t('homepageShows')}</legend>
                         {(['TIMELINE', 'RESUME'] as const).map(v => (
