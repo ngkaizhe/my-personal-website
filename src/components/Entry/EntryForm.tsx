@@ -223,6 +223,10 @@ export default function EntryForm({ item, experiences, action, aiAvailable }: Pr
         try {
             await action(formData);
         } catch (err) {
+            // The server action redirects on success — Next signals that with
+            // a control-flow exception that must propagate, not be shown as
+            // an error (it used to spam the console on every successful save).
+            if (err instanceof Error && err.message.includes('NEXT_REDIRECT')) throw err;
             console.error('Failed to save entry:', err);
             setError(err instanceof Error ? err.message : t('errorGeneric'));
             setSubmitting(false);

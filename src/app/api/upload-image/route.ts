@@ -30,7 +30,14 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN not configured.' }, { status: 503 });
         }
 
-        const formData = await request.formData();
+        // A missing or non-multipart body makes formData() throw — that's a
+        // client error, not a server fault.
+        let formData: FormData;
+        try {
+            formData = await request.formData();
+        } catch {
+            return NextResponse.json({ error: 'Expected multipart/form-data body' }, { status: 400 });
+        }
         const file = formData.get('file');
         if (!(file instanceof File)) {
             return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });

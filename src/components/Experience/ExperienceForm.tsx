@@ -144,6 +144,9 @@ export default function ExperienceForm({ item, action, aiAvailable }: Props) {
         try {
             await action(formData);
         } catch (err) {
+            // Success path: the action redirects via a control-flow exception
+            // that must propagate rather than render as an error.
+            if (err instanceof Error && err.message.includes('NEXT_REDIRECT')) throw err;
             console.error('Failed to save experience:', err);
             setError(err instanceof Error ? err.message : t('errorGeneric'));
             setSubmitting(false);
