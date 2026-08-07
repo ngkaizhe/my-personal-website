@@ -369,7 +369,16 @@
         "dnsInstructions": "到你的 DNS 服務商新增以下記錄，然後重新檢查：",
         "error_invalid": "這看起來不是有效的網域。",
         "error_taken": "此網域已被其他使用者綁定。",
-        "error_vercel_failed": "無法向平台註冊此網域，請稍後再試。"
+        "error_vercel_failed": "無法向平台註冊此網域，請稍後再試。",
+        "pathsTitle": "路徑",
+        "homepageShows": "首頁顯示",
+        "viewTimeline": "時間軸",
+        "viewResume": "履歷",
+        "altPathLabel": "{view}的路徑",
+        "savePaths": "儲存路徑",
+        "pathsSaved": "已儲存。",
+        "error_invalid_path": "路徑必須是單一段的小寫字串，例如 /resume。",
+        "error_reserved_path": "此路徑為系統保留。"
     },
     "FormControls": {
         "searchIcons": "搜尋圖示…",

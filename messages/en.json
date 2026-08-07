@@ -369,7 +369,16 @@
         "dnsInstructions": "Add these records at your DNS provider, then re-check:",
         "error_invalid": "That doesn't look like a valid domain.",
         "error_taken": "This domain is already bound to another profile.",
-        "error_vercel_failed": "Couldn't register the domain with the platform. Try again later."
+        "error_vercel_failed": "Couldn't register the domain with the platform. Try again later.",
+        "pathsTitle": "Paths",
+        "homepageShows": "Homepage shows",
+        "viewTimeline": "Timeline",
+        "viewResume": "Résumé",
+        "altPathLabel": "Path for {view}",
+        "savePaths": "Save paths",
+        "pathsSaved": "Saved.",
+        "error_invalid_path": "Path must be a single lowercase segment like /resume.",
+        "error_reserved_path": "That path is reserved by the app."
     },
     "FormControls": {
         "searchIcons": "Search icons…",

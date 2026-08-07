@@ -5,6 +5,7 @@ import { Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/currentUser';
 import { normalizeDomain } from '@/lib/customDomain';
+import { normalizeAltPath } from '@/lib/domainPaths';
 import {
     addDomainToProject,
     getDomainStatus,
@@ -74,6 +75,21 @@ export async function removeCustomDomain(): Promise<DomainActionResult> {
     if (!removed.ok) return { ok: false, error: 'vercel_failed' };
 
     await prisma.user.update({ where: { id: userId }, data: { customDomain: null } });
+    revalidatePath('/dashboard/domain');
+    return { ok: true };
+}
+
+export async function saveDomainPaths(
+    rootView: 'TIMELINE' | 'RESUME',
+    altPathInput: string,
+): Promise<{ ok: boolean; error?: 'invalid_path' | 'reserved_path' }> {
+    const userId = await getCurrentUserId();
+    const normalized = normalizeAltPath(altPathInput);
+    if (!normalized.ok) return { ok: false, error: normalized.error };
+    await prisma.user.update({
+        where: { id: userId },
+        data: { domainRootView: rootView, domainAltPath: normalized.path },
+    });
     revalidatePath('/dashboard/domain');
     return { ok: true };
 }
