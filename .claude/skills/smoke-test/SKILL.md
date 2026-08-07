@@ -528,6 +528,34 @@ Then visit `/dashboard` (auth required — if no cookie available, skip this in 
 
 This catches accidental regressions in `src/lib/aiAvailable.ts` or its callsites.
 
+### T1.40 — Custom-domain host routing (production only)
+
+The proxy (`src/proxy.ts`) serves a bound custom domain's public pages and
+bounces everything else to `NEXT_PUBLIC_APP_HOST`. Against production
+(`ngkaizhe.com` is bound to `@ngkaizhe`):
+
+1. `curl -s https://ngkaizhe.com/` → HTML contains the profile display name
+   (`黃開哲`). Root serves the timeline via the `/d/[domain]` rewrite.
+2. `curl -s https://ngkaizhe.com/resume` → HTML contains the résumé heading.
+3. `curl -s -o /dev/null -w "%{http_code} %{redirect_url}" https://ngkaizhe.com/dashboard`
+   → `307 https://<NEXT_PUBLIC_APP_HOST>/dashboard`.
+4. `curl -s -o /dev/null -w "%{http_code}" https://<NEXT_PUBLIC_APP_HOST>/@demo`
+   → `200` (NOT 307 — a 307 to `/u/demo` means the proxy's re-invocation
+   guard regressed; see `x-forwarded-host` handling + the `/u|/d` internal-
+   target skip in src/proxy.ts).
+5. `curl -s https://<NEXT_PUBLIC_APP_HOST>/@ngkaizhe | grep canonical` →
+   canonical href is `https://ngkaizhe.com/`.
+
+Dev variant: send `-H "Host: ngkaizhe.com"` to `http://localhost:3000` for
+checks 1–3 (needs `NEXT_PUBLIC_APP_HOST` in `.env.local`).
+
+### T1.41 — AI routes require auth
+
+`curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"text":"x"}' <base>/api/parse-entry`
+→ `401` when not signed in (same for `/api/improve-bullet`, `/api/translate-content`).
+Guards the `guardAiRequest()` gate in `src/lib/aiRoute.ts` — anonymous traffic
+must never reach the Anthropic API.
+
 ### T1.13 — No console errors on landing + public profile
 
 For each of: `/`, `/@demo`, `/@demo/resume`, `/@nonexistent_user_smoke_test_zzz`:
