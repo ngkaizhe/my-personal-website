@@ -1,7 +1,7 @@
 // Sourced from the Prisma enum so a schema change (new experience type) flows
 // into the DTO layer automatically instead of silently drifting. Imported as
 // well as re-exported because TimelineItem below references it locally.
-import type { ExperienceType } from '@prisma/client';
+import type { ExperienceType } from '@/generated/prisma/client';
 
 export type { ExperienceType };
 

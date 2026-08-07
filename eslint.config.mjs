@@ -7,6 +7,7 @@ export default [
     {
         ignores: [
             '.next/**',
+            'src/generated/**',
             'node_modules/**',
             'docs/**',
             '.playwright-mcp/**',

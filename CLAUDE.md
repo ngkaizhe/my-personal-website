@@ -73,14 +73,17 @@ Each user logs in with Google, picks a username, then uses the site as a **work 
 
 ### Database & env
 
-- **PostgreSQL** via Prisma. Connection string from `DATABASE_URL` env var. Schema in `prisma/schema.prisma`, seed in `prisma/seed.ts`.
+- **PostgreSQL** via Prisma **7**. Connection string from `DATABASE_URL` env var. Schema in `prisma/schema.prisma`, seed in `prisma/seed.ts`, CLI config in `prisma.config.ts` (root).
 - **Secrets live in `.env.local`** (gitignored via Next.js's `.env*.local` pattern). `.env` is untracked — do not put real credentials there.
-- **Prisma CLI does not read `.env.local`** — Next.js runtime does. So manual Prisma commands must go through the `dotenv-cli`-wrapped npm scripts:
+- **Env loading**: `prisma.config.ts` loads `.env.local` (then `.env`) itself via dotenv, so plain `npx prisma db push` etc. work directly — the old dotenv-cli wrappers are gone.
   - `npm run db:push` — sync schema (`prisma db push --accept-data-loss`). Refuses to add a required column without a default to a non-empty table — use `db:reset` for that.
   - `npm run db:reset` — wipe DB (`--force-reset`) then re-seed. Use when adding a required FK to existing rows.
   - `npm run db:seed` — seed data (`prisma db seed`)
   - `npm run db:studio` — DB GUI on port 5555 (`prisma studio --browser none`)
-  - `npx prisma db push` **without** the wrapper will fail with `Environment variable not found: DATABASE_URL`.
+- **Prisma 7 specifics** (migrated 2026-08; don't regress to v6 idioms):
+  - Generator is `prisma-client` (not `prisma-client-js`) emitting TypeScript into `src/generated/prisma/` (gitignored, rebuilt by `postinstall`). Import the client and enums from `@/generated/prisma/client`, **never** from `@prisma/client`.
+  - `new PrismaClient()` requires a **driver adapter**: `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })` (`@prisma/adapter-pg`). Applies to `src/lib/prisma.ts` AND `prisma/seed.ts`.
+  - Seed command lives in `prisma.config.ts` `migrations.seed` (the `package.json#prisma` block is gone).
 - **Schema push** (dev): `npm run db:push` is non-interactive and preferred. `prisma migrate dev` requires interactive confirmation and fails in automated environments.
 - **Env vars required** (all in `.env.local`):
   - `DATABASE_URL` — Postgres connection string

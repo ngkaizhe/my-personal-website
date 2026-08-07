@@ -1,9 +1,12 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 // Same helper the write path uses, so seeded tagSlug values can't drift from
 // the ones the app generates.
 import { tagToSlug } from '../src/lib/slug';
 
-const prisma = new PrismaClient();
+// `prisma db seed` inherits the env that prisma.config.ts loaded (.env.local).
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Cleaning up existing data...');

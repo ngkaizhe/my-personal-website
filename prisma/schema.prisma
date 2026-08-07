@@ -2,7 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  // Prisma 7 generator: emits plain TypeScript into src/generated (gitignored,
+  // rebuilt by the postinstall hook). CJS module format so the ts-node-driven
+  // seed script can consume it alongside Next's bundler.
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
