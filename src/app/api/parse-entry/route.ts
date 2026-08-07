@@ -1,9 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { iconNames } from '@/lib/iconNames';
 import { COLOR_KEYS } from '@/lib/colors';
-import { auth } from '@/auth';
-import { checkRateLimit, rateLimitKey } from '@/lib/rateLimit';
+import { guardAiRequest, callClaudeJson } from '@/lib/aiRoute';
 
 export const runtime = 'nodejs';
 
@@ -68,26 +66,8 @@ const VALID_QUESTION_IDS = new Set(['impact', 'details', 'techStack', 'descripti
 
 export async function POST(request: Request) {
     try {
-        // Per-user (or per-IP fallback) rate limit. 30/min is well above
-        // anything a real user would hit through the UI but stops a runaway
-        // loop from racking up Anthropic charges.
-        const session = await auth();
-        const identifier = session?.user?.id
-            || request.headers.get('x-forwarded-for')?.split(',')[0]
-            || 'unknown';
-        const rl = checkRateLimit(rateLimitKey('parse-entry', identifier), { max: 30, windowSec: 60 });
-        if (!rl.ok) {
-            return NextResponse.json(
-                { error: 'Rate limit exceeded. Try again shortly.' },
-                {
-                    status: 429,
-                    headers: {
-                        'Retry-After': String(rl.retryAfter),
-                        'X-RateLimit-Remaining': '0',
-                    },
-                },
-            );
-        }
+        const guard = await guardAiRequest('parse-entry');
+        if (!guard.ok) return guard.response;
 
         const body = await request.json();
         const {
@@ -114,47 +94,18 @@ export async function POST(request: Request) {
             }
         }
 
-        if (!process.env.ANTHROPIC_API_KEY) {
-            return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
-        }
-
-        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
         const systemPrompt = isRefinement ? REFINEMENT_SYSTEM_PROMPT : INITIAL_SYSTEM_PROMPT;
         const userPrompt = isRefinement
             ? JSON.stringify({ previousState, originalText: text ?? '', answers }, null, 2)
             : (text as string);
 
-        const response = await client.messages.create({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 800,
-            system: [
-                {
-                    type: 'text',
-                    text: systemPrompt,
-                    cache_control: { type: 'ephemeral' },
-                },
-            ],
-            messages: [
-                { role: 'user', content: userPrompt },
-            ],
+        const result = await callClaudeJson<ParsedEntry>({
+            system: systemPrompt,
+            user: userPrompt,
+            maxTokens: 800,
         });
-
-        const content = response.content[0];
-        if (content.type !== 'text') {
-            return NextResponse.json({ error: 'Unexpected response type from Claude' }, { status: 500 });
-        }
-
-        const raw = content.text.trim();
-        const json = raw.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
-
-        let parsed: ParsedEntry;
-        try {
-            parsed = JSON.parse(json);
-        } catch (e) {
-            console.error('Failed to parse Claude JSON response:', raw);
-            return NextResponse.json({ error: 'Model returned invalid JSON', raw }, { status: 500 });
-        }
+        if (!result.ok) return result.response;
+        const parsed = result.data;
 
         // Validate and sanitize core fields
         const safeColor = COLOR_KEYS.includes(parsed.color) ? parsed.color : 'blue';

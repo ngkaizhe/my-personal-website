@@ -2,12 +2,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { createEntry, getExperienceOptions, EntryDetail } from "../actions";
 import EntryForm from "@/components/Entry/EntryForm";
 import { isAiParseAvailable } from "@/lib/aiAvailable";
+import { SUPPORTED_LOCALES } from '@/i18n/locales';
 
 export const metadata = {
     title: "Add Entry",
 };
 
-const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
 
 function blankTranslation(locale: string) {
     return {

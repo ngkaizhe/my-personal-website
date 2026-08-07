@@ -1,13 +1,10 @@
 import { getRequestConfig } from 'next-intl/server';
 import { cookies } from 'next/headers';
+import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 
-export const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'en';
-
-export function isLocale(value: string | undefined | null): value is Locale {
-    return !!value && (SUPPORTED_LOCALES as readonly string[]).includes(value);
-}
+// Re-export so existing imports keep working; the constants themselves live
+// in the pure module @/i18n/locales (importable from client code).
+export { SUPPORTED_LOCALES, DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 
 // next-intl reads this on every server render. Cookie is the source of truth;
 // no URL-prefix routing because the toggle is just a UI control like ThemeToggle.

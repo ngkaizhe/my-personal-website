@@ -34,12 +34,13 @@ export function SignInForm({ callbackUrl }: Props) {
             try {
                 const result = await signInWithEmail(formData, callbackUrl);
                 if (result && !result.success && result.error) {
-                    setError(result.error === 'invalidCredentials' ? t('invalidCredentials') : result.error);
+                    // The action returns message keys, never raw error text.
+                    setError(result.error === 'invalidCredentials' ? t('invalidCredentials') : t('signInFailed'));
                 }
             } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err);
                 if (msg.includes('NEXT_REDIRECT')) throw err;
-                setError(msg);
+                setError(t('signInFailed'));
             }
         });
     };

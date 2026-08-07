@@ -1,10 +1,24 @@
+import { cache } from 'react';
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
+import { isProtectedPath } from '@/lib/routes';
 
-// Edge-safe slice of the auth config: providers, callbacks, route gating.
-// Imported by both src/auth.ts (Node, with Prisma adapter) and src/middleware.ts
-// (edge runtime, no Prisma allowed).
+// Per-request dedupe for the username re-read in session(): pages that call
+// auth() several times per request (layout + page + actions) share one DB hit.
+// Outside a React request scope cache() transparently falls through.
+const readUsername = cache(async (userId: string): Promise<string | null> => {
+    const { prisma } = await import('@/lib/prisma');
+    const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { username: true },
+    });
+    return dbUser?.username ?? null;
+});
+
+// Adapter-free slice of the auth config: providers, callbacks, route gating.
+// Imported by both src/auth.ts (with Prisma adapter) and src/proxy.ts
+// (which must not pull the adapter into its bundle).
 //
 // The Credentials provider's authorize() callback below uses bcryptjs +
 // prisma, which are Node-only. NextAuth v5 still hands these off to a Node
@@ -104,12 +118,7 @@ export default {
                 // so a lazy Prisma import here is safe everywhere session() is
                 // called. One DB query per request is fine at this scale.
                 try {
-                    const { prisma } = await import('@/lib/prisma');
-                    const dbUser = await prisma.user.findUnique({
-                        where: { id: token.sub as string },
-                        select: { username: true },
-                    });
-                    session.user.username = dbUser?.username ?? null;
+                    session.user.username = await readUsername(token.sub as string);
                 } catch {
                     // Fall back to the JWT snapshot if the DB is unreachable.
                     session.user.username = (token.username as string | null) ?? null;
@@ -118,11 +127,7 @@ export default {
             return session;
         },
         authorized({ auth, request: { nextUrl } }) {
-            const isAuthenticated = !!auth;
-            const isProtected =
-                nextUrl.pathname.startsWith('/dashboard') ||
-                nextUrl.pathname === '/setup';
-            if (isProtected) return isAuthenticated;
+            if (isProtectedPath(nextUrl.pathname)) return !!auth;
             return true;
         },
     },

@@ -13,11 +13,7 @@ import { createHash } from 'node:crypto';
 // empty card — it should show the 中文 source, and the UI can hint that no
 // English version exists yet.
 
-export type Locale = 'en' | 'zh-TW';
-
-interface Translatable<T> {
-    locale: string;
-}
+export type { Locale } from '@/i18n/locales';
 
 export function pickTranslation<T extends { locale: string }>(
     translations: T[],
@@ -56,10 +52,6 @@ export function isBlankEntryTranslation(t: { title: string; description: string 
 export function isBlankExperienceTranslation(t: { organization: string }): boolean {
     return !t.organization.trim();
 }
-
-// Suppress unused-export warnings for the Translatable<T> placeholder above;
-// kept for type docs.
-export type { Translatable };
 
 // Stable hash of a source-locale translation's fields. Used both by the
 // translate API (when AI translates X → Y, we record what X looked like at

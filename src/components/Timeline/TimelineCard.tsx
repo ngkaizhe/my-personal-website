@@ -6,7 +6,6 @@ import { TimelineItem } from '@/lib/types'
 
 interface TimelineCardProps {
     item: TimelineItem;
-    index: number;
     isRight: boolean;
     onClick: () => void;
 }

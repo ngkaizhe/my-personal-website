@@ -1,7 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { checkRateLimit, rateLimitKey } from '@/lib/rateLimit';
+import { guardAiRequest, callClaudeJson } from '@/lib/aiRoute';
 
 export const runtime = 'nodejs';
 
@@ -37,17 +35,8 @@ interface ImproveBulletRequest {
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        const identifier = session?.user?.id
-            || request.headers.get('x-forwarded-for')?.split(',')[0]
-            || 'unknown';
-        const rl = checkRateLimit(rateLimitKey('improve-bullet', identifier), { max: 30, windowSec: 60 });
-        if (!rl.ok) {
-            return NextResponse.json(
-                { error: 'Rate limit exceeded. Try again shortly.' },
-                { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
-            );
-        }
+        const guard = await guardAiRequest('improve-bullet');
+        if (!guard.ok) return guard.response;
 
         const body = await request.json() as ImproveBulletRequest;
         const { actionVerb, title, impact, description } = body;
@@ -55,48 +44,21 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'title required' }, { status: 400 });
         }
 
-        if (!process.env.ANTHROPIC_API_KEY) {
-            return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 });
-        }
-
-        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-        const userPrompt = JSON.stringify({
-            actionVerb: actionVerb || '',
-            title,
-            impact: impact || '',
-            description: description || '',
-        }, null, 2);
-
-        const response = await client.messages.create({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 500,
-            system: [
-                {
-                    type: 'text',
-                    text: SYSTEM_PROMPT,
-                    cache_control: { type: 'ephemeral' },
-                },
-            ],
-            messages: [{ role: 'user', content: userPrompt }],
+        const result = await callClaudeJson<{ improved?: string; feedback?: string }>({
+            system: SYSTEM_PROMPT,
+            user: JSON.stringify({
+                actionVerb: actionVerb || '',
+                title,
+                impact: impact || '',
+                description: description || '',
+            }, null, 2),
+            maxTokens: 500,
         });
-
-        const content = response.content[0];
-        if (content.type !== 'text') {
-            return NextResponse.json({ error: 'Unexpected response type from Claude' }, { status: 500 });
-        }
-
-        const raw = content.text.trim();
-        const json = raw.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
-        let parsed: { improved?: string; feedback?: string };
-        try {
-            parsed = JSON.parse(json);
-        } catch {
-            return NextResponse.json({ error: 'Model returned invalid JSON', raw }, { status: 500 });
-        }
+        if (!result.ok) return result.response;
 
         return NextResponse.json({
-            improved: typeof parsed.improved === 'string' ? parsed.improved : '',
-            feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+            improved: typeof result.data.improved === 'string' ? result.data.improved : '',
+            feedback: typeof result.data.feedback === 'string' ? result.data.feedback : '',
         });
     } catch (error) {
         console.error('improve-bullet error:', error);

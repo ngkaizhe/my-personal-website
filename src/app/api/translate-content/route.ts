@@ -1,15 +1,20 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { hashSource } from '@/lib/translations';
-import { auth } from '@/auth';
-import { checkRateLimit, rateLimitKey } from '@/lib/rateLimit';
+import { guardAiRequest, callClaudeJson } from '@/lib/aiRoute';
+import type { Locale } from '@/i18n/locales';
 
 export const runtime = 'nodejs';
 
-const LOCALE_NAME: Record<string, string> = {
+// Keyed by Locale so adding a locale to SUPPORTED_LOCALES fails compilation
+// here until a display name is provided.
+const LOCALE_NAME: Record<Locale, string> = {
     en: 'English',
     'zh-TW': 'Traditional Chinese (繁體中文, Taiwan)',
 };
+
+function localeName(value: string): string | null {
+    return (LOCALE_NAME as Record<string, string>)[value] ?? null;
+}
 
 const ENTRY_SYSTEM_PROMPT = `You translate work-log entry fields between languages for a personal résumé site.
 
@@ -49,23 +54,8 @@ interface ExperienceSource {
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        const identifier = session?.user?.id
-            || request.headers.get('x-forwarded-for')?.split(',')[0]
-            || 'unknown';
-        const rl = checkRateLimit(rateLimitKey('translate-content', identifier), { max: 30, windowSec: 60 });
-        if (!rl.ok) {
-            return NextResponse.json(
-                { error: 'Rate limit exceeded. Try again shortly.' },
-                {
-                    status: 429,
-                    headers: {
-                        'Retry-After': String(rl.retryAfter),
-                        'X-RateLimit-Remaining': '0',
-                    },
-                },
-            );
-        }
+        const guard = await guardAiRequest('translate-content');
+        if (!guard.ok) return guard.response;
 
         const body = await request.json();
         const { type, source, sourceLocale, targetLocale } = body as {
@@ -81,63 +71,39 @@ export async function POST(request: Request) {
         if (!source || typeof source !== 'object') {
             return NextResponse.json({ error: 'Missing source' }, { status: 400 });
         }
-        if (!LOCALE_NAME[sourceLocale] || !LOCALE_NAME[targetLocale]) {
+        const sourceName = localeName(sourceLocale);
+        const targetName = localeName(targetLocale);
+        if (!sourceName || !targetName) {
             return NextResponse.json({ error: 'Unsupported locale' }, { status: 400 });
         }
         if (sourceLocale === targetLocale) {
             return NextResponse.json({ error: 'Source and target locales are the same' }, { status: 400 });
         }
 
-        if (!process.env.ANTHROPIC_API_KEY) {
-            return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 });
-        }
-
         const systemPrompt = type === 'entry' ? ENTRY_SYSTEM_PROMPT : EXPERIENCE_SYSTEM_PROMPT;
-        const userPrompt = `Translate the following ${type} fields from ${LOCALE_NAME[sourceLocale]} to ${LOCALE_NAME[targetLocale]}. Return a JSON object with the same field names.
+        const userPrompt = `Translate the following ${type} fields from ${sourceName} to ${targetName}. Return a JSON object with the same field names.
 
 Source (${sourceLocale}):
 ${JSON.stringify(source, null, 2)}`;
 
-        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-        const response = await client.messages.create({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 800,
-            system: [
-                {
-                    type: 'text',
-                    text: systemPrompt,
-                    cache_control: { type: 'ephemeral' },
-                },
-            ],
-            messages: [{ role: 'user', content: userPrompt }],
+        const result = await callClaudeJson<Record<string, unknown>>({
+            system: systemPrompt,
+            user: userPrompt,
+            maxTokens: 800,
         });
-
-        const content = response.content[0];
-        if (content.type !== 'text') {
-            return NextResponse.json({ error: 'Unexpected response type from Claude' }, { status: 500 });
-        }
-
-        const raw = content.text.trim();
-        const json = raw.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
-        let translated: Record<string, unknown>;
-        try {
-            translated = JSON.parse(json);
-        } catch {
-            console.error('Failed to parse Claude JSON response:', raw);
-            return NextResponse.json({ error: 'Model returned invalid JSON', raw }, { status: 500 });
-        }
+        if (!result.ok) return result.response;
+        const translated = result.data;
 
         // Normalise: every field present in source is also present (as string)
         // in the output, defaulting to empty string if the model dropped it.
-        const result: Record<string, string> = {};
+        const translation: Record<string, string> = {};
         for (const key of Object.keys(source)) {
             const val = translated[key];
-            result[key] = typeof val === 'string' ? val : '';
+            translation[key] = typeof val === 'string' ? val : '';
         }
 
         return NextResponse.json({
-            translation: result,
+            translation,
             sourceHash: hashSource(source as unknown as Record<string, string>),
         });
     } catch (error) {

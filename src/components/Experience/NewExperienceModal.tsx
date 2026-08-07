@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useModalFocusTrap } from '@/components/ui/useModalFocusTrap';
 import type { ExperienceType } from '@/lib/types';
 import { createExperienceInline, InlineExperienceOption } from '@/app/dashboard/experiences/actions';
 
@@ -40,42 +41,13 @@ export default function NewExperienceModal({ open, onClose, onCreated }: Props) 
 
     const dialogRef = useRef<HTMLDivElement>(null);
     const firstFieldRef = useRef<HTMLSelectElement>(null);
-    const triggerRef = useRef<HTMLElement | null>(null);
 
-    useEffect(() => {
-        if (!open) return;
-
-        triggerRef.current = document.activeElement as HTMLElement | null;
-        firstFieldRef.current?.focus();
-
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                onClose();
-                return;
-            }
-            if (e.key !== 'Tab' || !dialogRef.current) return;
-            const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length === 0) return;
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-            if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault();
-                last.focus();
-            } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault();
-                first.focus();
-            }
-        };
-
-        document.addEventListener('keydown', onKey);
-        return () => {
-            document.removeEventListener('keydown', onKey);
-            triggerRef.current?.focus?.();
-        };
-    }, [open, onClose]);
+    useModalFocusTrap({
+        open,
+        onClose,
+        dialogRef,
+        initialFocusRef: firstFieldRef,
+    });
 
     // Reset state every time the modal re-opens so the next entry doesn't see
     // leftover values from a previous attempt. Done as a render-time

@@ -1,5 +1,7 @@
 'use server';
 
+import { AuthError } from 'next-auth';
+import { unstable_rethrow } from 'next/navigation';
 import { signIn } from '@/auth';
 
 export interface SignInResult {
@@ -23,14 +25,15 @@ export async function signInWithEmail(formData: FormData, callbackUrl: string): 
         });
         return { success: true };
     } catch (err) {
-        // NEXT_REDIRECT is the success path. Anything else is bad credentials
-        // or a runtime error. NextAuth folds bad-creds into a generic error,
-        // so don't try to differentiate the message.
-        const msg = err instanceof Error ? err.message : String(err);
-        if (msg.includes('NEXT_REDIRECT')) throw err;
-        if (msg.includes('CredentialsSignin') || msg.includes('CallbackRouteError')) {
+        // The redirect "error" is the success path — unstable_rethrow lets
+        // Next's own control-flow errors (redirect/notFound) pass through and
+        // returns normally for everything else.
+        unstable_rethrow(err);
+        // Typed check instead of message sniffing; NextAuth folds bad-creds
+        // into these error types. Never leak raw error messages to the client.
+        if (err instanceof AuthError) {
             return { success: false, error: 'invalidCredentials' };
         }
-        return { success: false, error: msg };
+        return { success: false, error: 'signInFailed' };
     }
 }

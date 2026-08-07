@@ -61,7 +61,8 @@
         "submitSignUp": "建立帳號",
         "submitting": "送出中…",
         "invalidCredentials": "Email 與密碼不符。",
-        "back": "返回"
+        "back": "返回",
+        "signInFailed": "登入失敗，請稍後再試。"
     },
     "PublicProfile": {
         "viewResume": "查看履歷",

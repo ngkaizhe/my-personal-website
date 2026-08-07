@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { X, Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { TimelineItem } from '@/lib/types';
 import EntryCard from '@/components/Entry/EntryCard';
+import { useModalFocusTrap } from '@/components/ui/useModalFocusTrap';
 
 interface TimelineModalProps {
     selectedId: string | null;
@@ -18,50 +19,19 @@ interface TimelineModalProps {
 }
 
 export const TimelineModal = ({ selectedId, items, onClose, editable = false }: TimelineModalProps) => {
-    const selectedItem = items.find((_, index) => `card-${index}` === selectedId);
+    const selectedItem = items.find(item => item.id === selectedId);
     const modalRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
-    const triggerRef = useRef<HTMLElement | null>(null);
     const titleId = selectedId ? `modal-title-${selectedId}` : undefined;
     const t = useTranslations('Timeline');
     const locale = useLocale();
 
-    useEffect(() => {
-        if (!selectedId) return;
-
-        // Remember the card that opened the modal so focus can return to it
-        // when the modal closes — keyboard / SR users otherwise lose their
-        // place in the timeline.
-        triggerRef.current = document.activeElement as HTMLElement | null;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-                return;
-            }
-            if (e.key !== 'Tab' || !modalRef.current) return;
-            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length === 0) return;
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-            if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault();
-                last.focus();
-            } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault();
-                first.focus();
-            }
-        };
-
-        closeButtonRef.current?.focus();
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-            triggerRef.current?.focus?.();
-        };
-    }, [selectedId, onClose]);
+    useModalFocusTrap({
+        open: Boolean(selectedId),
+        onClose,
+        dialogRef: modalRef,
+        initialFocusRef: closeButtonRef,
+    });
 
     if (!selectedId || !selectedItem) return null;
 

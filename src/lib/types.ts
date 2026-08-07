@@ -1,4 +1,6 @@
-export type ExperienceType = 'JOB' | 'EDUCATION' | 'PROJECT' | 'VOLUNTEER' | 'BREAK';
+// Re-exported from the Prisma enum so a schema change (new experience type)
+// flows into the DTO layer automatically instead of silently drifting.
+export type { ExperienceType } from '@prisma/client';
 
 // Display-layer Timeline DTO. Already collapsed to a single locale by the
 // query helper (via pickTranslation) — the consumer doesn't need to think

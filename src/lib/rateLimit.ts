@@ -32,6 +32,13 @@ export interface RateLimitResult {
 
 export function checkRateLimit(key: string, opts: RateLimitOptions): RateLimitResult {
     const now = Date.now();
+
+    // Opportunistic sweep so abandoned keys don't accumulate forever. The map
+    // is tiny (one bucket per active user×route), so a full pass is cheap.
+    for (const [k, bucket] of buckets) {
+        if (bucket.resetAt <= now) buckets.delete(k);
+    }
+
     const existing = buckets.get(key);
 
     if (!existing || existing.resetAt <= now) {

@@ -2,7 +2,12 @@ import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 import authConfig from '@/auth.config';
 import { isMainHost } from '@/lib/customDomain';
+import { isProtectedPath } from '@/lib/routes';
 
+// Next.js 16 proxy (formerly middleware.ts — the file convention was renamed;
+// behavior is identical and it runs on the Node runtime, which we need because
+// the Credentials provider compiled into auth.config.ts pushes the bundle past
+// the 1MB edge limit and dynamically imports Prisma + bcryptjs).
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
@@ -11,9 +16,9 @@ export default auth((req) => {
     // --- Custom domain branch -------------------------------------------
     // A bound domain serves only the owner's two public pages; everything
     // else bounces to the main app. Pure string logic: the /d/[domain]
-    // pages own the DB lookup so middleware stays DB-free.
+    // pages own the DB lookup so the proxy stays DB-free.
     //
-    // x-forwarded-host is preferred because Vercel re-invokes middleware for
+    // x-forwarded-host is preferred because Vercel re-invokes the proxy for
     // rewritten requests with an internal Host header; acting on that value
     // turned the /@ -> /u rewrite into a visible 307 on *.vercel.app hosts.
     // Rewrite targets (/u, /d) are likewise skipped so a re-entrant pass can
@@ -46,7 +51,7 @@ export default auth((req) => {
     // --------------------------------------------------------------------
 
     // Pretty profile URLs: /@kaizhe -> /u/kaizhe (Next can't have a @-prefixed
-    // dynamic folder, so the file system uses /u/[username] and middleware rewrites).
+    // dynamic folder, so the file system uses /u/[username] and the proxy rewrites).
     if (nextUrl.pathname.startsWith('/@')) {
         const rewritten = nextUrl.clone();
         rewritten.pathname = '/u/' + nextUrl.pathname.slice(2);
@@ -54,12 +59,13 @@ export default auth((req) => {
     }
 
     // Gate protected routes. authorized() callback only enforces this automatically
-    // when middleware exports `auth` directly; with a custom handler we own the gate.
-    const isProtected =
-        nextUrl.pathname.startsWith('/dashboard') ||
-        nextUrl.pathname === '/setup';
-    if (isProtected && !session?.user) {
-        return NextResponse.redirect(new URL('/', nextUrl));
+    // when the proxy exports `auth` directly; with a custom handler we own the gate.
+    // callbackUrl lets the landing page bounce the user back to where they were
+    // headed once they sign in.
+    if (isProtectedPath(nextUrl.pathname) && !session?.user) {
+        const signInUrl = new URL('/', nextUrl);
+        signInUrl.searchParams.set('callbackUrl', nextUrl.pathname + nextUrl.search);
+        return NextResponse.redirect(signInUrl);
     }
 
     // NOTE: we deliberately do NOT redirect "logged-in but no username" users
@@ -72,13 +78,6 @@ export default auth((req) => {
     // username, so missing username never breaks data access.
 });
 
-// Pinned to nodejs runtime because the Credentials provider compiled into
-// auth.config.ts pushes the bundle past Vercel's 1MB edge limit. Node runtime
-// raises the limit to 250MB and gives us a proper require() so the dynamic
-// imports of @/lib/prisma + bcryptjs in authorize() don't get statically
-// bundled into the edge graph. Cold-start cost (~50ms vs ~5ms) is negligible
-// for a personal portfolio.
 export const config = {
-    runtime: 'nodejs',
     matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

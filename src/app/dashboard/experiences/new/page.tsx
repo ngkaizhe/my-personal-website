@@ -2,12 +2,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { createExperience, ExperienceDetail } from "../actions";
 import ExperienceForm from "@/components/Experience/ExperienceForm";
 import { isAiParseAvailable } from "@/lib/aiAvailable";
+import { SUPPORTED_LOCALES } from '@/i18n/locales';
 
 export const metadata = {
     title: "Add Experience",
 };
 
-const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const;
 
 function blankExpTranslation(locale: string) {
     return {

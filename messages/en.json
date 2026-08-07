@@ -61,7 +61,8 @@
         "submitSignUp": "Create account",
         "submitting": "Submitting…",
         "invalidCredentials": "That email and password combination didn't match.",
-        "back": "Back"
+        "back": "Back",
+        "signInFailed": "Sign-in failed. Please try again."
     },
     "PublicProfile": {
         "viewResume": "View résumé",
