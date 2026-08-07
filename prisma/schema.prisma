@@ -10,9 +10,10 @@ generator client {
   moduleFormat = "cjs"
 }
 
+// Connection URL lives in prisma.config.ts (datasource.url) — Prisma 7 no
+// longer allows it in the schema file.
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
