@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { LogIn } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { signInWithEmail } from './actions';
+import { signInWithEmail, signInWithGoogle } from './actions';
 
 const inputClass = `
     w-full px-4 py-3 rounded-xl
@@ -23,6 +24,7 @@ interface Props {
 export function SignInForm({ callbackUrl }: Props) {
     const t = useTranslations('EmailAuth');
     const tLanding = useTranslations('Landing');
+    const tAuth = useTranslations('Auth');
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
 
@@ -87,6 +89,22 @@ export function SignInForm({ callbackUrl }: Props) {
                     className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30"
                 >
                     {pending ? t('submitting') : t('submitSignIn')}
+                </button>
+                <p className="text-xs text-text-faint text-center">{t('forgotPassword')}</p>
+
+                <div className="flex items-center gap-3" aria-hidden="true">
+                    <div className="flex-1 h-px bg-border-light" />
+                    <span className="text-xs text-text-faint">{t('orDivider')}</span>
+                    <div className="flex-1 h-px bg-border-light" />
+                </div>
+                <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => startTransition(async () => { await signInWithGoogle(callbackUrl); })}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl whitespace-nowrap bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                >
+                    <LogIn className="w-4 h-4 shrink-0" />
+                    {tAuth('signInWithGoogle')}
                 </button>
                 <p className="text-sm text-text-muted text-center">
                     {tLanding('noAccount')}{' '}

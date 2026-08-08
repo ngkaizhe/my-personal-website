@@ -9,6 +9,12 @@ export interface SignInResult {
     error?: string;
 }
 
+// Google OAuth entry for the /signin page, so users who land here directly
+// (instead of via the landing page) still get the OAuth option.
+export async function signInWithGoogle(callbackUrl: string): Promise<void> {
+    await signIn('google', { redirectTo: callbackUrl });
+}
+
 // Wraps NextAuth's Credentials sign-in so the client doesn't import the
 // next-auth helpers directly. Throws to redirect on success.
 export async function signInWithEmail(formData: FormData, callbackUrl: string): Promise<SignInResult> {
