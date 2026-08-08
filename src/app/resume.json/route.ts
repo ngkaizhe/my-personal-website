@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
             displayName: true,
             name: true,
             bio: true,
+            resumeSummaryEn: true,
+            resumeSummaryZh: true,
             image: true,
             contactEmail: true,
             linkedin: true,
