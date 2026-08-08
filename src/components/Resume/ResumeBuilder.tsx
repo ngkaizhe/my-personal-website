@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
-import { Copy, Check, Download, Printer, Star } from 'lucide-react';
+import { Copy, Check, Download, Printer, Star, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 import type { ExperienceType } from '@/lib/types';
@@ -214,18 +214,20 @@ export default function ResumeBuilder({ data, canImproveBullets = false }: Resum
                                 </span>
                             </label>
                         ))}
-                        <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={selectedExperiences.has('unlinked')}
-                                onChange={() => toggleExperience('unlinked')}
-                                className="mt-0.5"
-                            />
-                            <span>
-                                <span className="font-medium text-text-primary">{t('unlinkedOption')}</span>
-                                <span className="text-text-muted block text-xs">{t('entriesCount', { count: data.unlinkedEntries.length })}</span>
-                            </span>
-                        </label>
+                        {data.unlinkedEntries.length > 0 && (
+                            <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedExperiences.has('unlinked')}
+                                    onChange={() => toggleExperience('unlinked')}
+                                    className="mt-0.5"
+                                />
+                                <span>
+                                    <span className="font-medium text-text-primary">{t('unlinkedOption')}</span>
+                                    <span className="text-text-muted block text-xs">{t('entriesCount', { count: data.unlinkedEntries.length })}</span>
+                                </span>
+                            </label>
+                        )}
                     </div>
                 </div>
 
@@ -436,10 +438,11 @@ export default function ResumeBuilder({ data, canImproveBullets = false }: Resum
                     )}
                 </div>
 
-                <div className="resume-print-hide">
-                    <label htmlFor="md" className="text-sm font-medium text-text-muted mb-2 uppercase tracking-wide block">
+                <details className="resume-print-hide group">
+                    <summary className="text-sm font-medium text-text-muted mb-2 uppercase tracking-wide cursor-pointer select-none list-none inline-flex items-center gap-1.5 hover:text-text-primary transition-colors">
+                        <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" aria-hidden="true" />
                         {t('markdown')}
-                    </label>
+                    </summary>
                     <textarea
                         ref={markdownRef}
                         id="md"
@@ -449,7 +452,7 @@ export default function ResumeBuilder({ data, canImproveBullets = false }: Resum
                         onClick={(e) => e.currentTarget.select()}
                         className="w-full px-4 py-3 rounded-xl bg-input-bg border border-input-border text-input-text font-mono text-xs focus:outline-none focus:border-blue-500"
                     />
-                </div>
+                </details>
             </div>
         </div>
     );
