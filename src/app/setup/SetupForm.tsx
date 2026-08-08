@@ -12,7 +12,9 @@ interface ContactDefaults {
 }
 
 interface Props {
+    defaultUsername: string;
     defaultDisplayName: string;
+    defaultBio: string;
     defaultImage: string;
     defaultContact: ContactDefaults;
 }
@@ -28,12 +30,12 @@ const inputClass = `
 
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
-export function SetupForm({ defaultDisplayName, defaultImage, defaultContact }: Props) {
+export function SetupForm({ defaultUsername, defaultDisplayName, defaultBio, defaultImage, defaultContact }: Props) {
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(defaultUsername);
     const [displayName, setDisplayName] = useState(defaultDisplayName);
-    const [bio, setBio] = useState('');
+    const [bio, setBio] = useState(defaultBio);
     const [image, setImage] = useState(defaultImage);
     const [contactEmail, setContactEmail] = useState(defaultContact.contactEmail);
     const [linkedin, setLinkedin] = useState(defaultContact.linkedin);

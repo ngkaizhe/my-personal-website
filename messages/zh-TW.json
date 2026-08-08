@@ -39,7 +39,8 @@
         "setUpProfile": "設定你的個人檔案",
         "dashboard": "儀表板",
         "setUsernameHint": "設定使用者名稱以分享你的時間軸",
-        "copyLinkTitle": "複製 {url}"
+        "copyLinkTitle": "複製 {url}",
+        "editProfile": "編輯個人檔案"
     },
     "Landing": {
         "title": "記錄。回顧。產出履歷。",
@@ -113,7 +114,9 @@
         "bioHint": "（選填）",
         "bioPlaceholder": "用一兩句話介紹自己。",
         "save": "儲存並繼續",
-        "saving": "儲存中…"
+        "saving": "儲存中…",
+        "editTitle": "編輯個人檔案",
+        "editSubtitle": "更新你的公開資訊——顯示名稱、頭像、簡介與聯絡連結。"
     },
     "Timeline": {
         "heading": "我的旅程",
@@ -353,7 +356,8 @@
         "improveBullet": "強化這條 bullet (AI)",
         "improveFailed": "強化失敗。",
         "copyImproved": "複製強化版",
-        "dismissImproved": "關掉"
+        "dismissImproved": "關掉",
+        "jsonResume": "JSON Resume（AI/ATS）"
     },
     "Theme": {
         "label": "切換主題,目前：{current}",

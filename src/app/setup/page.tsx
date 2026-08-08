@@ -19,6 +19,8 @@ export default async function SetupPage() {
         select: {
             username: true,
             name: true,
+            displayName: true,
+            bio: true,
             image: true,
             contactEmail: true,
             linkedin: true,
@@ -27,26 +29,28 @@ export default async function SetupPage() {
         },
     });
 
-    if (dbUser?.username) {
-        // Already set up — there's nothing to do here yet.
-        redirect('/dashboard');
-    }
-
+    // First-time visitors set their username here; users who already have one
+    // land on the same form pre-filled, as the profile editor.
+    const isEdit = !!dbUser?.username;
     const t = await getTranslations('Setup');
 
     return (
         <div className="min-h-screen bg-page p-4 md:p-8">
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary">{t('title')}</h1>
+                    <h1 className="text-3xl font-bold text-text-primary">{isEdit ? t('editTitle') : t('title')}</h1>
                     <p className="text-text-muted mt-2">
-                        {t.rich('subtitle', {
-                            urlExample: (chunks) => <span className="font-mono">{chunks}</span>,
-                        })}
+                        {isEdit
+                            ? t('editSubtitle')
+                            : t.rich('subtitle', {
+                                urlExample: (chunks) => <span className="font-mono">{chunks}</span>,
+                            })}
                     </p>
                 </div>
                 <SetupForm
-                    defaultDisplayName={dbUser?.name ?? ''}
+                    defaultUsername={dbUser?.username ?? ''}
+                    defaultDisplayName={dbUser?.displayName ?? dbUser?.name ?? ''}
+                    defaultBio={dbUser?.bio ?? ''}
                     defaultImage={dbUser?.image ?? ''}
                     defaultContact={{
                         contactEmail: dbUser?.contactEmail ?? '',

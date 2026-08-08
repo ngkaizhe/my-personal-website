@@ -39,7 +39,8 @@
         "setUpProfile": "Set up your profile",
         "dashboard": "Dashboard",
         "setUsernameHint": "Set a username to share your timeline",
-        "copyLinkTitle": "Copy {url}"
+        "copyLinkTitle": "Copy {url}",
+        "editProfile": "Edit profile"
     },
     "Landing": {
         "title": "Track. Reflect. Resume.",
@@ -113,7 +114,9 @@
         "bioHint": "(Optional)",
         "bioPlaceholder": "A sentence or two about you.",
         "save": "Save and continue",
-        "saving": "Saving…"
+        "saving": "Saving…",
+        "editTitle": "Edit profile",
+        "editSubtitle": "Update your public info — display name, avatar, bio, and contact links."
     },
     "Timeline": {
         "heading": "My Journey",
@@ -353,7 +356,8 @@
         "improveBullet": "Improve this bullet (AI)",
         "improveFailed": "Could not improve bullet.",
         "copyImproved": "Copy improved bullet",
-        "dismissImproved": "Dismiss"
+        "dismissImproved": "Dismiss",
+        "jsonResume": "JSON Resume (AI/ATS)"
     },
     "Theme": {
         "label": "Change theme, current: {current}",

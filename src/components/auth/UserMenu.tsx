@@ -144,6 +144,17 @@ export function UserMenu({ user }: Props) {
                             <ExternalLink className="w-4 h-4" />
                             <span className="flex-1 text-left">{t('viewPublicProfile')}</span>
                         </Link>
+                    ) : null}
+                    {user.username ? (
+                        <Link
+                            href="/setup"
+                            role="menuitem"
+                            onClick={() => setOpen(false)}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span className="flex-1 text-left">{t('editProfile')}</span>
+                        </Link>
                     ) : (
                         <Link
                             href="/setup"
