@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { FileText, Mail, Linkedin, Github, Globe } from 'lucide-react';
+import { FileText, Mail, Linkedin, Github, Globe, Hash, CalendarRange } from 'lucide-react';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
@@ -65,6 +65,10 @@ export default async function PublicProfilePage({ params }: Props) {
     const displayName = user.displayName || user.name || `@${user.username}`;
     // Editable when the signed-in viewer owns this profile.
     const editable = session?.user?.id === user.id;
+    // Most recent year with content — target for the "year in review" link.
+    const latestYear = timeline.length > 0
+        ? Math.max(...timeline.map(item => new Date(item.date).getFullYear()))
+        : null;
 
     return (
         <div className="bg-page min-h-screen">
@@ -101,6 +105,22 @@ export default async function PublicProfilePage({ params }: Props) {
                                 <FileText className="w-4 h-4" />
                                 {t('viewResume')}
                             </Link>
+                            <Link
+                                href={`/@${user.username}/skills`}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
+                            >
+                                <Hash className="w-4 h-4" />
+                                {t('viewSkills')}
+                            </Link>
+                            {latestYear && (
+                                <Link
+                                    href={`/@${user.username}/year/${latestYear}`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
+                                >
+                                    <CalendarRange className="w-4 h-4" />
+                                    {t('viewYear', { year: latestYear })}
+                                </Link>
+                            )}
                             {user.contactEmail && (
                                 <a
                                     href={`mailto:${user.contactEmail}`}
@@ -149,7 +169,7 @@ export default async function PublicProfilePage({ params }: Props) {
                 </div>
             </section>
 
-            <Timeline items={timeline} editable={editable} />
+            <Timeline items={timeline} editable={editable} variant="section" />
         </div>
     );
 }

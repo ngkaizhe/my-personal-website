@@ -22,7 +22,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
       </a>
       <header className="sticky top-0 z-50 bg-header-bg backdrop-blur-md border-b border-header-border">
         <nav className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3" aria-label={tNav('primaryNav')}>
-          <div className="flex items-center gap-1 overflow-x-auto min-w-0">
+          <div className="flex items-center gap-1 overflow-x-auto min-w-0 scrollbar-none">
             <NavLink href="/dashboard" exact>{tNav('timeline')}</NavLink>
             {aiAvailable && <NavLink href="/dashboard/quick-add">{tNav('quickAdd')}</NavLink>}
             <NavLink href="/dashboard/entries">{tNav('entries')}</NavLink>

@@ -13,9 +13,12 @@ interface TimelineProps {
     /** Pass true when the signed-in user owns the timeline (i.e. dashboard
      *  view) so the modal can show an Edit button. */
     editable?: boolean;
+    /** 'hero' renders the big h1 heading (dashboard); 'section' renders a
+     *  compact h2 for pages that already have their own h1 (public profile). */
+    variant?: 'hero' | 'section';
 }
 
-const Timeline = ({ items, editable = false }: TimelineProps) => {
+const Timeline = ({ items, editable = false, variant = 'hero' }: TimelineProps) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [query, setQuery] = useState('');
     const t = useTranslations('Timeline');
@@ -73,15 +76,24 @@ const Timeline = ({ items, editable = false }: TimelineProps) => {
 
     return (
         <div className="container mx-auto px-4 py-8 relative">
-            <div className="text-center mb-10 pt-8">
-                <h1 className="text-5xl md:text-6xl font-bold uppercase tracking-wider text-text-primary mb-4">
-                    {t('heading')}
-                </h1>
-                <div className="w-16 h-1 bg-text-primary mx-auto mb-4 rounded-full opacity-60"></div>
-                <p className="text-text-muted text-lg font-normal max-w-md mx-auto">
-                    {t('subtitle')}
-                </p>
-            </div>
+            {variant === 'hero' ? (
+                <div className="text-center mb-10 pt-8">
+                    <h1 className="text-5xl md:text-6xl font-bold uppercase tracking-wider text-text-primary mb-4">
+                        {t('heading')}
+                    </h1>
+                    <div className="w-16 h-1 bg-text-primary mx-auto mb-4 rounded-full opacity-60"></div>
+                    <p className="text-text-muted text-lg font-normal max-w-md mx-auto">
+                        {t('subtitle')}
+                    </p>
+                </div>
+            ) : (
+                <div className="text-center mb-8 pt-2">
+                    <h2 className="text-2xl font-bold uppercase tracking-wider text-text-primary mb-2">
+                        {t('heading')}
+                    </h2>
+                    <div className="w-12 h-0.5 bg-text-primary mx-auto rounded-full opacity-40"></div>
+                </div>
+            )}
 
             {skillFilter && (
                 <div className="max-w-xl mx-auto mb-4 flex justify-center">
@@ -145,7 +157,7 @@ const Timeline = ({ items, editable = false }: TimelineProps) => {
                 </div>
             ) : (
                 <>
-                    <div className="relative wrap overflow-hidden px-4 py-10 md:p-10 h-full">
+                    <div className="relative wrap overflow-hidden px-4 py-6 md:px-10 md:py-6 h-full">
                         <div className="absolute h-full border-l-2 border-border-timeline opacity-40 left-5 md:left-1/2 md:-translate-x-1/2"></div>
 
                         {filteredItems.map((item, index) => (

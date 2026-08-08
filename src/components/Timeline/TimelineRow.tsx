@@ -21,7 +21,7 @@ export const TimelineRow = ({
     const delay = Math.min(index * 0.08, 0.6);
     return (
         <div
-            className="timeline-row-reveal mb-8 flex items-center w-full relative"
+            className="timeline-row-reveal mb-5 flex items-center w-full relative"
             style={{ animationDelay: `${delay}s` }}
         >
             {/* Icon: mobile = inline left; desktop = absolute centered on timeline */}

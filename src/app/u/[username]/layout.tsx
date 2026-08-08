@@ -23,9 +23,9 @@ export default async function PublicProfileLayout({ children }: { children: Reac
                 <nav className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3" aria-label={tNav('primaryNav')}>
                     <Link
                         href="/"
-                        className="text-sm font-semibold text-header-text hover:text-header-text-hover transition-colors"
+                        className="text-sm font-bold whitespace-nowrap text-header-text hover:text-header-text-hover transition-colors"
                     >
-                        {tLanding('title')}
+                        {tLanding('brand')}
                     </Link>
                     <div className="flex items-center gap-2">
                         <LocaleToggle />
