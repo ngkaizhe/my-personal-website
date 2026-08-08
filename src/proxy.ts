@@ -40,9 +40,15 @@ export default auth((req) => {
 
     // Pretty profile URLs: /@kaizhe -> /u/kaizhe (Next can't have a @-prefixed
     // dynamic folder, so the file system uses /u/[username] and the proxy rewrites).
-    if (nextUrl.pathname.startsWith('/@')) {
+    // Also accept the percent-encoded form (/%40kaizhe): the custom-domain
+    // bounce and some external link handlers encode the @, and without this
+    // the rewrite misses and the URL 404s.
+    if (nextUrl.pathname.startsWith('/@') || nextUrl.pathname.startsWith('/%40')) {
+        const rest = nextUrl.pathname.startsWith('/%40')
+            ? nextUrl.pathname.slice(4)
+            : nextUrl.pathname.slice(2);
         const rewritten = nextUrl.clone();
-        rewritten.pathname = '/u/' + nextUrl.pathname.slice(2);
+        rewritten.pathname = '/u/' + rest;
         return NextResponse.rewrite(rewritten);
     }
 
