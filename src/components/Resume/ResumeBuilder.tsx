@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
-import { Copy, Check, Download, Printer, Star, ChevronRight } from 'lucide-react';
+import { Copy, Check, Download, Printer, Star, ChevronRight, Braces } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ResumeData, ResumeEntry, ResumeExperience } from '@/app/dashboard/resume/actions';
 import type { ExperienceType } from '@/lib/types';
@@ -51,9 +51,12 @@ interface ResumeBuilderProps {
     /** Enables the per-bullet "Improve" AI coaching button. Caller decides
      *  based on (aiAvailable && viewer-owns-the-resume). */
     canImproveBullets?: boolean;
+    /** Link to the machine-readable JSON Resume for this profile (shown as a
+     *  button in the actions column when provided). */
+    jsonResumeUrl?: string;
 }
 
-export default function ResumeBuilder({ data, canImproveBullets = false }: ResumeBuilderProps) {
+export default function ResumeBuilder({ data, canImproveBullets = false, jsonResumeUrl }: ResumeBuilderProps) {
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
@@ -277,6 +280,17 @@ export default function ResumeBuilder({ data, canImproveBullets = false }: Resum
                         <Download className="w-4 h-4" />
                         {t('downloadMd')}
                     </button>
+                    {jsonResumeUrl && (
+                        <a
+                            href={jsonResumeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
+                        >
+                            <Braces className="w-4 h-4" />
+                            {t('jsonResume')}
+                        </a>
+                    )}
                     <div>
                         <label htmlFor="print-template" className="block text-xs font-medium text-form-label mb-1.5">
                             {t('printTemplate')}

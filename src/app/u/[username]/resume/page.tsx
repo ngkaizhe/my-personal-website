@@ -21,9 +21,14 @@ export async function generateMetadata({ params }: Props) {
     const display = user.displayName || user.name || username;
     return {
         title: `${display} — Résumé`,
-        ...(user.customDomain
-            ? { alternates: { canonical: `https://${user.customDomain}${resolveDomainPaths(user).resumePath}` } }
-            : {}),
+        alternates: {
+            ...(user.customDomain
+                ? { canonical: `https://${user.customDomain}${resolveDomainPaths(user).resumePath}` }
+                : {}),
+            // Machine-readable variant, so crawlers/agents can discover the
+            // JSON Resume without knowing the URL convention.
+            types: { 'application/json': `/@${username}/resume.json` },
+        },
     };
 }
 
@@ -57,7 +62,7 @@ export default async function PublicResumePage({ params }: Props) {
                     </p>
                 </div>
 
-                <ResumeBuilder data={data} />
+                <ResumeBuilder data={data} jsonResumeUrl={`/@${user.username}/resume.json`} />
             </div>
         </div>
     );
