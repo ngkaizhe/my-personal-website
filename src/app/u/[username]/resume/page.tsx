@@ -36,7 +36,18 @@ export default async function PublicResumePage({ params }: Props) {
     const { username } = await params;
     const user = await prisma.user.findUnique({
         where: { username },
-        select: { id: true, displayName: true, name: true, username: true },
+        select: {
+            id: true,
+            displayName: true,
+            name: true,
+            username: true,
+            contactEmail: true,
+            github: true,
+            linkedin: true,
+            website: true,
+            resumeSummaryEn: true,
+            resumeSummaryZh: true,
+        },
     });
     if (!user) notFound();
 
@@ -62,7 +73,20 @@ export default async function PublicResumePage({ params }: Props) {
                     </p>
                 </div>
 
-                <ResumeBuilder data={data} jsonResumeUrl={`/@${user.username}/resume.json`} />
+                <ResumeBuilder
+                    data={data}
+                    jsonResumeUrl={`/@${user.username}/resume.json`}
+                    summary={locale === 'zh-TW'
+                        ? user.resumeSummaryZh ?? user.resumeSummaryEn
+                        : user.resumeSummaryEn ?? user.resumeSummaryZh}
+                    header={{
+                        name: displayName,
+                        contactEmail: user.contactEmail,
+                        github: user.github,
+                        linkedin: user.linkedin,
+                        website: user.website,
+                    }}
+                />
             </div>
         </div>
     );

@@ -8,6 +8,7 @@ import type { ExperienceType } from '@/lib/types';
 import { aggregateSkills } from '@/lib/skills';
 import BulletImprover from '@/components/Resume/BulletImprover';
 import { inputClassCompact } from '@/lib/formStyles';
+import { groupSkills } from '@/lib/skillCategories';
 
 // Ordering for sections in the résumé output. BREAK is rendered together with
 // the "Other" bucket alongside unlinked entries.
@@ -46,6 +47,14 @@ function inRange(iso: string, from: string, to: string) {
     return true;
 }
 
+export interface ResumeHeader {
+    name: string;
+    contactEmail?: string | null;
+    github?: string | null;
+    linkedin?: string | null;
+    website?: string | null;
+}
+
 interface ResumeBuilderProps {
     data: ResumeData;
     /** Enables the per-bullet "Improve" AI coaching button. Caller decides
@@ -54,9 +63,29 @@ interface ResumeBuilderProps {
     /** Link to the machine-readable JSON Resume for this profile (shown as a
      *  button in the actions column when provided). */
     jsonResumeUrl?: string;
+    /** Name + contact links rendered at the top of the preview (and the
+     *  markdown/PDF) — the printed résumé must carry its own contact info. */
+    header?: ResumeHeader;
+    /** Professional summary paragraph rendered under the header. Caller
+     *  resolves the locale (resumeSummaryEn / resumeSummaryZh). */
+    summary?: string | null;
 }
 
-export default function ResumeBuilder({ data, canImproveBullets = false, jsonResumeUrl }: ResumeBuilderProps) {
+/** "https://github.com/x" -> "github.com/x" for compact display/print. */
+function bareUrl(url: string): string {
+    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+function contactItems(header: ResumeHeader): { label: string; href: string }[] {
+    return [
+        header.contactEmail ? { label: header.contactEmail, href: `mailto:${header.contactEmail}` } : null,
+        header.github ? { label: bareUrl(header.github), href: header.github } : null,
+        header.linkedin ? { label: bareUrl(header.linkedin), href: header.linkedin } : null,
+        header.website ? { label: bareUrl(header.website), href: header.website } : null,
+    ].filter((i): i is { label: string; href: string } => i !== null);
+}
+
+export default function ResumeBuilder({ data, canImproveBullets = false, jsonResumeUrl, header, summary }: ResumeBuilderProps) {
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
@@ -119,6 +148,20 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
     const markdown = useMemo(() => {
         const lines: string[] = [];
 
+        if (header) {
+            lines.push(`# ${header.name}`);
+            const contacts = contactItems(header);
+            if (contacts.length > 0) {
+                lines.push('');
+                lines.push(contacts.map(c => c.label).join(' · '));
+            }
+            lines.push('');
+        }
+        if (summary) {
+            lines.push(summary);
+            lines.push('');
+        }
+
         const writeExperience = (exp: ResumeExperience) => {
             const header = exp.role ? `${exp.organization} — ${exp.role}` : exp.organization;
             lines.push(`## ${header}`);
@@ -156,12 +199,14 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
         if (filtered.skills.length > 0) {
             lines.push(`# ${t('skills')}`);
             lines.push('');
-            lines.push(filtered.skills.map(s => s.name).join(' · '));
+            for (const group of groupSkills(filtered.skills)) {
+                lines.push(`- **${t(`skillCat_${group.key}`)}**: ${group.skills.map(s => s.name).join(' · ')}`);
+            }
             lines.push('');
         }
 
         return lines.join('\n').trim();
-    }, [grouped, filtered.unlinked, filtered.skills, t, locale, presentLabel]);
+    }, [grouped, filtered.unlinked, filtered.skills, t, locale, presentLabel, header, summary]);
 
     const copy = async () => {
         try {
@@ -338,6 +383,31 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                         {t('preview')}
                     </h2>
 
+                    {header && (
+                        <header className="mb-8 pb-6 border-b border-border-light">
+                            <h2 className="text-3xl font-bold text-text-primary">{header.name}</h2>
+                            {contactItems(header).length > 0 && (
+                                <p className="mt-2 text-sm text-text-secondary flex flex-wrap gap-x-2 gap-y-1">
+                                    {contactItems(header).map((c, i) => (
+                                        <span key={c.href} className="inline-flex items-center gap-2">
+                                            {i > 0 && <span className="text-text-faint" aria-hidden="true">·</span>}
+                                            <a
+                                                href={c.href}
+                                                target={c.href.startsWith('mailto:') ? undefined : '_blank'}
+                                                rel="noopener noreferrer"
+                                                className="hover:text-text-primary hover:underline underline-offset-2 transition-colors"
+                                            >
+                                                {c.label}
+                                            </a>
+                                        </span>
+                                    ))}
+                                </p>
+                            )}
+                            {summary && (
+                                <p className="mt-4 text-sm text-text-secondary leading-relaxed max-w-3xl">{summary}</p>
+                            )}
+                        </header>
+                    )}
                     {filtered.experiences.length === 0 && filtered.unlinked.length === 0 ? (
                         <p className="text-text-muted text-center py-12">{t('noMatching')}</p>
                     ) : (
@@ -438,12 +508,23 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                             )}
                             {filtered.skills.length > 0 && (
                                 <div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-2">{t('skills')}</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {filtered.skills.map(s => (
-                                            <span key={s.name} className="bg-badge-bg text-badge-text text-sm px-3 py-1 rounded-full font-medium">
-                                                {s.name} <span className="opacity-60">×{s.count}</span>
-                                            </span>
+                                    <h3 className="text-2xl font-bold text-text-primary mb-3">{t('skills')}</h3>
+                                    <div className="space-y-2.5">
+                                        {groupSkills(filtered.skills).map(group => (
+                                            <div key={group.key} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
+                                                <span className="sm:w-40 shrink-0 text-sm font-semibold text-text-secondary">
+                                                    {t(`skillCat_${group.key}`)}
+                                                </span>
+                                                <div className="flex flex-wrap gap-x-2 gap-y-1.5">
+                                                    {group.skills.map((s, i) => (
+                                                        <span key={s.name} className="text-sm text-text-secondary">
+                                                            {i > 0 && <span className="text-text-faint mr-2" aria-hidden="true">·</span>}
+                                                            {s.name}
+                                                            {s.count >= 2 && <span className="text-text-faint text-xs ml-0.5">×{s.count}</span>}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
