@@ -20,7 +20,7 @@ export default async function ResumePage() {
     const me = session?.user?.id
         ? await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { displayName: true, name: true, contactEmail: true, github: true, linkedin: true, website: true, resumeSummaryEn: true, resumeSummaryZh: true },
+            select: { displayName: true, name: true, image: true, contactEmail: true, github: true, linkedin: true, website: true, resumeSummaryEn: true, resumeSummaryZh: true },
         })
         : null;
 
@@ -44,6 +44,7 @@ export default async function ResumePage() {
                             : me.resumeSummaryEn ?? me.resumeSummaryZh,
                         header: {
                             name: me.displayName || me.name || (username ? `@${username}` : ''),
+                            image: me.image,
                             contactEmail: me.contactEmail,
                             github: me.github,
                             linkedin: me.linkedin,

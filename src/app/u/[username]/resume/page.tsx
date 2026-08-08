@@ -41,6 +41,7 @@ export default async function PublicResumePage({ params }: Props) {
             displayName: true,
             name: true,
             username: true,
+            image: true,
             contactEmail: true,
             github: true,
             linkedin: true,
@@ -81,6 +82,7 @@ export default async function PublicResumePage({ params }: Props) {
                         : user.resumeSummaryEn ?? user.resumeSummaryZh}
                     header={{
                         name: displayName,
+                        image: user.image,
                         contactEmail: user.contactEmail,
                         github: user.github,
                         linkedin: user.linkedin,

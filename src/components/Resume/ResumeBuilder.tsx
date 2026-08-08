@@ -49,6 +49,10 @@ function inRange(iso: string, from: string, to: string) {
 
 export interface ResumeHeader {
     name: string;
+    /** Avatar/photo URL — rendered at the right of the header, toggleable
+     *  from the filters (photos are the norm for TW résumés, discouraged for
+     *  US/ATS ones, so the owner decides per print). */
+    image?: string | null;
     contactEmail?: string | null;
     github?: string | null;
     linkedin?: string | null;
@@ -93,6 +97,7 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
     );
     const [featuredOnly, setFeaturedOnly] = useState(false);
     const [printTemplate, setPrintTemplate] = useState<'minimal' | 'classic' | 'compact'>('minimal');
+    const [showPhoto, setShowPhoto] = useState(true);
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
     const markdownRef = useRef<HTMLTextAreaElement>(null);
     const t = useTranslations('Resume');
@@ -295,6 +300,21 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                     </span>
                 </label>
 
+                {header?.image && (
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={showPhoto}
+                            onChange={e => setShowPhoto(e.target.checked)}
+                            className="mt-0.5 w-4 h-4 rounded cursor-pointer accent-blue-600"
+                        />
+                        <span>
+                            <span className="text-sm font-medium text-form-label">{t('showPhoto')}</span>
+                            <span className="block text-xs text-text-faint mt-0.5">{t('showPhotoHint')}</span>
+                        </span>
+                    </label>
+                )}
+
                 <div>
                     <label htmlFor="from" className="block text-sm font-medium text-form-label mb-2">{t('from')}</label>
                     <input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputClassCompact} />
@@ -384,7 +404,8 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                     </h2>
 
                     {header && (
-                        <header className="mb-8 pb-6 border-b border-border-light">
+                        <header className="mb-8 pb-6 border-b border-border-light flex items-start justify-between gap-6">
+                            <div className="min-w-0">
                             <h2 className="text-3xl font-bold text-text-primary">{header.name}</h2>
                             {contactItems(header).length > 0 && (
                                 <p className="mt-2 text-sm text-text-secondary flex flex-wrap gap-x-2 gap-y-1">
@@ -405,6 +426,18 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                             )}
                             {summary && (
                                 <p className="mt-4 text-sm text-text-secondary leading-relaxed max-w-3xl">{summary}</p>
+                            )}
+                            </div>
+                            {header.image && showPhoto && (
+                                // Plain <img>: the URL points at whatever external
+                                // host the user configured (LinkedIn, GitHub, …).
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={header.image}
+                                    alt=""
+                                    referrerPolicy="no-referrer"
+                                    className="w-28 h-28 rounded-xl object-cover border border-border-light shrink-0"
+                                />
                             )}
                         </header>
                     )}
