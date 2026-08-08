@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { getEntrySummaries, deleteEntry } from "./actions";
+import { getEntrySummaries, deleteEntry, toggleEntryFeatured } from "./actions";
 import EntryList from "@/components/Entry/EntryList";
 
 export const metadata = {
@@ -14,6 +14,11 @@ export default async function EntriesPage() {
     const deleteAction = async (id: string) => {
         'use server';
         await deleteEntry(id);
+    };
+
+    const featuredAction = async (id: string, featured: boolean) => {
+        'use server';
+        await toggleEntryFeatured(id, featured);
     };
 
     return (
@@ -30,7 +35,7 @@ export default async function EntriesPage() {
                     </Link>
                 </div>
 
-                <EntryList items={items} deleteAction={deleteAction} />
+                <EntryList items={items} deleteAction={deleteAction} featuredAction={featuredAction} />
             </div>
         </div>
     );

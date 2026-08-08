@@ -17,6 +17,7 @@ export interface EntrySummary {
     id: string;
     date: string;
     title: string;
+    actionVerb?: string;
     tag: string;
     color: string;
     featured: boolean;
@@ -107,12 +108,23 @@ export async function getEntrySummaries(): Promise<EntrySummary[]> {
             id: i.id,
             date: i.date.toISOString(),
             title: tr.title,
+            actionVerb: tr.actionVerb ?? '',
             tag: tr.tag,
             color: i.color,
             featured: i.featured,
             experienceName: expTr?.organization,
         }];
     });
+}
+
+export async function toggleEntryFeatured(id: string, featured: boolean) {
+    const userId = await getCurrentUserId();
+    const result = await prisma.entry.updateMany({ where: { id, userId }, data: { featured } });
+    if (result.count === 0) {
+        throw new Error('Entry not found or not owned by current user');
+    }
+    revalidatePath('/dashboard/entries');
+    revalidatePath('/dashboard');
 }
 
 export async function getEntryDetail(id: string): Promise<EntryDetail | null> {
