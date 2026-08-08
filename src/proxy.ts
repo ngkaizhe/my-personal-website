@@ -26,7 +26,11 @@ export default auth((req) => {
     const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '';
     const isInternalTarget =
         nextUrl.pathname.startsWith('/u/') || nextUrl.pathname.startsWith('/d/');
-    if (!isInternalTarget && !isMainHost(host)) {
+    // Machine-readable endpoints resolve the user from the Host header
+    // themselves, so they must reach their route handlers un-rewritten.
+    const isHostAwareEndpoint =
+        nextUrl.pathname === '/llms.txt' || nextUrl.pathname === '/resume.json';
+    if (!isInternalTarget && !isHostAwareEndpoint && !isMainHost(host)) {
         const bare = host.toLowerCase().split(':')[0];
         // Whole-path rewrite: which paths render which view (and which
         // bounce to the main app) is user-configurable and lives in the DB,
