@@ -6,6 +6,8 @@ import Timeline from '@/components/Timeline';
 import { prisma } from '@/lib/prisma';
 import { fetchTimelineByUserId } from '@/lib/timeline';
 import { resolveDomainPaths } from '@/lib/domainPaths';
+import { buildPersonJsonLd, jsonLdString } from '@/lib/personJsonLd';
+import { mainAppHost } from '@/lib/customDomain';
 import { auth } from '@/auth';
 
 interface Props {
@@ -52,6 +54,7 @@ export default async function PublicProfilePage({ params }: Props) {
             linkedin: true,
             github: true,
             website: true,
+            customDomain: true,
         },
     });
     if (!user) notFound();
@@ -70,8 +73,34 @@ export default async function PublicProfilePage({ params }: Props) {
         ? Math.max(...timeline.map(item => new Date(item.date).getFullYear()))
         : null;
 
+    // Structured data for crawlers/AI: top skills by usage + newest employer.
+    const skillCounts = new Map<string, number>();
+    for (const item of timeline) {
+        for (const s of item.techStack) skillCounts.set(s, (skillCounts.get(s) ?? 0) + 1);
+    }
+    const topSkills = [...skillCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name]) => name);
+    const latestJob = [...timeline]
+        .filter(item => item.experience?.type === 'JOB')
+        .sort((a, b) => b.date.localeCompare(a.date))[0];
+    const jsonLd = buildPersonJsonLd({
+        displayName,
+        username: user.username!,
+        bio: user.bio,
+        image: user.image,
+        profileUrl: user.customDomain
+            ? `https://${user.customDomain}`
+            : `https://${mainAppHost() ?? 'localhost:3000'}/@${user.username}`,
+        sameAs: [user.github, user.linkedin, user.website].filter((u): u is string => !!u),
+        knowsAbout: topSkills,
+        worksFor: latestJob?.experience?.organization ?? null,
+    });
+
     return (
         <div className="bg-page min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
+            />
             <section className="max-w-4xl mx-auto px-6 pt-12 pb-6">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
                     <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-elevated border border-border-light shrink-0 flex items-center justify-center text-2xl font-semibold text-text-secondary">
