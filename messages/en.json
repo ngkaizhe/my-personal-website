@@ -26,7 +26,9 @@
         "creating": "Creating…",
         "actions": "Actions",
         "present": "Present",
-        "featuredAriaLabel": "Featured entry"
+        "featuredAriaLabel": "Featured entry",
+        "markFeatured": "Mark as featured",
+        "unmarkFeatured": "Remove from featured"
     },
     "Auth": {
         "signInWithGoogle": "Sign in with Google",
@@ -48,7 +50,17 @@
         "signUpWithEmail": "Sign up with email",
         "noAccount": "No account yet?",
         "haveAccount": "Already have an account?",
-        "tryAsDemo": "Try as Demo (no signup)"
+        "tryAsDemo": "Try as Demo (no signup)",
+        "brand": "My Journey",
+        "previewTimelineCaption": "Your journey as a public timeline",
+        "previewResumeCaption": "…and a résumé generated from it",
+        "previewMockVerb": "Introduced",
+        "previewMockTitle": "Docker & CI/CD pipeline",
+        "previewMockImpact": "Deploy time 2 h → 15 min",
+        "previewMockTag": "DevOps",
+        "previewMockVerb2": "Led",
+        "previewMockTitle2": "a team of 5 to ship an e-commerce platform",
+        "previewMockImpact2": "10k+ daily active users"
     },
     "EmailAuth": {
         "signInHeading": "Sign in",
@@ -62,13 +74,17 @@
         "submitting": "Submitting…",
         "invalidCredentials": "That email and password combination didn't match.",
         "back": "Back",
-        "signInFailed": "Sign-in failed. Please try again."
+        "signInFailed": "Sign-in failed. Please try again.",
+        "orDivider": "or",
+        "forgotPassword": "Forgot your password? Self-service reset isn't available yet — sign in with Google instead."
     },
     "PublicProfile": {
         "viewResume": "View résumé",
         "resumeTitle": "{name} — Résumé",
         "backToTimeline": "Back to {name}'s timeline",
-        "resumeSubtitle": "Filter by experience and date, then copy the markdown or download a .md file."
+        "resumeSubtitle": "Filter by experience and date, then copy the markdown or download a .md file.",
+        "viewSkills": "Skills",
+        "viewYear": "{year} in review"
     },
     "NotFound": {
         "label": "404 — Profile not found",
@@ -116,7 +132,8 @@
         "clearSearch": "Clear search",
         "searchEmpty": "No entries match \"{query}\"",
         "filteringBySkill": "Filtering by {skill}",
-        "clearSkillFilter": "Clear"
+        "clearSkillFilter": "Clear",
+        "addEntryCta": "Log something"
     },
     "Entries": {
         "manageTitle": "Manage Entries",
@@ -131,7 +148,9 @@
         "colExperience": "Experience",
         "colTag": "Tag",
         "deleteTitle": "Delete entry?",
-        "deleteDescription": "Are you sure you want to delete <strong>{title}</strong>? This action cannot be undone."
+        "deleteDescription": "Are you sure you want to delete <strong>{title}</strong>? This action cannot be undone.",
+        "listSearchPlaceholder": "Filter entries…",
+        "listSearchEmpty": "No entries match “{query}”."
     },
     "EntryCard": {
         "techSkillsLabel": "Tech / Skills",
@@ -393,6 +412,7 @@
     "FormControls": {
         "searchIcons": "Search icons…",
         "removeTag": "Remove {tag}",
-        "tagInputPlaceholder": "Type and press Enter…"
+        "tagInputPlaceholder": "Type and press Enter…",
+        "browseCommonIcons": "Common icons — or type to search all"
     }
 }

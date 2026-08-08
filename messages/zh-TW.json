@@ -26,7 +26,9 @@
         "creating": "建立中…",
         "actions": "操作",
         "present": "至今",
-        "featuredAriaLabel": "履歷重點紀錄"
+        "featuredAriaLabel": "履歷重點紀錄",
+        "markFeatured": "標為履歷重點",
+        "unmarkFeatured": "取消履歷重點"
     },
     "Auth": {
         "signInWithGoogle": "使用 Google 登入",
@@ -48,7 +50,17 @@
         "signUpWithEmail": "用 Email 註冊",
         "noAccount": "還沒有帳號?",
         "haveAccount": "已經有帳號?",
-        "tryAsDemo": "用 Demo 帳號試試（免註冊）"
+        "tryAsDemo": "用 Demo 帳號試試（免註冊）",
+        "brand": "My Journey",
+        "previewTimelineCaption": "你的公開時間軸",
+        "previewResumeCaption": "一鍵長成履歷",
+        "previewMockVerb": "導入",
+        "previewMockTitle": "Docker 與 CI/CD 流程",
+        "previewMockImpact": "部署時間 2 小時 → 15 分鐘",
+        "previewMockTag": "DevOps",
+        "previewMockVerb2": "帶領",
+        "previewMockTitle2": "5 人團隊推出電商平台",
+        "previewMockImpact2": "日活躍使用者超過 10 萬"
     },
     "EmailAuth": {
         "signInHeading": "登入",
@@ -62,13 +74,17 @@
         "submitting": "送出中…",
         "invalidCredentials": "Email 與密碼不符。",
         "back": "返回",
-        "signInFailed": "登入失敗，請稍後再試。"
+        "signInFailed": "登入失敗，請稍後再試。",
+        "orDivider": "或",
+        "forgotPassword": "忘記密碼？目前不支援自助重設，請改用 Google 登入。"
     },
     "PublicProfile": {
         "viewResume": "查看履歷",
         "resumeTitle": "{name} — 履歷",
         "backToTimeline": "回到 {name} 的時間軸",
-        "resumeSubtitle": "依經歷與日期篩選,然後複製 markdown 或下載 .md 檔。"
+        "resumeSubtitle": "依經歷與日期篩選,然後複製 markdown 或下載 .md 檔。",
+        "viewSkills": "技能",
+        "viewYear": "{year} 年度回顧"
     },
     "NotFound": {
         "label": "404 — 找不到個人檔案",
@@ -116,7 +132,8 @@
         "clearSearch": "清除搜尋",
         "searchEmpty": "沒有符合「{query}」的紀錄",
         "filteringBySkill": "依「{skill}」篩選中",
-        "clearSkillFilter": "清除"
+        "clearSkillFilter": "清除",
+        "addEntryCta": "記一筆"
     },
     "Entries": {
         "manageTitle": "管理紀錄",
@@ -131,7 +148,9 @@
         "colExperience": "經歷",
         "colTag": "標籤",
         "deleteTitle": "刪除紀錄？",
-        "deleteDescription": "確定要刪除 <strong>{title}</strong> 嗎?此動作無法復原。"
+        "deleteDescription": "確定要刪除 <strong>{title}</strong> 嗎?此動作無法復原。",
+        "listSearchPlaceholder": "篩選紀錄…",
+        "listSearchEmpty": "沒有符合「{query}」的紀錄。"
     },
     "EntryCard": {
         "techSkillsLabel": "技術／技能",
@@ -393,6 +412,7 @@
     "FormControls": {
         "searchIcons": "搜尋圖示…",
         "removeTag": "移除 {tag}",
-        "tagInputPlaceholder": "輸入後按 Enter…"
+        "tagInputPlaceholder": "輸入後按 Enter…",
+        "browseCommonIcons": "常用圖示——也可輸入關鍵字搜尋全部"
     }
 }
