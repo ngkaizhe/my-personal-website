@@ -36,9 +36,11 @@ async (page) => {
 ```
 
 Notes:
-- `page.pdf()` applies the print stylesheet automatically — do NOT
-  `emulateMedia({media:'print'})` first (it double-applies nothing but can
-  confuse the restore path).
+- `page.pdf()` uses print CSS by default, **but a leftover
+  `emulateMedia({media:'screen'})` from an earlier check (e.g. smoke-test
+  T1.20/T1.25 restore steps) silently overrides it** — the PDF then contains
+  the full screen UI (nav, filters). Always run
+  `await page.emulateMedia({ media: null })` before the first `page.pdf()`.
 - Output under `.playwright-mcp/` (gitignored).
 - If the photo toggle matters for the review, capture both states.
 

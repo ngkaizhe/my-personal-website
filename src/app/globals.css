@@ -278,8 +278,15 @@
     box-shadow: none !important;
     border-color: #ccc !important;
   }
-  /* Keep section bullets together with their headers across page breaks. */
-  section, h2, h3 {
+  /* Pagination: keep headings attached to what follows and never split a
+     single bullet — but do NOT set break-inside on whole sections: a
+     section taller than one page (Experience, Skills) then jumps to a fresh
+     page wholesale, leaving the previous page mostly blank. */
+  h2, h3 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  li {
     break-inside: avoid;
     page-break-inside: avoid;
   }
