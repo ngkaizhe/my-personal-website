@@ -338,8 +338,8 @@ for i in {1..35}; do
 done | sort | uniq -c
 ```
 
-- Expect a mix of 200/500 responses for the first 30 (depending on whether ANTHROPIC_API_KEY is set), then at least 1 `429` once the cap is hit.
-- 429 responses should include `Retry-After` header.
+- **Unauthenticated (the curl above): expect all 35 to be `401`** — `guardAiRequest()` checks auth before the rate limiter, so anonymous floods never consume rate-limit budget. This is the intended order.
+- To exercise the limiter itself you need a session cookie; an authenticated flood should flip to `429` (with `Retry-After`) after the cap.
 
 ### T1.28 — Skills view exists + filters timeline by ?skill=
 
@@ -631,6 +631,7 @@ This is the canary for the inline-create flow added in commit `5ae42ab`.
 5. Re-open the modal → fill `Type=Job`, `Company="Smoke Test Co."`, `Role="QA Bot"`, `StartDate=2026-01-01` → submit
 6. Assert: modal closed, the new option appears in the parent select AND is auto-selected
 7. **Cleanup**: navigate to `/dashboard/experiences`, find "Smoke Test Co.", delete it via the row's Delete button + confirmation. Skip cleanup if Tier 2 is being run in dry-run mode (declared in the user's invocation).
+   **⚠️ Scope the Delete button to the target card — never `.last()`/`.first()` on the whole page.** And before confirming, assert the ConfirmDialog's text actually names "Smoke Test Co." — a mis-scoped locator once deleted the seed State University experience (restored by hand from seed.ts). If the dialog names anything else, Cancel and re-locate.
 
 ### T2.6 — Create + delete entry round-trip
 
