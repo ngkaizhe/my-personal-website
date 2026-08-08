@@ -180,9 +180,13 @@
 
 /* ===== Page fade-in (CSS fallback for Framer Motion issues) ===== */
 
+/* Opacity-only on purpose: a translateY here would leave a persistent
+   `transform` on the page wrapper (fill-mode: both), which turns it into
+   the containing block for `position: fixed` descendants — breaking any
+   floating action button rendered by a page. */
 @keyframes page-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .page-fade-in {
@@ -347,4 +351,15 @@
 .bg-page {
   background-image: radial-gradient(var(--color-dot-pattern) 0.5px, transparent 0.5px);
   background-size: 24px 24px;
+}
+
+/* ===== Utilities ===== */
+
+/* Horizontal-scroll containers (mobile nav) that shouldn't show a scrollbar. */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
