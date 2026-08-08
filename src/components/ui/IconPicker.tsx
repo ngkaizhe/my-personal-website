@@ -15,6 +15,19 @@ interface IconPickerProps {
 
 const MAX_SUGGESTIONS = 30;
 
+// Shown as a browsable grid when the input is empty, so users can pick an
+// icon without knowing Lucide names. Typing still searches the full set.
+const COMMON_ICONS = [
+    'briefcase', 'graduation-cap', 'rocket', 'code', 'terminal', 'server',
+    'database', 'hard-drive', 'cloud', 'container', 'cpu', 'globe',
+    'brain', 'sparkles', 'lightbulb', 'flask-conical', 'test-tube', 'gauge',
+    'workflow', 'git-branch', 'refresh-cw', 'arrow-right-left', 'package', 'layers',
+    'settings', 'wrench', 'bug', 'shield-check', 'lock', 'key',
+    'chart-line', 'trending-up', 'target', 'flag', 'calendar', 'clock',
+    'users', 'handshake', 'megaphone', 'presentation', 'book-open', 'pen-tool',
+    'award', 'trophy', 'star', 'heart', 'palette', 'building-2',
+];
+
 export default function IconPicker({ id, name, value, onChange, className = '' }: IconPickerProps) {
     const [open, setOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -97,6 +110,28 @@ export default function IconPicker({ id, name, value, onChange, className = '' }
                     aria-autocomplete="list"
                 />
             </div>
+
+            {open && !value && (
+                <div
+                    className="absolute z-50 mt-2 w-full bg-surface-elevated border border-border-light rounded-xl shadow-2xl p-3 max-h-60 overflow-y-auto"
+                >
+                    <p className="text-xs text-text-faint mb-2">{t('browseCommonIcons')}</p>
+                    <div className="grid grid-cols-8 gap-1">
+                        {COMMON_ICONS.map((iconName) => (
+                            <button
+                                key={iconName}
+                                type="button"
+                                onClick={() => select(iconName)}
+                                title={iconName}
+                                aria-label={iconName}
+                                className="flex items-center justify-center w-9 h-9 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                            >
+                                <LucideIcon iconName={iconName} className="w-5 h-5" />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {open && suggestions.length > 0 && (
                 <div
