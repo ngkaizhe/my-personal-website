@@ -15,6 +15,8 @@ interface Props {
     defaultUsername: string;
     defaultDisplayName: string;
     defaultBio: string;
+    defaultResumeSummaryEn: string;
+    defaultResumeSummaryZh: string;
     defaultImage: string;
     defaultContact: ContactDefaults;
 }
@@ -30,12 +32,14 @@ const inputClass = `
 
 const labelClass = 'block text-sm font-medium text-form-label mb-2';
 
-export function SetupForm({ defaultUsername, defaultDisplayName, defaultBio, defaultImage, defaultContact }: Props) {
+export function SetupForm({ defaultUsername, defaultDisplayName, defaultBio, defaultResumeSummaryEn, defaultResumeSummaryZh, defaultImage, defaultContact }: Props) {
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [username, setUsername] = useState(defaultUsername);
     const [displayName, setDisplayName] = useState(defaultDisplayName);
     const [bio, setBio] = useState(defaultBio);
+    const [resumeSummaryEn, setResumeSummaryEn] = useState(defaultResumeSummaryEn);
+    const [resumeSummaryZh, setResumeSummaryZh] = useState(defaultResumeSummaryZh);
     const [image, setImage] = useState(defaultImage);
     const [contactEmail, setContactEmail] = useState(defaultContact.contactEmail);
     const [linkedin, setLinkedin] = useState(defaultContact.linkedin);
@@ -50,6 +54,7 @@ export function SetupForm({ defaultUsername, defaultDisplayName, defaultBio, def
         startTransition(async () => {
             const result = await saveSetup({
                 username, displayName, bio, image,
+                resumeSummaryEn, resumeSummaryZh,
                 contactEmail, linkedin, github, website,
             });
             if (!result.success) {
@@ -145,6 +150,39 @@ export function SetupForm({ defaultUsername, defaultDisplayName, defaultBio, def
                 />
                 <p className="text-xs text-text-faint mt-1">{bio.length} / 280</p>
             </div>
+
+            <fieldset className="border border-form-section-border rounded-xl p-5">
+                <legend className="px-2 text-sm font-semibold text-form-section-text">{t('resumeSummaryLegend')}</legend>
+                <p className="text-xs text-text-faint mb-4">{t('resumeSummaryHint')}</p>
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="setup-summary-en" className={labelClass}>
+                            {t('resumeSummaryEn')} <span className="text-text-faint">{tCommon('optional')}</span>
+                        </label>
+                        <textarea
+                            id="setup-summary-en"
+                            value={resumeSummaryEn}
+                            onChange={e => setResumeSummaryEn(e.target.value)}
+                            rows={3}
+                            maxLength={600}
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="setup-summary-zh" className={labelClass}>
+                            {t('resumeSummaryZh')} <span className="text-text-faint">{tCommon('optional')}</span>
+                        </label>
+                        <textarea
+                            id="setup-summary-zh"
+                            value={resumeSummaryZh}
+                            onChange={e => setResumeSummaryZh(e.target.value)}
+                            rows={3}
+                            maxLength={600}
+                            className={inputClass}
+                        />
+                    </div>
+                </div>
+            </fieldset>
 
             <fieldset className="border border-form-section-border rounded-xl p-5">
                 <legend className="px-2 text-sm font-semibold text-form-section-text">

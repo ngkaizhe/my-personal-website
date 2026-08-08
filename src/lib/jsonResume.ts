@@ -10,6 +10,8 @@ export interface JsonResumeUser {
     displayName: string | null;
     name: string | null;
     bio: string | null;
+    resumeSummaryEn?: string | null;
+    resumeSummaryZh?: string | null;
     image: string | null;
     contactEmail: string | null;
     linkedin: string | null;
@@ -51,6 +53,10 @@ export function mapToJsonResume(
     const displayName = user.displayName || user.name || `@${user.username}`;
     const jobs = resume.experiences.filter(e => e.type === 'JOB');
     const latestJob = jobs[0];
+    // Dedicated résumé summary wins over the (more casual) timeline bio.
+    const summary = (opts.locale === 'zh-TW'
+        ? user.resumeSummaryZh ?? user.resumeSummaryEn
+        : user.resumeSummaryEn ?? user.resumeSummaryZh) ?? user.bio;
 
     const profiles = [
         user.github ? { network: 'GitHub', url: user.github } : null,
@@ -66,7 +72,7 @@ export function mapToJsonResume(
             ...(user.image ? { image: user.image } : {}),
             ...(user.contactEmail ? { email: user.contactEmail } : {}),
             url: opts.profileUrl,
-            ...(user.bio ? { summary: user.bio } : {}),
+            ...(summary ? { summary } : {}),
             ...(profiles.length > 0 ? { profiles } : {}),
         },
         work: jobs.map(exp => ({

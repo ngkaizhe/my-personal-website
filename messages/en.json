@@ -116,7 +116,11 @@
         "save": "Save and continue",
         "saving": "Saving…",
         "editTitle": "Edit profile",
-        "editSubtitle": "Update your public info — display name, avatar, bio, and contact links."
+        "editSubtitle": "Update your public info — display name, avatar, bio, and contact links.",
+        "resumeSummaryLegend": "Résumé summary",
+        "resumeSummaryHint": "A 2–4 line professional summary shown at the top of your generated résumé (more formal than the bio above). Fill either language; the résumé falls back to the other.",
+        "resumeSummaryEn": "Summary (English)",
+        "resumeSummaryZh": "Summary (中文)"
     },
     "Timeline": {
         "heading": "My Journey",
@@ -357,7 +361,12 @@
         "improveFailed": "Could not improve bullet.",
         "copyImproved": "Copy improved bullet",
         "dismissImproved": "Dismiss",
-        "jsonResume": "JSON Resume (AI/ATS)"
+        "jsonResume": "JSON Resume (AI/ATS)",
+        "skillCat_languages": "Languages & Frameworks",
+        "skillCat_adtech": "AdTech",
+        "skillCat_data": "Data & Infrastructure",
+        "skillCat_practices": "Tools & Practices",
+        "skillCat_other": "Other"
     },
     "Theme": {
         "label": "Change theme, current: {current}",

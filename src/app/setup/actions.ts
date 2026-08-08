@@ -9,6 +9,8 @@ export interface SetupInput {
     username: string;
     displayName: string;
     bio: string;
+    resumeSummaryEn: string;
+    resumeSummaryZh: string;
     image: string;
     contactEmail: string;
     linkedin: string;
@@ -37,6 +39,8 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
     // multi-KB paste shouldn't be storable in the first place.
     const displayName = input.displayName.trim().slice(0, 100);
     const bio = input.bio.trim().slice(0, 500);
+    const resumeSummaryEn = input.resumeSummaryEn.trim().slice(0, 600);
+    const resumeSummaryZh = input.resumeSummaryZh.trim().slice(0, 600);
     const image = input.image.trim();
     const contactEmail = input.contactEmail.trim().slice(0, 254);
     // Link fields end up as <a href> on the public profile — same http(s)-only
@@ -68,6 +72,8 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
                 username,
                 displayName: displayName || null,
                 bio: bio || null,
+                resumeSummaryEn: resumeSummaryEn || null,
+                resumeSummaryZh: resumeSummaryZh || null,
                 ...(safeImage !== null || image === '' ? { image: safeImage } : {}),
                 contactEmail: contactEmail || null,
                 linkedin,

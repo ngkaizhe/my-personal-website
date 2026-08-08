@@ -30,6 +30,8 @@ async function main() {
       username: 'demo',
       displayName: 'Demo Person',
       bio: 'Software engineer building things. This site is my work-log + résumé generator — flick through the timeline to see what I have shipped.',
+      resumeSummaryEn: 'Senior full-stack architect with 5+ years shipping e-commerce platforms — led a cross-functional team of five from zero to checkout, redesigned core auth into microservices (99.5% → 99.99% availability), and cut deploy time 87% with Docker + CI/CD.',
+      resumeSummaryZh: '資深全端架構師，5+ 年電商平台經驗——帶領五人跨職能團隊從零做到交付，將核心驗證系統重構為微服務（可用度 99.5% → 99.99%），並以 Docker + CI/CD 將部署時間縮短 87%。',
     },
   });
 

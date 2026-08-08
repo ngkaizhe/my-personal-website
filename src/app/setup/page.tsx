@@ -21,6 +21,8 @@ export default async function SetupPage() {
             name: true,
             displayName: true,
             bio: true,
+            resumeSummaryEn: true,
+            resumeSummaryZh: true,
             image: true,
             contactEmail: true,
             linkedin: true,
@@ -51,6 +53,8 @@ export default async function SetupPage() {
                     defaultUsername={dbUser?.username ?? ''}
                     defaultDisplayName={dbUser?.displayName ?? dbUser?.name ?? ''}
                     defaultBio={dbUser?.bio ?? ''}
+                    defaultResumeSummaryEn={dbUser?.resumeSummaryEn ?? ''}
+                    defaultResumeSummaryZh={dbUser?.resumeSummaryZh ?? ''}
                     defaultImage={dbUser?.image ?? ''}
                     defaultContact={{
                         contactEmail: dbUser?.contactEmail ?? '',

@@ -116,7 +116,11 @@
         "save": "儲存並繼續",
         "saving": "儲存中…",
         "editTitle": "編輯個人檔案",
-        "editSubtitle": "更新你的公開資訊——顯示名稱、頭像、簡介與聯絡連結。"
+        "editSubtitle": "更新你的公開資訊——顯示名稱、頭像、簡介與聯絡連結。",
+        "resumeSummaryLegend": "履歷摘要",
+        "resumeSummaryHint": "顯示在履歷最上方的 2–4 行專業摘要（比上面的簡介更正式）。兩種語言擇一填寫即可，履歷會自動遞補另一種。",
+        "resumeSummaryEn": "摘要（英文）",
+        "resumeSummaryZh": "摘要（中文）"
     },
     "Timeline": {
         "heading": "我的旅程",
@@ -357,7 +361,12 @@
         "improveFailed": "強化失敗。",
         "copyImproved": "複製強化版",
         "dismissImproved": "關掉",
-        "jsonResume": "JSON Resume（AI/ATS）"
+        "jsonResume": "JSON Resume（AI/ATS）",
+        "skillCat_languages": "語言與框架",
+        "skillCat_adtech": "廣告技術",
+        "skillCat_data": "資料與基礎設施",
+        "skillCat_practices": "工具與方法",
+        "skillCat_other": "其他"
     },
     "Theme": {
         "label": "切換主題,目前：{current}",

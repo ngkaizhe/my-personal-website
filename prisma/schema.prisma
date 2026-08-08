@@ -32,6 +32,11 @@ model User {
   username      String?      @unique
   displayName   String?
   bio           String?
+  // Professional summary shown at the top of the generated résumé — more
+  // formal than bio (which is the timeline hero blurb). One column per
+  // locale; User has no translation table and two fields are plenty.
+  resumeSummaryEn String?
+  resumeSummaryZh String?
   // bcrypt hash for the email + password sign-up path. Null for users who
   // came in via Google OAuth (or any other future provider).
   passwordHash  String?
