@@ -39,7 +39,7 @@ export default async function RootLayout({
 }) {
   const cookieStore = await cookies();
   const cookieTheme = cookieStore.get('theme')?.value;
-  const theme: Theme = isTheme(cookieTheme) ? cookieTheme : 'light';
+  const theme: Theme = isTheme(cookieTheme) ? cookieTheme : 'dark';
   const locale = await getLocale();
   const messages = await getMessages();
 
