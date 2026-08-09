@@ -95,7 +95,9 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
     const [selectedExperiences, setSelectedExperiences] = useState<Set<string>>(
         new Set(['unlinked', ...data.experiences.map(e => e.id)])
     );
-    const [featuredOnly, setFeaturedOnly] = useState(false);
+    // Defaults ON: the résumé is the curated view (starred entries only);
+    // visitors can untick to see everything.
+    const [featuredOnly, setFeaturedOnly] = useState(true);
     const [showPhoto, setShowPhoto] = useState(true);
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
     const markdownRef = useRef<HTMLTextAreaElement>(null);

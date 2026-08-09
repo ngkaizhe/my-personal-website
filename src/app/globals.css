@@ -293,8 +293,8 @@
   .resume-print-doc {
     position: relative;
     color: var(--rp-ink);
-    font-size: 10pt;
-    line-height: 1.45;
+    font-size: 10.5pt;
+    line-height: 1.5;
   }
   /* Sidebar tint as a fixed bar: repeats on every page. */
   .resume-print-doc::before {
@@ -342,7 +342,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    font-size: 8.5pt;
+    font-size: 9pt;
     color: var(--rp-ink);
   }
   .rp-contact li {
@@ -353,13 +353,13 @@
     margin-bottom: 3.2mm;
   }
   .rp-skill-group h3 {
-    font-size: 8.5pt;
+    font-size: 9pt;
     font-weight: 700;
     color: var(--rp-ink);
     margin: 0 0 0.8mm;
   }
   .rp-skill-group p {
-    font-size: 8.5pt;
+    font-size: 9pt;
     color: var(--rp-muted);
     margin: 0;
   }
@@ -378,7 +378,7 @@
     margin: 0 0 4mm;
   }
   .rp-summary {
-    font-size: 9.5pt;
+    font-size: 10pt;
     color: var(--rp-ink);
     margin: 0 0 6mm;
     padding-bottom: 4mm;
@@ -425,7 +425,7 @@
     white-space: nowrap;
   }
   .rp-exp-desc {
-    font-size: 9pt;
+    font-size: 9.5pt;
     color: var(--rp-muted);
     margin: 1mm 0 1.5mm;
   }
@@ -435,8 +435,8 @@
     margin: 1.5mm 0 0;
   }
   .rp-main li {
-    font-size: 9.5pt;
-    margin-bottom: 1.4mm;
+    font-size: 10pt;
+    margin-bottom: 1.9mm;
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -449,7 +449,7 @@
   .rp-stack {
     color: var(--rp-muted);
     font-style: italic;
-    font-size: 8.5pt;
+    font-size: 9pt;
   }
 }
 

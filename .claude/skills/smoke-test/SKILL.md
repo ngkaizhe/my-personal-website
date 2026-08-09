@@ -241,13 +241,14 @@ In Playwright:
 
 ### T1.19 — Featured-only filter reduces résumé bullets
 
-The seed marks 6 of 8 demo entries as `featured=true`. Without filter: 8 bullets; with featured-only on: 6.
+The seed marks 6 of 8 demo entries as `featured=true`. **"Featured only"
+defaults to ON since the 2026-08 curation change** — the résumé opens as the
+curated view.
 
 1. Navigate to `/@demo/resume`
-2. Count `section li` elements → record N1
-3. Check the "Featured only" checkbox (`label:has-text("Featured only") input[type="checkbox"]`)
-4. Count `section li` again → record N2
-5. Assert N2 < N1 AND N2 > 0
+2. Assert the "Featured only" checkbox is already checked; count `section li` → record N1 (curated count, 6 for seed)
+3. Untick the checkbox → count again → record N2 (full count, 8 for seed)
+4. Assert N2 > N1 AND N1 > 0
 
 ### T1.20 — Print stylesheet hides chrome
 
