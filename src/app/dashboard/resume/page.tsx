@@ -4,17 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { getResumeData } from "./actions";
 import ResumeBuilder from "@/components/Resume/ResumeBuilder";
 import { isAiParseAvailable } from "@/lib/aiAvailable";
-import { getResumeLabels } from "@/lib/resumeLabels";
 
 export const metadata = {
     title: "Resume Builder",
 };
 
 export default async function ResumePage() {
-    const [dataZh, dataEn, labels, session, t, locale] = await Promise.all([
-        getResumeData('zh-TW'),
-        getResumeData('en'),
-        getResumeLabels(),
+    const [data, session, t, locale] = await Promise.all([
+        getResumeData(),
         auth(),
         getTranslations('Resume'),
         getLocale(),
@@ -38,12 +35,10 @@ export default async function ResumePage() {
                 </div>
 
                 <ResumeBuilder
-                    resumes={{
-                        'zh-TW': { data: dataZh, summary: me?.resumeSummaryZh ?? me?.resumeSummaryEn },
-                        en: { data: dataEn, summary: me?.resumeSummaryEn ?? me?.resumeSummaryZh },
-                    }}
-                    labels={labels}
-                    defaultResumeLocale={locale === 'zh-TW' ? 'zh-TW' : 'en'}
+                    data={data}
+                    summary={locale === 'zh-TW'
+                        ? me?.resumeSummaryZh ?? me?.resumeSummaryEn
+                        : me?.resumeSummaryEn ?? me?.resumeSummaryZh}
                     canImproveBullets={isAiParseAvailable()}
                     {...(username ? { jsonResumeUrl: `/@${username}/resume.json` } : {})}
                     {...(me ? {
