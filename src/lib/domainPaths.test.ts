@@ -33,6 +33,14 @@ describe('normalizeAltPath', () => {
     });
 });
 
+describe('RESERVED_PATH_SEGMENTS', () => {
+    it('rejects the public sub-page namespaces as alt paths', () => {
+        for (const seg of ['skills', 'year', 'entry']) {
+            expect(normalizeAltPath(`/${seg}`)).toEqual({ ok: false, error: 'reserved_path' });
+        }
+    });
+});
+
 describe('normalizeViewPaths', () => {
     it('timeline at / stores TIMELINE root + resume alt', () => {
         expect(normalizeViewPaths('/', '/resume'))

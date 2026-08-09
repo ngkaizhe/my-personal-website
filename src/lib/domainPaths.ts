@@ -17,9 +17,12 @@ export function resolveDomainPaths(cfg: DomainPathConfig): { timelinePath: strin
 }
 
 // Route namespaces the alt path must never shadow. `resume` is deliberately
-// absent — it is the default alt path.
+// absent — it is the default alt path. skills/year/entry are the public
+// sub-pages the /d catch-all serves on bound domains; letting a view path
+// claim them would shadow those pages.
 export const RESERVED_PATH_SEGMENTS: ReadonlySet<string> = new Set([
     'u', 'd', 'api', 'dashboard', 'setup', 'signin', 'signup', '_next',
+    'skills', 'year', 'entry',
 ]);
 
 const ALT_PATH_RE = /^\/[a-z0-9][a-z0-9-]*$/;

@@ -6,6 +6,7 @@ import ResumeBuilder from '@/components/Resume/ResumeBuilder';
 import { prisma } from '@/lib/prisma';
 import { fetchResumeByUserId } from '@/lib/resume';
 import { resolveDomainPaths } from '@/lib/domainPaths';
+import { getPublicLinks } from '@/lib/publicLinks';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -58,13 +59,14 @@ export default async function PublicResumePage({ params }: Props) {
         getTranslations('PublicProfile'),
     ]);
     const displayName = user.displayName || user.name || `@${user.username}`;
+    const links = await getPublicLinks(user.username!);
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-6xl mx-auto">
                 <div className="mb-8 flex flex-col gap-2 no-print">
                     <Link
-                        href={`/@${user.username}`}
+                        href={links.timeline}
                         className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -81,7 +83,7 @@ export default async function PublicResumePage({ params }: Props) {
                     summary={locale === 'zh-TW'
                         ? user.resumeSummaryZh ?? user.resumeSummaryEn
                         : user.resumeSummaryEn ?? user.resumeSummaryZh}
-                    jsonResumeUrl={`/@${user.username}/resume.json`}
+                    jsonResumeUrl={links.jsonResume}
                     header={{
                         name: displayName,
                         image: user.image,

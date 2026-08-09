@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
 import { fetchYearReview } from '@/lib/yearReview';
 import YearReview from '@/components/YearReview/YearReview';
+import { getPublicLinks } from '@/lib/publicLinks';
 
 interface Props {
     params: Promise<{ username: string; year: string }>;
@@ -25,6 +26,7 @@ export default async function PublicYearReviewPage({ params }: Props) {
         select: { id: true, displayName: true, name: true, username: true },
     });
     if (!user) notFound();
+    const links = await getPublicLinks(user.username!);
 
     const locale = await getLocale();
     const [data, t, tBack] = await Promise.all([
@@ -42,7 +44,7 @@ export default async function PublicYearReviewPage({ params }: Props) {
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-3xl mx-auto">
                 <Link
-                    href={`/@${user.username}`}
+                    href={links.timeline}
                     className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors mb-6"
                 >
                     <ArrowLeft className="w-4 h-4" />
@@ -55,7 +57,7 @@ export default async function PublicYearReviewPage({ params }: Props) {
 
                 <div className="flex items-center justify-between mb-6 text-sm">
                     <Link
-                        href={`/@${user.username}/year/${previousYear}`}
+                        href={links.year(previousYear)}
                         className="inline-flex items-center gap-1 text-text-muted hover:text-text-primary transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -63,7 +65,7 @@ export default async function PublicYearReviewPage({ params }: Props) {
                     </Link>
                     {nextYear <= currentYear && (
                         <Link
-                            href={`/@${user.username}/year/${nextYear}`}
+                            href={links.year(nextYear)}
                             className="text-text-muted hover:text-text-primary transition-colors"
                         >
                             {nextYear} →

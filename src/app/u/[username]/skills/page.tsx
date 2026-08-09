@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
 import { fetchSkillsByUserId } from '@/lib/skillsQuery';
+import { getPublicLinks } from '@/lib/publicLinks';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -26,6 +27,7 @@ export default async function PublicSkillsPage({ params }: Props) {
         },
     });
     if (!user) notFound();
+    const links = await getPublicLinks(user.username!);
 
     const skills = await fetchSkillsByUserId(user.id);
     const t = await getTranslations('Skills');
@@ -36,7 +38,7 @@ export default async function PublicSkillsPage({ params }: Props) {
         <div className="p-4 md:p-8 bg-page min-h-screen">
             <div className="max-w-4xl mx-auto">
                 <Link
-                    href={`/@${user.username}`}
+                    href={links.timeline}
                     className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors mb-6"
                 >
                     <ArrowLeft className="w-4 h-4" />
@@ -57,7 +59,7 @@ export default async function PublicSkillsPage({ params }: Props) {
                             {skills.map(s => (
                                 <Link
                                     key={s.name}
-                                    href={`/@${user.username}?skill=${encodeURIComponent(s.name)}`}
+                                    href={`${links.timeline}?skill=${encodeURIComponent(s.name)}`}
                                     className="inline-flex items-center gap-2 bg-badge-bg hover:bg-surface-elevated text-badge-text text-sm px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer"
                                 >
                                     {s.name}

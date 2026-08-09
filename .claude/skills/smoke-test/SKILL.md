@@ -536,6 +536,14 @@ passed verification that way. Reliable markers:
 - timeline: `type="search"` (the timeline search box)
 - résumé: `resume-print-doc` (the print-only layout div; the old `print-template` selector was removed in the 2026-08 print redesign)
 
+**Domain-served sub-pages (2026-08):** `/skills`, `/year/<n>`, `/entry/<id>`
+are served directly on a bound domain (no bounce), and public-page internal
+links are host-aware (`getPublicLinks`) — on the domain they use the owner's
+configured paths (`/`, altPath, `/skills`, …), on the main host they stay
+`/@user/...`. Check both: `curl -H "Host: ngkaizhe.com" <base>/skills` → 200,
+and the domain-rendered timeline HTML contains `href="<resumePath>"` (not
+`/@ngkaizhe/resume`). `skills`/`year`/`entry` are reserved alt-path segments.
+
 **Playwright caveat:** radio `.check()` can flip the DOM without firing
 React's onChange (state silently stale — a save then persists old values).
 Interact with `fill()`/real `click()` on labels, and verify writes against

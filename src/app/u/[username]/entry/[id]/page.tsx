@@ -6,6 +6,7 @@ import EntryCard from '@/components/Entry/EntryCard';
 import { prisma } from '@/lib/prisma';
 import { pickTranslation } from '@/lib/translations';
 import { getTextClass, getBadgeClass } from '@/lib/colors';
+import { getPublicLinks } from '@/lib/publicLinks';
 
 interface Props {
     params: Promise<{ username: string; id: string }>;
@@ -46,6 +47,7 @@ export default async function PublicEntryPage({ params }: Props) {
         },
     });
     if (!entry) notFound();
+    const links = await getPublicLinks(entry.user.username!);
 
     const tr = pickTranslation(entry.translations, locale, entry.primaryLocale);
     if (!tr) notFound();
@@ -64,7 +66,7 @@ export default async function PublicEntryPage({ params }: Props) {
         <div className="bg-page min-h-screen p-4 md:p-8">
             <div className="max-w-2xl mx-auto">
                 <Link
-                    href={`/@${entry.user.username}`}
+                    href={links.timeline}
                     className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors mb-6"
                 >
                     <ArrowLeft className="w-4 h-4" />

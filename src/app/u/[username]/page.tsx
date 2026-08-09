@@ -9,6 +9,7 @@ import { resolveDomainPaths } from '@/lib/domainPaths';
 import { buildPersonJsonLd, jsonLdString } from '@/lib/personJsonLd';
 import { mainAppHost } from '@/lib/customDomain';
 import { auth } from '@/auth';
+import { getPublicLinks } from '@/lib/publicLinks';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -68,6 +69,7 @@ export default async function PublicProfilePage({ params }: Props) {
     const displayName = user.displayName || user.name || `@${user.username}`;
     // Editable when the signed-in viewer owns this profile.
     const editable = session?.user?.id === user.id;
+    const links = await getPublicLinks(user.username!);
     // Most recent year with content — target for the "year in review" link.
     const latestYear = timeline.length > 0
         ? Math.max(...timeline.map(item => new Date(item.date).getFullYear()))
@@ -128,14 +130,14 @@ export default async function PublicProfilePage({ params }: Props) {
                         )}
                         <div className="pt-2 flex flex-wrap items-center gap-2 justify-center md:justify-start">
                             <Link
-                                href={`/@${user.username}/resume`}
+                                href={links.resume}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
                                 {t('viewResume')}
                             </Link>
                             <Link
-                                href={`/@${user.username}/skills`}
+                                href={links.skills}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
                             >
                                 <Hash className="w-4 h-4" />
@@ -143,7 +145,7 @@ export default async function PublicProfilePage({ params }: Props) {
                             </Link>
                             {latestYear && (
                                 <Link
-                                    href={`/@${user.username}/year/${latestYear}`}
+                                    href={links.year(latestYear)}
                                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light text-sm font-medium transition-colors"
                                 >
                                     <CalendarRange className="w-4 h-4" />
