@@ -6,8 +6,7 @@ import { fetchResumeByUserId, type ResumeData } from '@/lib/resume';
 
 export type { ResumeData, ResumeExperience, ResumeEntry } from '@/lib/resume';
 
-export async function getResumeData(): Promise<ResumeData> {
+export async function getResumeData(locale?: string): Promise<ResumeData> {
     const userId = await getCurrentUserId();
-    const locale = await getLocale();
-    return fetchResumeByUserId(userId, locale);
+    return fetchResumeByUserId(userId, locale ?? await getLocale());
 }

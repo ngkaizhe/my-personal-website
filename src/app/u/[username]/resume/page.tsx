@@ -6,6 +6,7 @@ import ResumeBuilder from '@/components/Resume/ResumeBuilder';
 import { prisma } from '@/lib/prisma';
 import { fetchResumeByUserId } from '@/lib/resume';
 import { resolveDomainPaths } from '@/lib/domainPaths';
+import { getResumeLabels } from '@/lib/resumeLabels';
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -53,9 +54,13 @@ export default async function PublicResumePage({ params }: Props) {
     if (!user) notFound();
 
     const locale = await getLocale();
-    const data = await fetchResumeByUserId(user.id, locale);
+    const [dataZh, dataEn, labels, t] = await Promise.all([
+        fetchResumeByUserId(user.id, 'zh-TW'),
+        fetchResumeByUserId(user.id, 'en'),
+        getResumeLabels(),
+        getTranslations('PublicProfile'),
+    ]);
     const displayName = user.displayName || user.name || `@${user.username}`;
-    const t = await getTranslations('PublicProfile');
 
     return (
         <div className="p-4 md:p-8 bg-page min-h-screen">
@@ -75,11 +80,13 @@ export default async function PublicResumePage({ params }: Props) {
                 </div>
 
                 <ResumeBuilder
-                    data={data}
+                    resumes={{
+                        'zh-TW': { data: dataZh, summary: user.resumeSummaryZh ?? user.resumeSummaryEn },
+                        en: { data: dataEn, summary: user.resumeSummaryEn ?? user.resumeSummaryZh },
+                    }}
+                    labels={labels}
+                    defaultResumeLocale={locale === 'zh-TW' ? 'zh-TW' : 'en'}
                     jsonResumeUrl={`/@${user.username}/resume.json`}
-                    summary={locale === 'zh-TW'
-                        ? user.resumeSummaryZh ?? user.resumeSummaryEn
-                        : user.resumeSummaryEn ?? user.resumeSummaryZh}
                     header={{
                         name: displayName,
                         image: user.image,

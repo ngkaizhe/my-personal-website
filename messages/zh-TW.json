@@ -337,13 +337,6 @@
         "to": "到",
         "featuredOnly": "只看重點",
         "featuredOnlyHint": "隱藏未標記為履歷重點的紀錄。",
-        "copyMarkdown": "複製 markdown",
-        "copied": "已複製！",
-        "copyManual": "已選取 — 請按 Ctrl+C",
-        "copySrCopied": "Markdown 已複製到剪貼簿。",
-        "copySrManual": "Markdown 已選取,請按 Ctrl+C 或 Command+C 複製。",
-        "downloadMd": "下載 .md",
-        "printPdf": "列印／存 PDF",
         "preview": "預覽",
         "markdown": "Markdown",
         "noMatching": "目前的篩選條件下沒有任何紀錄。",
@@ -365,7 +358,12 @@
         "skillCat_other": "其他",
         "showPhoto": "顯示照片",
         "showPhotoHint": "在履歷上顯示頭像（台式履歷常見；投美商或走 ATS 時通常拿掉）。",
-        "contact": "聯絡方式"
+        "contact": "聯絡方式",
+        "resumeLanguage": "履歷語言",
+        "printPdfZh": "列印／存 PDF（中文）",
+        "printPdfEn": "列印／存 PDF（English）",
+        "downloadMdZh": "下載 .md（中文）",
+        "downloadMdEn": "下載 .md（English）"
     },
     "Theme": {
         "label": "切換主題,目前：{current}",

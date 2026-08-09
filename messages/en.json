@@ -337,13 +337,6 @@
         "to": "To",
         "featuredOnly": "Featured only",
         "featuredOnlyHint": "Hide entries you haven't marked as résumé-worthy.",
-        "copyMarkdown": "Copy markdown",
-        "copied": "Copied!",
-        "copyManual": "Selected — press Ctrl+C",
-        "copySrCopied": "Markdown copied to clipboard.",
-        "copySrManual": "Markdown selected. Press Ctrl+C or Command+C to copy.",
-        "downloadMd": "Download .md",
-        "printPdf": "Print / Save PDF",
         "preview": "Preview",
         "markdown": "Markdown",
         "noMatching": "No entries match your filters.",
@@ -365,7 +358,12 @@
         "skillCat_other": "Other",
         "showPhoto": "Show photo",
         "showPhotoHint": "Include your avatar on the résumé (common in TW, often omitted for US/ATS applications).",
-        "contact": "Contact"
+        "contact": "Contact",
+        "resumeLanguage": "Résumé language",
+        "printPdfZh": "Print / Save PDF (中文)",
+        "printPdfEn": "Print / Save PDF (English)",
+        "downloadMdZh": "Download .md (中文)",
+        "downloadMdEn": "Download .md (English)"
     },
     "Theme": {
         "label": "Change theme, current: {current}",
