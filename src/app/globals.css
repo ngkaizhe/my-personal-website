@@ -242,28 +242,33 @@
 }
 
 /* ===== Print stylesheet for /dashboard/resume + /@user/resume =====
-   The user hits Ctrl+P / Cmd+P; the browser produces a clean one-column
-   résumé suitable for Save-as-PDF. We hide every piece of chrome that
-   isn't résumé content. Elements that opt in via `.print-only` show up
-   ONLY when printing; `.no-print` is hidden during print.
+   Ctrl+P / Cmd+P produces a designed two-column PDF. The on-screen preview
+   card is hidden in print (.resume-print-hide); a dedicated print DOM
+   (.resume-print-doc, hidden on screen via .print-only) is what prints.
 
-   Strategy: force light backgrounds + dark text, hide nav / filter
-   sidebar / markdown export box, single-column the preview, kill the
-   sticky positioning so the page can flow naturally across pages.
+   Design tokens follow common industry résumé templates (Awesome-CV,
+   resume.io two-column family): ~32% light-gray sidebar, one accent color,
+   uppercase letterspaced section titles, 9.5-10.5pt body.
 */
+.print-only {
+  display: none;
+}
+
 @media print {
-  /* Hide all the chrome — nav, theme toggle, dev tools overlay, etc. */
+  :root {
+    --rp-accent: #1e3a5f;   /* deep navy — the single accent */
+    --rp-ink: #1f2937;
+    --rp-muted: #6b7280;
+    --rp-side-bg: #f3f4f6;
+    --rp-side-w: 62mm;
+  }
+  /* Hide all chrome + the screen preview. */
   header[class*="sticky"],
   nav,
-  .no-print {
-    display: none !important;
-  }
-  /* Hide the filter sidebar and the editable markdown textarea — these
-     are tool-shed UI, not résumé content. The preview is what prints. */
+  .no-print,
   .resume-print-hide {
     display: none !important;
   }
-  /* Collapse the 2-column résumé layout to a single column for paper. */
   .resume-print-page {
     display: block !important;
     max-width: 100% !important;
@@ -271,85 +276,180 @@
     margin: 0 !important;
     background: white !important;
   }
-  /* Force readable B&W typography regardless of active theme. */
-  body, body * {
-    background: transparent !important;
-    color: #111 !important;
-    box-shadow: none !important;
-    border-color: #ccc !important;
+  /* Kill theme backgrounds (dark mode would otherwise print black slabs
+     wherever the doc doesn't cover the page container). */
+  body,
+  .bg-page {
+    background: #fff !important;
   }
-  /* Pagination: keep headings attached to what follows and never split a
-     single bullet — but do NOT set break-inside on whole sections: a
-     section taller than one page (Experience, Skills) then jumps to a fresh
-     page wholesale, leaving the previous page mostly blank. */
-  h2, h3 {
+  .print-only {
+    display: block;
+  }
+  @page {
+    margin: 0;   /* the doc manages its own padding so the sidebar tint can bleed */
+  }
+
+  /* --- Two-column document ------------------------------------------- */
+  .resume-print-doc {
+    position: relative;
+    color: var(--rp-ink);
+    font-size: 10pt;
+    line-height: 1.45;
+  }
+  /* Sidebar tint as a fixed bar: repeats on every page. */
+  .resume-print-doc::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--rp-side-w);
+    background: var(--rp-side-bg);
+  }
+  .rp-side {
+    float: left;
+    width: calc(var(--rp-side-w) - 20mm);
+    padding: 12mm 0 8mm 10mm;
+    position: relative;
+  }
+  .rp-main {
+    margin-left: calc(var(--rp-side-w) + 8mm);
+    padding: 12mm 12mm 10mm 0;
+  }
+
+  /* --- Sidebar -------------------------------------------------------- */
+  .rp-photo {
+    width: 34mm;
+    height: 34mm;
+    object-fit: cover;
+    border-radius: 2mm;
+    margin-bottom: 6mm;
+  }
+  .rp-side-title {
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--rp-accent);
+    border-bottom: 0.4mm solid var(--rp-accent);
+    padding-bottom: 1mm;
+    margin: 6mm 0 3mm;
+  }
+  .rp-side section:first-of-type .rp-side-title {
+    margin-top: 0;
+  }
+  .rp-contact {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 8.5pt;
+    color: var(--rp-ink);
+  }
+  .rp-contact li {
+    margin-bottom: 1.6mm;
+    word-break: break-all;
+  }
+  .rp-skill-group {
+    margin-bottom: 3.2mm;
+  }
+  .rp-skill-group h3 {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: var(--rp-ink);
+    margin: 0 0 0.8mm;
+  }
+  .rp-skill-group p {
+    font-size: 8.5pt;
+    color: var(--rp-muted);
+    margin: 0;
+  }
+
+  /* --- Main column ----------------------------------------------------- */
+  .rp-name {
+    font-size: 23pt;
+    font-weight: 700;
+    color: var(--rp-accent);
+    margin: 0 0 1mm;
+    letter-spacing: 0.01em;
+  }
+  .rp-role {
+    font-size: 11pt;
+    color: var(--rp-muted);
+    margin: 0 0 4mm;
+  }
+  .rp-summary {
+    font-size: 9.5pt;
+    color: var(--rp-ink);
+    margin: 0 0 6mm;
+    padding-bottom: 4mm;
+    border-bottom: 0.3mm solid #d1d5db;
+  }
+  .rp-section-title {
+    font-size: 11.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--rp-accent);
+    border-bottom: 0.4mm solid var(--rp-accent);
+    padding-bottom: 1mm;
+    margin: 6mm 0 3.5mm;
     break-after: avoid-page;
     page-break-after: avoid;
   }
-  li {
+  .rp-main section:first-of-type .rp-section-title {
+    margin-top: 0;
+  }
+  .rp-exp {
+    margin-bottom: 4.5mm;
+  }
+  .rp-exp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4mm;
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  .rp-exp-org {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: var(--rp-ink);
+  }
+  .rp-exp-role {
+    font-weight: 500;
+    color: var(--rp-muted);
+  }
+  .rp-exp-dates {
+    font-size: 8.5pt;
+    color: var(--rp-muted);
+    white-space: nowrap;
+  }
+  .rp-exp-desc {
+    font-size: 9pt;
+    color: var(--rp-muted);
+    margin: 1mm 0 1.5mm;
+  }
+  .rp-main ul {
+    list-style: disc;
+    padding-left: 4.5mm;
+    margin: 1.5mm 0 0;
+  }
+  .rp-main li {
+    font-size: 9.5pt;
+    margin-bottom: 1.4mm;
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  /* Underline links so they survive removal of color. */
-  a {
-    text-decoration: underline !important;
+  .rp-main li::marker {
+    color: var(--rp-accent);
   }
-  /* Print page margins — most browsers respect this. */
-  @page {
-    margin: 1.5cm;
+  .rp-impact {
+    color: #166534;   /* keep the quantified impact readable but calm */
   }
-}
-
-/* ===== Print template variants =====
-   The ResumeBuilder filter sidebar lets the user pick a template; the picker
-   writes the choice to body[data-print-template]. Each template adds its own
-   @media print overrides on top of the base block above. The base ("minimal")
-   needs no extra CSS — it's what runs when no data attribute is set OR when
-   data-print-template="minimal".
-*/
-
-/* "Classic": serif body, all-caps section headers, generous vertical spacing.
-   Reads like a traditional one-page CV. */
-@media print {
-  body[data-print-template="classic"] {
-    font-family: Georgia, 'Times New Roman', serif !important;
-  }
-  body[data-print-template="classic"] h3 {
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 1.05rem !important;
-    border-bottom: 1px solid #333 !important;
-    padding-bottom: 0.25rem !important;
-    margin-top: 1.5rem !important;
-  }
-  body[data-print-template="classic"] h2 {
-    font-size: 1.4rem !important;
-  }
-  body[data-print-template="classic"] section {
-    margin-bottom: 1.25rem;
-  }
-}
-
-/* "Compact": tighter line-height + smaller body text — fits more on a page,
-   good for résumés with lots of bullets. */
-@media print {
-  body[data-print-template="compact"] {
-    font-size: 0.85rem !important;
-    line-height: 1.35 !important;
-  }
-  body[data-print-template="compact"] h2 {
-    font-size: 1.15rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  body[data-print-template="compact"] h3 {
-    font-size: 0.95rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  body[data-print-template="compact"] section {
-    margin-bottom: 0.5rem !important;
-  }
-  body[data-print-template="compact"] ul {
-    margin-bottom: 0.25rem !important;
+  .rp-stack {
+    color: var(--rp-muted);
+    font-style: italic;
+    font-size: 8.5pt;
   }
 }
 

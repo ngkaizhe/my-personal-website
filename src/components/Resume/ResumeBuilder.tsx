@@ -75,9 +75,9 @@ interface ResumeBuilderProps {
     summary?: string | null;
 }
 
-/** "https://github.com/x" -> "github.com/x" for compact display/print. */
+/** "https://www.github.com/x" -> "github.com/x" for compact display/print. */
 function bareUrl(url: string): string {
-    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    return url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
 }
 
 function contactItems(header: ResumeHeader): { label: string; href: string }[] {
@@ -96,7 +96,6 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
         new Set(['unlinked', ...data.experiences.map(e => e.id)])
     );
     const [featuredOnly, setFeaturedOnly] = useState(false);
-    const [printTemplate, setPrintTemplate] = useState<'minimal' | 'classic' | 'compact'>('minimal');
     const [showPhoto, setShowPhoto] = useState(true);
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'manual'>('idle');
     const markdownRef = useRef<HTMLTextAreaElement>(null);
@@ -356,31 +355,9 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                             {t('jsonResume')}
                         </a>
                     )}
-                    <div>
-                        <label htmlFor="print-template" className="block text-xs font-medium text-form-label mb-1.5">
-                            {t('printTemplate')}
-                        </label>
-                        <select
-                            id="print-template"
-                            value={printTemplate}
-                            onChange={(e) => {
-                                const v = e.target.value as 'minimal' | 'classic' | 'compact';
-                                setPrintTemplate(v);
-                                document.body.dataset.printTemplate = v;
-                            }}
-                            className="w-full px-3 py-2 rounded-lg bg-input-bg border border-input-border text-input-text text-sm focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="minimal">{t('templateMinimal')}</option>
-                            <option value="classic">{t('templateClassic')}</option>
-                            <option value="compact">{t('templateCompact')}</option>
-                        </select>
-                    </div>
                     <button
                         type="button"
-                        onClick={() => {
-                            document.body.dataset.printTemplate = printTemplate;
-                            window.print();
-                        }}
+                        onClick={() => window.print()}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
                     >
                         <Printer className="w-4 h-4" />
@@ -398,7 +375,7 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
 
             {/* Preview + markdown */}
             <div className="space-y-6">
-                <div className="bg-surface rounded-2xl shadow-sm border border-border p-5 md:p-8">
+                <div className="bg-surface rounded-2xl shadow-sm border border-border p-5 md:p-8 resume-print-hide">
                     <h2 className="text-lg font-semibold text-text-primary border-b border-border-light pb-2 mb-4 no-print">
                         {t('preview')}
                     </h2>
@@ -581,6 +558,116 @@ export default function ResumeBuilder({ data, canImproveBullets = false, jsonRes
                         className="w-full px-4 py-3 rounded-xl bg-input-bg border border-input-border text-input-text font-mono text-xs focus:outline-none focus:border-blue-500"
                     />
                 </details>
+            </div>
+
+            {/* Dedicated print layout (two-column sidebar style, industry
+                conventions: ~32% light sidebar, single accent color, uppercase
+                letterspaced section titles). Hidden on screen; the screen
+                preview above is hidden in print. */}
+            <div className="print-only resume-print-doc">
+                <aside className="rp-side">
+                    {header?.image && showPhoto && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={header.image} alt="" referrerPolicy="no-referrer" className="rp-photo" />
+                    )}
+                    {header && contactItems(header).length > 0 && (
+                        <section>
+                            <h2 className="rp-side-title">{t('contact')}</h2>
+                            <ul className="rp-contact">
+                                {contactItems(header).map(c => (
+                                    <li key={c.href}>{c.label}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                    {filtered.skills.length > 0 && (
+                        <section>
+                            <h2 className="rp-side-title">{t('skills')}</h2>
+                            {groupSkills(filtered.skills).map(group => (
+                                <div key={group.key} className="rp-skill-group">
+                                    <h3>{t(`skillCat_${group.key}`)}</h3>
+                                    <p>{group.skills.map(s => s.name).join(' · ')}</p>
+                                </div>
+                            ))}
+                        </section>
+                    )}
+                </aside>
+                <div className="rp-main">
+                    {header && <h1 className="rp-name">{header.name}</h1>}
+                    {data.experiences.find(e => e.type === 'JOB')?.role && (
+                        <p className="rp-role">{data.experiences.find(e => e.type === 'JOB')!.role}</p>
+                    )}
+                    {summary && <p className="rp-summary">{summary}</p>}
+
+                    {SECTION_TYPES.map(type => {
+                        const list = grouped[type];
+                        if (list.length === 0) return null;
+                        return (
+                            <section key={type}>
+                                <h2 className="rp-section-title">{t(SECTION_KEY[type])}</h2>
+                                {list.map(exp => (
+                                    <div key={exp.id} className="rp-exp">
+                                        <div className="rp-exp-head">
+                                            <span className="rp-exp-org">
+                                                {exp.organization}
+                                                {exp.role && <span className="rp-exp-role"> — {exp.role}</span>}
+                                            </span>
+                                            <span className="rp-exp-dates">{formatExperienceRange(exp.startDate, exp.endDate, locale, presentLabel)}</span>
+                                        </div>
+                                        {exp.description && <p className="rp-exp-desc">{exp.description}</p>}
+                                        {exp.entries.length > 0 && (
+                                            <ul>
+                                                {exp.entries.map(e => (
+                                                    <li key={e.id}>
+                                                        {e.actionVerb && <strong>{e.actionVerb} </strong>}
+                                                        {e.title}
+                                                        {e.impact && <span className="rp-impact"> — {e.impact}</span>}
+                                                        {e.techStack.length > 0 && <span className="rp-stack"> ({e.techStack.join(', ')})</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                ))}
+                            </section>
+                        );
+                    })}
+                    {(grouped.BREAK.length > 0 || filtered.unlinked.length > 0) && (
+                        <section>
+                            <h2 className="rp-section-title">{t('sectionOther')}</h2>
+                            {grouped.BREAK.map(exp => (
+                                <div key={exp.id} className="rp-exp">
+                                    <div className="rp-exp-head">
+                                        <span className="rp-exp-org">{exp.organization}</span>
+                                        <span className="rp-exp-dates">{formatExperienceRange(exp.startDate, exp.endDate, locale, presentLabel)}</span>
+                                    </div>
+                                    {exp.entries.length > 0 && (
+                                        <ul>
+                                            {exp.entries.map(e => (
+                                                <li key={e.id}>
+                                                    {e.actionVerb && <strong>{e.actionVerb} </strong>}
+                                                    {e.title}
+                                                    {e.impact && <span className="rp-impact"> — {e.impact}</span>}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            ))}
+                            {filtered.unlinked.length > 0 && (
+                                <ul>
+                                    {filtered.unlinked.map(e => (
+                                        <li key={e.id}>
+                                            {e.actionVerb && <strong>{e.actionVerb} </strong>}
+                                            {e.title}
+                                            {e.impact && <span className="rp-impact"> — {e.impact}</span>}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    )}
+                </div>
             </div>
         </div>
     );

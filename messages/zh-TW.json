@@ -344,10 +344,6 @@
         "copySrManual": "Markdown 已選取,請按 Ctrl+C 或 Command+C 複製。",
         "downloadMd": "下載 .md",
         "printPdf": "列印／存 PDF",
-        "printTemplate": "列印版型",
-        "templateMinimal": "簡約",
-        "templateClassic": "經典",
-        "templateCompact": "精簡",
         "preview": "預覽",
         "markdown": "Markdown",
         "noMatching": "目前的篩選條件下沒有任何紀錄。",
@@ -368,7 +364,8 @@
         "skillCat_practices": "工具與方法",
         "skillCat_other": "其他",
         "showPhoto": "顯示照片",
-        "showPhotoHint": "在履歷上顯示頭像（台式履歷常見；投美商或走 ATS 時通常拿掉）。"
+        "showPhotoHint": "在履歷上顯示頭像（台式履歷常見；投美商或走 ATS 時通常拿掉）。",
+        "contact": "聯絡方式"
     },
     "Theme": {
         "label": "切換主題,目前：{current}",

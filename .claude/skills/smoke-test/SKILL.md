@@ -305,17 +305,12 @@ Smoke test for the MarkdownText component. Any successful dashboard / public pro
 
 (Optional — skip if no markdown-flavoured test entry is available.)
 
-### T1.25 — Print template selector + variants apply
+### T1.25 — Removed in 2026-08 (print redesign)
 
-1. Navigate to `/dashboard/resume` or `/@demo/resume`.
-2. Find `select#print-template` — assert it has options `minimal`, `classic`, `compact`.
-3. Select `classic` → assert `document.body.dataset.printTemplate === 'classic'`.
-4. Emulate print media: `await page.emulateMedia({ media: 'print' })`.
-5. Assert the body computed font-family contains "Georgia" / "serif".
-6. Restore: select `minimal` → confirm body font-family is back to the default sans-serif.
-7. `await page.emulateMedia({ media: 'screen' })` before finishing.
-
-Catches: the data attribute writer missing, the @media print blocks getting accidentally outside their gate, or one of the templates getting deleted from globals.css.
+The three print-template variants (minimal/classic/compact) and the
+`select#print-template` picker were replaced by a single designed two-column
+print layout (`.resume-print-doc`, print-only DOM inside ResumeBuilder).
+Print-output QA now lives in the dedicated `resume-pdf-review` skill.
 
 ### T1.26 — Edit button in TimelineModal when viewer owns the timeline
 
@@ -538,7 +533,7 @@ words "履歷/Résumé" appear on BOTH views (the timeline has a "View résumé"
 button), so grepping them cannot tell the views apart — a wrong mapping once
 passed verification that way. Reliable markers:
 - timeline: `type="search"` (the timeline search box)
-- résumé: `print-template` (the print-template selector)
+- résumé: `resume-print-doc` (the print-only layout div; the old `print-template` selector was removed in the 2026-08 print redesign)
 
 **Playwright caveat:** radio `.check()` can flip the DOM without firing
 React's onChange (state silently stale — a save then persists old values).

@@ -344,10 +344,6 @@
         "copySrManual": "Markdown selected. Press Ctrl+C or Command+C to copy.",
         "downloadMd": "Download .md",
         "printPdf": "Print / Save PDF",
-        "printTemplate": "Print template",
-        "templateMinimal": "Minimal",
-        "templateClassic": "Classic",
-        "templateCompact": "Compact",
         "preview": "Preview",
         "markdown": "Markdown",
         "noMatching": "No entries match your filters.",
@@ -368,7 +364,8 @@
         "skillCat_practices": "Tools & Practices",
         "skillCat_other": "Other",
         "showPhoto": "Show photo",
-        "showPhotoHint": "Include your avatar on the résumé (common in TW, often omitted for US/ATS applications)."
+        "showPhotoHint": "Include your avatar on the résumé (common in TW, often omitted for US/ATS applications).",
+        "contact": "Contact"
     },
     "Theme": {
         "label": "Change theme, current: {current}",
