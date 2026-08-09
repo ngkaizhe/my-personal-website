@@ -368,19 +368,11 @@ export default function ResumeBuilder({ resumes, labels, defaultResumeLocale, ca
                     </button>
                     <button
                         type="button"
-                        onClick={() => download('zh-TW')}
+                        onClick={() => download(resumeLocale)}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
                     >
                         <Download className="w-4 h-4" />
-                        {t('downloadMdZh')}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => download('en')}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-form-cancel-border text-form-cancel-text hover:text-form-cancel-text-hover hover:border-form-cancel-border-hover font-medium transition-colors cursor-pointer"
-                    >
-                        <Download className="w-4 h-4" />
-                        {t('downloadMdEn')}
+                        {resumeLocale === 'zh-TW' ? t('downloadMdZh') : t('downloadMdEn')}
                     </button>
                     {jsonResumeUrl && (
                         <a
