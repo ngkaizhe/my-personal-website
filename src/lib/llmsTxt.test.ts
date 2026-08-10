@@ -21,7 +21,7 @@ describe('buildUserLlmsTxt', () => {
         expect(txt).toContain('https://ngkaizhe.com/');
         expect(txt).toContain('https://ngkaizhe.com/resume');
         expect(txt).toContain('https://ngkaizhe.com/resume.json');
-        expect(txt).toContain('https://main.example.com/@ngkaizhe/skills');
+        expect(txt).toContain('https://main.example.com/u/ngkaizhe/skills');
     });
 
     it('omits the skills line without a main host and the quote without a bio', () => {
@@ -40,7 +40,7 @@ describe('buildSiteLlmsTxt', () => {
     it('describes the product and points at the demo profile', () => {
         const txt = buildSiteLlmsTxt('main.example.com');
         expect(txt.startsWith('# My Journey\n')).toBe(true);
-        expect(txt).toContain('https://main.example.com/@demo');
-        expect(txt).toContain('https://main.example.com/@demo/resume.json');
+        expect(txt).toContain('https://main.example.com/u/demo');
+        expect(txt).toContain('https://main.example.com/u/demo/resume.json');
     });
 });

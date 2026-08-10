@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
                 : {}),
             // Machine-readable variant, so crawlers/agents can discover the
             // JSON Resume without knowing the URL convention.
-            types: { 'application/json': `/@${username}/resume.json` },
+            types: { 'application/json': `/u/${username}/resume.json` },
         },
     };
 }

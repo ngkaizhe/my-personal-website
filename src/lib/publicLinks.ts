@@ -4,7 +4,7 @@ import { domainProfile } from '@/lib/domainProfile';
 
 // Host-aware links for the public pages. When a page is being rendered on a
 // bound custom domain (via the /d catch-all), internal links must use the
-// domain's own path space — /@username/... paths are unmapped there and
+// domain's own path space — /u/username/... paths are unmapped there and
 // would bounce the visitor to the main app, silently losing the domain.
 //
 // domainProfile() is React-cached, so this adds no extra query to a /d
@@ -40,7 +40,7 @@ export async function getPublicLinks(username: string): Promise<PublicLinks> {
         }
     }
 
-    const base = `/@${username}`;
+    const base = `/u/${username}`;
     return {
         onDomain: false,
         timeline: base,

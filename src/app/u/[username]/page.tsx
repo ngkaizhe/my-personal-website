@@ -91,7 +91,7 @@ export default async function PublicProfilePage({ params }: Props) {
         image: user.image,
         profileUrl: user.customDomain
             ? `https://${user.customDomain}`
-            : `https://${mainAppHost() ?? 'localhost:3000'}/@${user.username}`,
+            : `https://${mainAppHost() ?? 'localhost:3000'}/u/${user.username}`,
         sameAs: [user.github, user.linkedin, user.website].filter((u): u is string => !!u),
         knowsAbout: topSkills,
         worksFor: latestJob?.experience?.organization ?? null,

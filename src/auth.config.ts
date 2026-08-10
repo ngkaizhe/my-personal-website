@@ -2,7 +2,6 @@ import { cache } from 'react';
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
-import { isProtectedPath } from '@/lib/routes';
 
 // Per-request dedupe for the username re-read in session(): pages that call
 // auth() several times per request (layout + page + actions) share one DB hit.
@@ -16,14 +15,10 @@ const readUsername = cache(async (userId: string): Promise<string | null> => {
     return dbUser?.username ?? null;
 });
 
-// Adapter-free slice of the auth config: providers, callbacks, route gating.
-// Imported by both src/auth.ts (with Prisma adapter) and src/proxy.ts
-// (which must not pull the adapter into its bundle).
-//
-// The Credentials provider's authorize() callback below uses bcryptjs +
-// prisma, which are Node-only. NextAuth v5 still hands these off to a Node
-// runtime invocation, so the middleware never actually runs them — it only
-// inspects the JWT. Keeping the provider declared here is safe.
+// Adapter-free slice of the auth config: providers and callbacks. Only
+// src/auth.ts consumes it today (the proxy no longer wraps NextAuth — auth
+// gating moved into the dashboard layout), but the split keeps the config
+// importable from adapter-free contexts.
 export default {
     providers: [
         Google({
@@ -125,10 +120,6 @@ export default {
                 }
             }
             return session;
-        },
-        authorized({ auth, request: { nextUrl } }) {
-            if (isProtectedPath(nextUrl.pathname)) return !!auth;
-            return true;
         },
     },
 } satisfies NextAuthConfig;

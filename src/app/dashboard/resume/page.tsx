@@ -40,7 +40,7 @@ export default async function ResumePage() {
                         ? me?.resumeSummaryZh ?? me?.resumeSummaryEn
                         : me?.resumeSummaryEn ?? me?.resumeSummaryZh}
                     canImproveBullets={isAiParseAvailable()}
-                    {...(username ? { jsonResumeUrl: `/@${username}/resume.json` } : {})}
+                    {...(username ? { jsonResumeUrl: `/u/${username}/resume.json` } : {})}
                     {...(me ? {
                         header: {
                             name: me.displayName || me.name || (username ? `@${username}` : ''),

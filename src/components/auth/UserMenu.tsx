@@ -87,7 +87,7 @@ export function UserMenu({ user }: Props) {
         first?.focus();
     }, [open]);
 
-    const profileHref = user.username ? `/@${user.username}` : null;
+    const profileHref = user.username ? `/u/${user.username}` : null;
     const displayName = user.name || user.email || 'You';
 
     return (

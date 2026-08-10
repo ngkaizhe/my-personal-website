@@ -39,7 +39,7 @@ export function CopyPublicUrlButton({ username }: Props) {
         );
     }
 
-    const url = `${origin}/@${username}`;
+    const url = `${origin}/u/${username}`;
 
     const copy = async () => {
         if (!origin) return;
@@ -61,7 +61,7 @@ export function CopyPublicUrlButton({ username }: Props) {
             title={origin ? tAuth('copyLinkTitle', { url }) : undefined}
         >
             {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-            <span className="font-mono">/@{username}</span>
+            <span className="font-mono">/u/{username}</span>
             <span className="text-text-faint">·</span>
             <span>{copied ? t('copied') : t('copyPublicUrl')}</span>
         </button>

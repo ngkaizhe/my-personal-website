@@ -32,7 +32,7 @@ export default function NotFound() {
                         Back home
                     </Link>
                     <Link
-                        href="/@demo"
+                        href="/u/demo"
                         className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border-light font-medium transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
                     >
                         See an example

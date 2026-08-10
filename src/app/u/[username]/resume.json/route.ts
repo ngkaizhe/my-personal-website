@@ -4,7 +4,7 @@ import { fetchResumeByUserId } from '@/lib/resume';
 import { mapToJsonResume } from '@/lib/jsonResume';
 import { resolveDomainPaths } from '@/lib/domainPaths';
 
-// Machine-readable résumé (JSON Resume schema) at /@username/resume.json.
+// Machine-readable résumé (JSON Resume schema) at /u/username/resume.json.
 // CORS is wide open on purpose — the whole point is letting external tools
 // and AI agents fetch it; the data is already public on the profile page.
 const JSON_HEADERS = {
@@ -47,7 +47,7 @@ export async function GET(
     // pretty URL on whichever host served this request.
     const profileUrl = user.customDomain
         ? `https://${user.customDomain}${resolveDomainPaths(user).timelinePath === '/' ? '' : resolveDomainPaths(user).timelinePath}`
-        : `${req.nextUrl.protocol}//${req.headers.get('x-forwarded-host') ?? req.nextUrl.host}/@${user.username}`;
+        : `${req.nextUrl.protocol}//${req.headers.get('x-forwarded-host') ?? req.nextUrl.host}/u/${user.username}`;
 
     const resume = await fetchResumeByUserId(user.id, locale);
     return NextResponse.json(

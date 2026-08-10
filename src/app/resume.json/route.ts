@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     if (!bare || isMainHost(host)) {
         return NextResponse.json(
-            { error: 'No profile bound to this host. Fetch /@<username>/resume.json instead.' },
+            { error: 'No profile bound to this host. Fetch /u/<username>/resume.json instead.' },
             { status: 404, headers: JSON_HEADERS },
         );
     }

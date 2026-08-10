@@ -135,10 +135,10 @@ export default async function Home({
                     <p className="text-sm text-text-faint">
                         {t('seeExample')}{' '}
                         <Link
-                            href="/@demo"
+                            href="/u/demo"
                             className="text-blue-600 hover:text-blue-500 underline-offset-2 hover:underline"
                         >
-                            /@demo
+                            /u/demo
                         </Link>
                     </p>
                 </div>

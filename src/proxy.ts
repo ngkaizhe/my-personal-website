@@ -1,17 +1,13 @@
-import NextAuth from 'next-auth';
-import { NextResponse } from 'next/server';
-import authConfig from '@/auth.config';
+import { NextResponse, type NextRequest } from 'next/server';
 import { isMainHost } from '@/lib/customDomain';
-import { isProtectedPath } from '@/lib/routes';
 
-// Next.js 16 proxy (formerly middleware.ts — the file convention was renamed;
-// behavior is identical and it runs on the Node runtime, which we need because
-// the Credentials provider compiled into auth.config.ts pushes the bundle past
-// the 1MB edge limit and dynamically imports Prisma + bcryptjs).
-const { auth } = NextAuth(authConfig);
-
-export default auth((req) => {
-    const { nextUrl, auth: session } = req;
+// Next.js 16 proxy (formerly middleware.ts). Deliberately thin: host-based
+// forwarding for bound custom domains plus a pathname pass-through header.
+// It holds no session logic — auth gating lives in the dashboard layout
+// (src/app/dashboard/layout.tsx) and every server action independently
+// re-checks via getCurrentUserId() — so it needs no NextAuth wrapper.
+export default function proxy(req: NextRequest) {
+    const { nextUrl } = req;
 
     // --- Custom domain branch -------------------------------------------
     // Everything on a bound domain is forwarded into the /d catch-all, which
@@ -19,18 +15,16 @@ export default auth((req) => {
     // unmapped paths to the main app) — the proxy itself stays DB-free.
     //
     // x-forwarded-host is preferred because Vercel re-invokes the proxy for
-    // rewritten requests with an internal Host header; acting on that value
-    // turned the /@ -> /u rewrite into a visible 307 on *.vercel.app hosts.
-    // Rewrite targets (/u, /d) are likewise skipped so a re-entrant pass can
-    // never bounce a path the first pass just rewrote to.
+    // rewritten requests with an internal Host header. /d is the proxy's only
+    // rewrite target, so a path already inside it must never be rewritten
+    // again on that re-entrant pass.
     const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '';
-    const isInternalTarget =
-        nextUrl.pathname.startsWith('/u/') || nextUrl.pathname.startsWith('/d/');
+    const isRewrittenTarget = nextUrl.pathname.startsWith('/d/');
     // Machine-readable endpoints resolve the user from the Host header
     // themselves, so they must reach their route handlers un-rewritten.
     const isHostAwareEndpoint =
         nextUrl.pathname === '/llms.txt' || nextUrl.pathname === '/resume.json';
-    if (!isInternalTarget && !isHostAwareEndpoint && !isMainHost(host)) {
+    if (!isRewrittenTarget && !isHostAwareEndpoint && !isMainHost(host)) {
         const bare = host.toLowerCase().split(':')[0];
         // Whole-path rewrite: which paths render which view (and which
         // bounce to the main app) is user-configurable and lives in the DB,
@@ -42,39 +36,12 @@ export default auth((req) => {
     }
     // --------------------------------------------------------------------
 
-    // Pretty profile URLs: /@kaizhe -> /u/kaizhe (Next can't have a @-prefixed
-    // dynamic folder, so the file system uses /u/[username] and the proxy rewrites).
-    // Also accept the percent-encoded form (/%40kaizhe): the custom-domain
-    // bounce and some external link handlers encode the @, and without this
-    // the rewrite misses and the URL 404s.
-    if (nextUrl.pathname.startsWith('/@') || nextUrl.pathname.startsWith('/%40')) {
-        const rest = nextUrl.pathname.startsWith('/%40')
-            ? nextUrl.pathname.slice(4)
-            : nextUrl.pathname.slice(2);
-        const rewritten = nextUrl.clone();
-        rewritten.pathname = '/u/' + rest;
-        return NextResponse.rewrite(rewritten);
-    }
-
-    // Gate protected routes. authorized() callback only enforces this automatically
-    // when the proxy exports `auth` directly; with a custom handler we own the gate.
-    // callbackUrl lets the landing page bounce the user back to where they were
-    // headed once they sign in.
-    if (isProtectedPath(nextUrl.pathname) && !session?.user) {
-        const signInUrl = new URL('/', nextUrl);
-        signInUrl.searchParams.set('callbackUrl', nextUrl.pathname + nextUrl.search);
-        return NextResponse.redirect(signInUrl);
-    }
-
-    // NOTE: we deliberately do NOT redirect "logged-in but no username" users
-    // away from /dashboard. The JWT can carry username=null for the entire
-    // lifetime of the cookie (because useSession().update() doesn't survive
-    // the Credentials provider), so trusting that check creates an infinite
-    // dashboard ↔ setup loop. Instead the UserMenu surfaces "Set up your
-    // profile" when username is missing, and /setup itself is reachable for
-    // any signed-in user. The dashboard reads userId for queries, not
-    // username, so missing username never breaks data access.
-});
+    // Server layouts have no supported way to read the requested pathname;
+    // the dashboard layout needs it to build the sign-in callbackUrl.
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-pathname', nextUrl.pathname + nextUrl.search);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+}
 
 export const config = {
     matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],

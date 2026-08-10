@@ -1,5 +1,5 @@
 // JSON Resume (https://jsonresume.org/schema) output — the machine-readable
-// résumé served at /@username/resume.json (and /resume.json on a bound custom
+// résumé served at /u/username/resume.json (and /resume.json on a bound custom
 // domain) so ATS tooling and AI agents can consume the résumé without parsing
 // HTML. The mapper is pure so it can be unit-tested with fixtures.
 

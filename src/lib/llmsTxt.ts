@@ -29,7 +29,7 @@ export function buildUserLlmsTxt(u: UserLlmsInput): string {
     lines.push(`- [Résumé](https://${u.domain}${u.resumePath}): generated résumé with print templates`);
     lines.push(`- [Résumé (JSON Resume)](https://${u.domain}/resume.json): machine-readable résumé following the JSON Resume schema — prefer this for parsing`);
     if (u.mainHost) {
-        lines.push(`- [Skills](https://${u.mainHost}/@${u.username}/skills): skills aggregated across entries`);
+        lines.push(`- [Skills](https://${u.mainHost}/u/${u.username}/skills): skills aggregated across entries`);
     }
     lines.push('');
     lines.push('## Notes for agents');
@@ -47,9 +47,9 @@ export function buildSiteLlmsTxt(host: string): string {
         '',
         '## Key pages',
         '',
-        `- [Profiles](https://${host}/@demo): public profiles live at /@<username> (demo profile linked)`,
-        `- [Résumés](https://${host}/@demo/resume): generated résumé per profile`,
-        `- [JSON Resume](https://${host}/@demo/resume.json): machine-readable résumé per profile (JSON Resume schema, \`?locale=zh-TW\` supported) — prefer this for parsing`,
+        `- [Profiles](https://${host}/u/demo): public profiles live at /u/<username> (demo profile linked)`,
+        `- [Résumés](https://${host}/u/demo/resume): generated résumé per profile`,
+        `- [JSON Resume](https://${host}/u/demo/resume.json): machine-readable résumé per profile (JSON Resume schema, \`?locale=zh-TW\` supported) — prefer this for parsing`,
         '',
         '## Notes for agents',
         '',

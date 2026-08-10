@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LocaleToggle } from "@/components/ui/LocaleToggle";
 import { NavLink } from "@/components/ui/NavLink";
@@ -9,6 +11,22 @@ import { isAiParseAvailable } from "@/lib/aiAvailable";
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
   const user = session?.user;
+
+  // Sign-in wall for the whole /dashboard group. The proxy holds no session
+  // logic anymore; this layout is the UX gate, and the real security boundary
+  // stays in the data layer (every server action calls getCurrentUserId(),
+  // which throws without a session). x-pathname is stamped by the proxy so
+  // the landing page can bounce the user back here after sign-in.
+  // Deliberately no username check — the JWT can carry username=null for the
+  // cookie's lifetime under the Credentials provider (useSession().update()
+  // doesn't stick), so redirecting on it would loop; UserMenu surfaces
+  // "Set up your profile" instead.
+  if (!user) {
+    const h = await headers();
+    const backTo = h.get("x-pathname") ?? "/dashboard";
+    redirect(`/?callbackUrl=${encodeURIComponent(backTo)}`);
+  }
+
   const aiAvailable = isAiParseAvailable();
   const tNav = await getTranslations('Nav');
 

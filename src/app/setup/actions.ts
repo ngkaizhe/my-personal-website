@@ -101,6 +101,6 @@ export async function saveSetup(input: SetupInput): Promise<SetupResult> {
     }
 
     revalidatePath('/dashboard');
-    revalidatePath(`/@${username}`);
+    revalidatePath(`/u/${username}`);
     return { success: true };
 }
