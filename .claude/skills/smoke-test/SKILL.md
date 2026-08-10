@@ -72,21 +72,22 @@ For each check below: navigate via `mcp__playwright__browser_navigate`, snapshot
 - Expect:
   - `<h1>` text matches the localised landing title (en: "Track. Reflect. Resume." / zh-TW: "記錄。回顧。產出履歷。")
   - A `<button type="submit">` with the "Sign in with Google" / "使用 Google 登入" text exists
-  - A link to `/@demo` exists
+  - A link to `/u/demo` exists
   - Console: 0 errors
 
-### T1.2 — Public profile renders (`/@demo`)
+### T1.2 — Public profile renders (`/u/demo`) + legacy vanity redirect
 
-- URL: `http://localhost:3000/@demo`
+- URL: `http://localhost:3000/u/demo`
 - Expect:
-  - URL stays on `/@demo` (middleware rewrites internally to `/u/demo`; verify with `page.url()`)
+  - Page renders at `/u/demo` (canonical public URL since the 2026-08 vanity retirement)
+  - Legacy forms both 308 to `/u/demo` (curl, don't follow): `curl -sI '<base>/@demo'` and `curl -sI '<base>/%40demo'` → `308` + `location: /u/demo` (declared in `next.config.js` `redirects()`)
   - `<h1>` contains the demo user's displayName ("Demo Person")
   - At least 1 timeline card (`role="button"` with `aria-label` starting with "View details for" / "查看")
   - Console: 0 errors
 
-### T1.3 — Public résumé renders (`/@demo/resume`)
+### T1.3 — Public résumé renders (`/u/demo/resume`)
 
-- URL: `http://localhost:3000/@demo/resume`
+- URL: `http://localhost:3000/u/demo/resume`
 - Expect:
   - `<h1>` contains "— Résumé" or "— 履歷"
   - At least one section heading among: Experience / Education / Projects / Volunteer / Other (or zh-TW equivalents)
@@ -95,15 +96,15 @@ For each check below: navigate via `mcp__playwright__browser_navigate`, snapshot
 
 ### T1.4 — 404 for unknown username
 
-- URL: `http://localhost:3000/@nonexistent_user_smoke_test_zzz`
+- URL: `http://localhost:3000/u/nonexistent_user_smoke_test_zzz`
 - Expect:
-  - HTTP 404 (check via curl: `curl -sI -o /dev/null -w "%{http_code}" .../@nonexistent...`)
+  - HTTP 404 (check via curl: `curl -sI -o /dev/null -w "%{http_code}" .../u/nonexistent...`)
   - Page renders the not-found heading ("No one's here yet." / "這裡還沒有人。")
-  - Link to `/` and to `/@demo` present
+  - Link to `/` and to `/u/demo` present
 
 ### T1.5 — Auth gate redirects
 
-Verify the middleware sends unauthenticated users away from protected routes.
+Verify unauthenticated users are sent away from protected routes. `/dashboard/*` is gated by `src/app/dashboard/layout.tsx` (redirect + callbackUrl built from the proxy-stamped `x-pathname` header); `/setup` self-guards in its page. The proxy holds no auth logic.
 
 ```bash
 curl -sI -o /dev/null -w "%{http_code} %{redirect_url}\n" --max-time 5 http://localhost:3000/dashboard
@@ -116,7 +117,7 @@ curl -sI -o /dev/null -w "%{http_code} %{redirect_url}\n" --max-time 5 http://lo
 
 In Playwright (no auth cookie needed — toggle is in `/u/[username]` layout):
 
-1. Navigate to `/@demo`
+1. Navigate to `/u/demo`
 2. Find the theme button (`aria-label` starts with "Change theme" / "切換主題")
 3. Read `document.documentElement.className` — record initial theme
 4. Click theme button → menu opens
@@ -129,7 +130,7 @@ In Playwright (no auth cookie needed — toggle is in `/u/[username]` layout):
 
 ### T1.7 — Locale toggle works
 
-1. Navigate to `/@demo`
+1. Navigate to `/u/demo`
 2. Read initial `<html lang>`
 3. Find locale button (`aria-label` starts with "Change language" / "切換語言")
 4. Click it
@@ -190,8 +191,8 @@ npx prisma validate  # prisma.config.ts loads .env.local itself (Prisma 7)
 
 Verifies the EntryTranslation / ExperienceTranslation fan-out actually wires through to the public profile. Uses the seed demo user.
 
-1. Set cookie `locale=en` and navigate to `/@demo` → capture the first card's text.
-2. Set cookie `locale=zh-TW`, reload `/@demo` → capture the first card's text.
+1. Set cookie `locale=en` and navigate to `/u/demo` → capture the first card's text.
+2. Set cookie `locale=zh-TW`, reload `/u/demo` → capture the first card's text.
 3. Assert the two captures differ AND the EN one contains an English token from the seed (e.g. "Graduated") AND the ZH one contains a Chinese token (e.g. "取得" or "州立大學").
 
 Catches: missed `getLocale()` plumbing in a query helper, broken `pickTranslation` fallback, or a forgotten `translations: true` include.
@@ -222,7 +223,7 @@ Verifies the email + password auth path works end-to-end without OAuth.
 6. Click "Save and continue" via `.click()`.
 7. Assert URL settles on `/dashboard` AND the nav contains "Timeline" / "Entries" / "Experiences" / "Resume" links.
 
-Catches regressions in: Credentials authorize() callback, bcrypt hashing, the `signUpWithEmail` server action's auto-signin, and the middleware "no-username" gate (which was deliberately removed because `useSession().update()` doesn't survive Credentials sessions — see commit history).
+Catches regressions in: Credentials authorize() callback, bcrypt hashing, the `signUpWithEmail` server action's auto-signin, and the "no-username" gate (which was deliberately removed because `useSession().update()` doesn't survive Credentials sessions — see commit history).
 
 Cleanup: leave the created User row. They're cheap and don't interfere with other checks.
 
@@ -245,14 +246,14 @@ The seed marks 6 of 8 demo entries as `featured=true`. **"Featured only"
 defaults to ON since the 2026-08 curation change** — the résumé opens as the
 curated view.
 
-1. Navigate to `/@demo/resume`
+1. Navigate to `/u/demo/resume`
 2. Assert the "Featured only" checkbox is already checked; count `section li` → record N1 (curated count, 6 for seed)
 3. Untick the checkbox → count again → record N2 (full count, 8 for seed)
 4. Assert N2 > N1 AND N1 > 0
 
 ### T1.20 — Print stylesheet hides chrome
 
-1. Navigate to `/@demo/resume`
+1. Navigate to `/u/demo/resume`
 2. `await page.emulateMedia({ media: 'print' })`
 3. Assert: `nav` has `display: none`, every `.resume-print-hide` has `display: none`, every `.no-print` has `display: none`
 4. Restore: `await page.emulateMedia({ media: 'screen' })`
@@ -270,7 +271,7 @@ Catches: the `demo` Credentials provider missing or broken, the seed `demo` user
 
 ### T1.22 — Timeline search filters cards live + `/` shortcut focuses input
 
-1. With a session that has ≥ 1 entry (demo works), navigate to `/dashboard` (or `/@demo` for an unauth check).
+1. With a session that has ≥ 1 entry (demo works), navigate to `/dashboard` (or `/u/demo` for an unauth check).
 2. Count cards via `[role="button"][aria-label^="View details"]` → record N1.
 3. Press `/` via `page.keyboard.press('/')`.
 4. Assert `document.activeElement.type === 'search'`.
@@ -298,7 +299,7 @@ Catches: the questions array missing in the response, the refinement turn parame
 
 ### T1.24 — Markdown rendering in EntryCard doesn't crash on plain text or markdown
 
-Smoke test for the MarkdownText component. Any successful dashboard / public profile / entry detail page load already exercises this (every TimelineModal opens an EntryCard). If the dashboard or `/@demo` returns 200 + h1 renders, this passes. No separate Playwright step needed unless you want to verify markdown formatting renders:
+Smoke test for the MarkdownText component. Any successful dashboard / public profile / entry detail page load already exercises this (every TimelineModal opens an EntryCard). If the dashboard or `/u/demo` returns 200 + h1 renders, this passes. No separate Playwright step needed unless you want to verify markdown formatting renders:
 
 1. Create or pick a test entry whose description contains `**bold text**` and `[a link](https://example.com)`.
 2. Navigate to that entry's timeline modal.
@@ -319,7 +320,7 @@ Print-output QA now lives in the dedicated `resume-pdf-review` skill.
 2. Navigate to `/dashboard`.
 3. Click any timeline card to open the modal.
 4. Assert at least one `a[href^="/dashboard/entries/"]` element exists inside the `[role="dialog"]`.
-5. Sign out (or use a different cookie) and navigate to `/@demo`.
+5. Sign out (or use a different cookie) and navigate to `/u/demo`.
 6. Open any card → assert NO `a[href^="/dashboard/entries/"]` appears in the modal.
 
 Catches regressions in the `editable` prop wiring or in the ownership check in `/u/[username]/page.tsx`.
@@ -339,7 +340,7 @@ done | sort | uniq -c
 
 ### T1.28 — Skills view exists + filters timeline by ?skill=
 
-1. Navigate to `/dashboard/skills` (auth'd) or `/@demo/skills` (public).
+1. Navigate to `/dashboard/skills` (auth'd) or `/u/demo/skills` (public).
 2. Count `a[href*="skill="]` elements — expect ≥ 1 (any user with techStack entries).
 3. Click the first skill link.
 4. Assert URL contains `?skill=…`.
@@ -348,7 +349,7 @@ done | sort | uniq -c
 
 ### T1.29 — Year review page renders stats + highlights
 
-1. Navigate to `/dashboard/year/<current-year>` (auth'd) or `/@demo/year/2024` (public, demo data spans multiple years).
+1. Navigate to `/dashboard/year/<current-year>` (auth'd) or `/u/demo/year/2024` (public, demo data spans multiple years).
 2. Assert `<h1>` text matches the year heading pattern.
 3. If the year has data: assert 4 stat cards exist (entries / impact / featured / top tag), plus at least one of: "Top categories", "Top skills", "Highlights" sections.
 4. If the year is empty: assert the empty-state message renders without crashing.
@@ -361,12 +362,12 @@ curl -sI -o /dev/null -w "%{http_code} %{content_type}\n" --max-time 30 http://l
 
 - Expect `200 image/png`. Catches regressions in the `params: Promise<...>` async signature (Next 16 made these async — easy to miss), in the database aggregation that powers the card, or in any next/og update.
 
-### T1.31 — /@username/entry/[id] permalink renders or 404s correctly
+### T1.31 — /u/username/entry/[id] permalink renders or 404s correctly
 
 - Valid id (use a known seed entry from the demo profile):
-  - `curl -sI -w "%{http_code}" http://localhost:3000/@demo/entry/<valid-id>` → expect `200`.
+  - `curl -sI -w "%{http_code}" http://localhost:3000/u/demo/entry/<valid-id>` → expect `200`.
 - Invalid id:
-  - `curl -sI -w "%{http_code}" http://localhost:3000/@demo/entry/00000000-0000-0000-0000-000000000000` → expect `404`.
+  - `curl -sI -w "%{http_code}" http://localhost:3000/u/demo/entry/00000000-0000-0000-0000-000000000000` → expect `404`.
 
 ### T1.32 — /api/improve-bullet returns improved + feedback (with key)
 
@@ -399,13 +400,13 @@ npm test
 
 - Expect all suites pass. Currently translations / skills / rateLimit. Add more as features land.
 
-### T1.35 — Profile contact links render on /@username
+### T1.35 — Profile contact links render on /u/username
 
 The setup form gains four optional URL fields (contactEmail / linkedin / github / website). Filled-in ones show as small icon buttons next to "View résumé" on the public profile.
 
 1. Sign in (or use any seed user) and visit `/setup`.
 2. Fill at least one of the contact fields (e.g. `github = https://github.com/demo`), Save.
-3. Navigate to `/@<your-username>`.
+3. Navigate to `/u/<your-username>`.
 4. Assert an icon-button `a[href*="github.com"]` exists next to the View résumé button.
 5. Repeat for `mailto:` (contactEmail), `linkedin.com` (linkedin), and a free-form `website` URL.
 
@@ -418,7 +419,7 @@ Catches regressions in the setup form wiring, the public profile select query (m
 3. Assert a thumbnail preview strip appears below the textarea with two `<img>` elements.
 4. Fill the rest of the required fields and Save.
 5. From the entries list, click Edit on the new row → assert the Attachments textarea is pre-populated with the two URLs.
-6. Optional: open the same entry's public permalink (`/@<user>/entry/<id>`) → assert two `<img>` elements appear in the attachment grid above the tech stack.
+6. Optional: open the same entry's public permalink (`/u/<user>/entry/<id>`) → assert two `<img>` elements appear in the attachment grid above the tech stack.
 
 Catches: EntryDetail / PreviewData missing the field, extractFormData's http(s) regex rejecting valid URLs, EntryCard losing the grid section.
 
@@ -515,11 +516,11 @@ bounces everything else to `NEXT_PUBLIC_APP_HOST`. Against production
 2. `curl -s https://ngkaizhe.com/resume` → HTML contains the résumé heading.
 3. `curl -s -o /dev/null -w "%{http_code} %{redirect_url}" https://ngkaizhe.com/dashboard`
    → `307 https://<NEXT_PUBLIC_APP_HOST>/dashboard`.
-4. `curl -s -o /dev/null -w "%{http_code}" https://<NEXT_PUBLIC_APP_HOST>/@demo`
-   → `200` (NOT 307 — a 307 to `/u/demo` means the proxy's re-invocation
-   guard regressed; see `x-forwarded-host` handling + the `/u|/d` internal-
-   target skip in src/proxy.ts).
-5. `curl -s https://<NEXT_PUBLIC_APP_HOST>/@ngkaizhe | grep canonical` →
+4. `curl -s -o /dev/null -w "%{http_code}" https://<NEXT_PUBLIC_APP_HOST>/u/demo`
+   → `200` (NOT 307 — a 307 here means the proxy's re-invocation guard
+   regressed; see `x-forwarded-host` handling + the `/d/` rewritten-target
+   skip in src/proxy.ts).
+5. `curl -s https://<NEXT_PUBLIC_APP_HOST>/u/ngkaizhe | grep canonical` →
    canonical href is `https://ngkaizhe.com/`.
 
 Dev variant: send `-H "Host: ngkaizhe.com"` to `http://localhost:3000` for
@@ -539,10 +540,10 @@ passed verification that way. Reliable markers:
 **Domain-served sub-pages (2026-08):** `/skills`, `/year/<n>`, `/entry/<id>`
 are served directly on a bound domain (no bounce), and public-page internal
 links are host-aware (`getPublicLinks`) — on the domain they use the owner's
-configured paths (`/`, altPath, `/skills`, …), on the main host they stay
-`/@user/...`. Check both: `curl -H "Host: ngkaizhe.com" <base>/skills` → 200,
+configured paths (`/`, altPath, `/skills`, …), on the main host they use
+`/u/<user>/...`. Check both: `curl -H "Host: ngkaizhe.com" <base>/skills` → 200,
 and the domain-rendered timeline HTML contains `href="<resumePath>"` (not
-`/@ngkaizhe/resume`). `skills`/`year`/`entry` are reserved alt-path segments.
+`/u/ngkaizhe/resume`). `skills`/`year`/`entry` are reserved alt-path segments.
 
 **Playwright caveat:** radio `.check()` can flip the DOM without firing
 React's onChange (state silently stale — a save then persists old values).
@@ -558,7 +559,7 @@ must never reach the Anthropic API.
 
 ### T1.13 — No console errors on landing + public profile
 
-For each of: `/`, `/@demo`, `/@demo/resume`, `/@nonexistent_user_smoke_test_zzz`:
+For each of: `/`, `/u/demo`, `/u/demo/resume`, `/u/nonexistent_user_smoke_test_zzz`:
 
 - Navigate, then call `mcp__playwright__browser_console_messages`
 - Filter to `severity === 'error'`. Expect zero. React hydration mismatches, missing translation keys, and 500 errors all show up here.
@@ -675,7 +676,7 @@ Output should be structured Markdown. Keep failed-check diagnostics terse — fi
 
 ### Tier 1
 ✅ T1.1 Landing renders
-✅ T1.2 /@demo timeline
+✅ T1.2 /u/demo timeline
 …
 ❌ T1.9 i18n key parity — EN-only: ['QuickAdd.unavailableHint']
    Fix: add `QuickAdd.unavailableHint` to messages/zh-TW.json or remove from en.json.

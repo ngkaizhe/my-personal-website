@@ -22,7 +22,7 @@ edge proxy 做 host 分流,把路由決策下放到 RSC 層,讓每個使用者�
 瀏覽器
   │
   ▼
-Vercel Edge ──► src/proxy.ts(host 分流、/@ 改寫、auth gate)
+Vercel Edge ──► src/proxy.ts(host 分流 + x-pathname,無 session 邏輯)
   │
   ▼
 Next.js 16 App Router(RSC 為主)
@@ -62,10 +62,13 @@ DB session 意味著每個請求多一次 session 查詢;JWT 把身分放進 coo
 **session() callback 每次從 DB 重讀 username**,用一次輕查詢換資料一致
 性。這是「JWT 資料過期」的教科書案例。
 
-**edge 限制的架構影響**:`auth.config.ts` 拆成 edge-safe 切片(providers
-+ callbacks,無 Prisma),`auth.ts` 才組完整版。後來 middleware 因
-bundle 超過 edge 1MB 限制,乾脆整個 proxy 跑 **Node runtime**(Next 16
-的 proxy.ts 慣例預設就是 Node)。
+**edge 限制的架構影響**:`auth.config.ts` 拆成 adapter-free 切片(providers
++ callbacks,無 Prisma),`auth.ts` 才組完整版。middleware 曾因 bundle
+超過 edge 1MB 限制改跑 **Node runtime**(Next 16 的 proxy.ts 慣例預設就
+是 Node);2026-08 重構後 proxy 完全不碰 session——**auth gate 移到
+`dashboard/layout.tsx`**(redirect + callbackUrl,路徑由 proxy 蓋的
+`x-pathname` header 提供),真正的安全邊界一直是資料層的
+`getCurrentUserId()`。這是「縱深防禦下,外圈只做 UX」的例子。
 
 **面試官可能追問**
 - JWT 被偷怎麼辦?→ httpOnly + secure cookie、短效期;真要撤銷就得
@@ -91,17 +94,22 @@ bundle 超過 edge 1MB 限制,乾脆整個 proxy 跑 **Node runtime**(Next 16
    種非法狀態。alt path 有保留字清單(dashboard、api、skills…)防止
    遮蔽系統路由。
 4. **連結 host-aware**:公開頁的內部連結經過 `getPublicLinks()`——在
-   自訂網域上用 domain 的路徑空間,在主站用 `/@user/...`。沒有它,
+   自訂網域上用 domain 的路徑空間,在主站用 `/u/user/...`。沒有它,
    訪客點一下連結就會漏回主站(真實踩過的 bug)。
 5. **綁定自助化**:站內呼叫 Vercel Domains API 掛網域、輪詢 DNS 驗證
    狀態,使用者全程不碰 Vercel 後台。
 
 **戰爭故事集**(挑 2 個熟講):
 - **Vercel proxy 重入**:Vercel 對 rewrite 後的請求會再跑一次 proxy,
-  且 Host 是內部值 → `/@user` 改寫變成可見的 307。解法:優先讀
-  `x-forwarded-host` + 跳過 `/u/`、`/d/` 內部目標。
-- **%40 編碼**:自訂網域 bounce 回主站時 `@` 被編成 `%40`,proxy 的
-  `/@` 前綴判斷不認得 → 404。解法:proxy 同時接受兩種形式。
+  且 Host 是內部值 → 改寫變成可見的 307。解法:優先讀
+  `x-forwarded-host` + 跳過已在 `/d/` 內的路徑(proxy 唯一的 rewrite
+  目標)。
+- **%40 編碼與 @ 慣例退役**:`/@user` vanity URL 曾被外部連結處理器編
+  成 `/%40user` 導致 404;更根本的發現是 Next router **無法**把 `@` 開
+  頭的 URL segment 交給動態路由(與 parallel-route slot 語法衝突),
+  vanity URL 永遠得靠 proxy rewrite 撐著。2026-08 乾脆退役:canonical
+  改 `/u/user`,舊連結由 `next.config.js` `redirects()` 宣告式 308
+  (`/@x` 與 `/%40x` 都涵蓋)。「刪掉一個慣例比維護它便宜」的案例。
 - **NEXT_PUBLIC_ 是 build-time 燒入**:env 改了沒 redeploy 就是舊值;
   以及使用者把值填成帶 https:// 的完整網址 → 程式碼改成 scheme-tolerant。
 

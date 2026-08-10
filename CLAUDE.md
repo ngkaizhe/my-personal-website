@@ -25,19 +25,19 @@ Each user logs in with Google, picks a username, then uses the site as a **work 
 3. **Entries CRUD** — manage detailed entries with date, action verb, impact metric, experience, skills
 4. **Experiences** — group entries under jobs/clients so résumé export can render them as Experience sections
 5. **Résumé Builder** — filter by experience + date range, generate markdown bullets + aggregated skills, copy or download
-6. **Public profile** — `/@username` shows that user's timeline; `/@username/résumé` shows the same builder over their data
+6. **Public profile** — `/u/username` shows that user's timeline; `/u/username/resume` shows the same builder over their data (legacy `/@username` links 308-redirect via `next.config.js` `redirects()`)
 
 ### Routing
 
-- `/` — landing page when unauth, redirects to `/dashboard` when auth. Sign-in form lives here (`pages.signIn` in NextAuth points here too, so middleware-blocked requests land here).
+- `/` — landing page when unauth, redirects to `/dashboard` when auth. Sign-in form lives here (`pages.signIn` in NextAuth points here too, so auth-gated requests land here).
 - `/setup` — first-time username/displayName/bio setup. Required before reaching `/dashboard`. Once set, the page itself redirects to `/dashboard`.
 - `/dashboard` — current user's timeline (auth-gated, scoped by `session.user.id`). Includes a "copy public URL" button.
 - `/dashboard/quick-add` — one-sentence input → AI parse → review → save
 - `/dashboard/entries`, `.../new`, `.../[id]` — CRUD for the current user's entries
 - `/dashboard/experiences`, `.../new`, `.../[id]` — CRUD for the current user's experiences
 - `/dashboard/resume` — résumé builder
-- `/@[username]` — **public** timeline view for any user (no auth needed). Middleware rewrites to `/u/[username]` because Next.js can't have a `@`-prefixed dynamic folder. The route file lives at `src/app/u/[username]/`.
-- `/@[username]/resume` — public résumé view (same `ResumeBuilder` component, public data).
+- `/u/[username]` — **public** timeline view for any user (no auth needed). This is the canonical public URL (the old `/@username` vanity form was retired 2026-08: Next's router can't match `@`-prefixed URL segments against dynamic routes at all — they collide with parallel-route slot syntax — so vanity URLs required a proxy rewrite forever; legacy `/@x` and `/%40x` links 308 to `/u/x` via `redirects()` in `next.config.js`).
+- `/u/[username]/resume` — public résumé view (same `ResumeBuilder` component, public data).
 - `/api/auth/[...nextauth]` — NextAuth handlers (sign-in, callback, sign-out, session).
 - `/api/parse-entry` — Claude Haiku-backed text-to-fields endpoint for Quick Add.
 
@@ -45,11 +45,11 @@ Each user logs in with Google, picks a username, then uses the site as a **work 
 
 - **Auth:**
   - `src/auth.ts` builds the full `NextAuth({...})` with `PrismaAdapter` and exports `{ handlers, auth, signIn, signOut }`. JWT session strategy.
-  - `src/auth.config.ts` is the **edge-safe slice** (providers, callbacks, `authorized()` route gate). Imported by both `auth.ts` and `middleware.ts` because `PrismaAdapter` doesn't run in edge.
-  - `src/middleware.ts` rewrites `/@x` → `/u/x` and redirects authenticated users without a username to `/setup`. The auth gate (sign-in required for `/dashboard/*` and `/setup`) is enforced via the `authorized()` callback in `auth.config.ts`.
+  - `src/auth.config.ts` is the adapter-free slice (providers, callbacks). Only `auth.ts` consumes it today — the proxy no longer wraps NextAuth.
+  - `src/proxy.ts` is session-free and deliberately thin: custom-domain host forwarding into `/d/...` plus an `x-pathname` request header (server layouts can't read the pathname any other way). The `/dashboard` auth gate lives in `src/app/dashboard/layout.tsx` (redirect to `/?callbackUrl=<x-pathname>`); `/setup` self-guards in its page. The real security boundary is per-action `getCurrentUserId()`.
   - `src/types/next-auth.d.ts` adds `id` and `username` to the `Session.user` and `JWT` types.
 - **Per-user scoping:** `src/lib/currentUser.ts` exports `getCurrentUserId()` which reads from `auth()` and throws when no session — every dashboard server action calls it. `update`/`delete` server actions use `updateMany`/`deleteMany` with `{ id, userId }` so users can't mutate each other's rows even via crafted requests.
-- **Query helpers:** `src/lib/timeline.ts` and `src/lib/resume.ts` expose `fetchTimelineByUserId(userId)` / `fetchResumeByUserId(userId)`. Both `/dashboard` actions and the public `/@username` pages call these — single source of truth for the query and DTO mapping.
+- **Query helpers:** `src/lib/timeline.ts` and `src/lib/resume.ts` expose `fetchTimelineByUserId(userId)` / `fetchResumeByUserId(userId)`. Both `/dashboard` actions and the public `/u/[username]` pages call these — single source of truth for the query and DTO mapping.
 - **Server Actions:**
   - `src/app/dashboard/entries/actions.ts` and `.../experiences/actions.ts` — CRUD scoped to current user.
   - `src/app/dashboard/resume/actions.ts` — `getResumeData()` wraps `fetchResumeByUserId(currentUserId)`. Re-exports the resume types from `lib/resume.ts`.
@@ -63,10 +63,10 @@ Each user logs in with Google, picks a username, then uses the site as a **work 
   - `Experience` — scoped by `userId` (Cascade). Groups entries; `endDate?` empty means current. Deleting an experience nulls `Entry.experienceId` (SetNull).
   - `Icon` — global lookup table (Lucide icon names). Not per-user.
 - **Components:**
-  - `src/components/Timeline/` — Timeline → TimelineRow → TimelineCard, plus TimelineModal. Reused by both `/dashboard` and `/@username`.
+  - `src/components/Timeline/` — Timeline → TimelineRow → TimelineCard, plus TimelineModal. Reused by both `/dashboard` and `/u/[username]`.
   - `src/components/Entry/` — EntryCard, EntryForm, EntryFormPreview, EntryList, QuickAdd.
   - `src/components/Experience/` — ExperienceForm, ExperienceList.
-  - `src/components/Resume/` — ResumeBuilder. Reused on both `/dashboard/resume` and `/@username/resume`.
+  - `src/components/Resume/` — ResumeBuilder. Reused on both `/dashboard/resume` and `/u/[username]/resume`.
   - `src/components/auth/` — UserMenu (avatar dropdown), CopyPublicUrlButton, SessionProviderWrapper.
 - **AI parse route:** `src/app/api/parse-entry/route.ts` — POST a raw sentence, returns structured fields using `claude-haiku-4-5-20251001` with an ephemerally-cached system prompt. Requires `ANTHROPIC_API_KEY`.
 - **Font:** Montserrat loaded via `next/font/google` with weights 400/500/600/700.
